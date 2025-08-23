@@ -1,0 +1,204 @@
+
+/* ================================
+   CORREÇÕES DE ACESSIBILIDADE 
+   ================================ */
+
+/* 1. CONTRASTE MÍNIMO GARANTIDO */
+.price-green, .price-success {
+  color: #059669 !important; /* Verde mais escuro para contraste 4.5:1 */
+  font-weight: 600;
+}
+
+.link-light-blue, .text-light-blue {
+  color: #0369a1 !important; /* Azul mais escuro para contraste 4.5:1 */
+  font-weight: 500;
+}
+
+.newsletter-text, .footer-text-light {
+  color: #f8fafc !important; /* Branco puro para texto claro */
+  font-weight: 500;
+}
+
+/* 2. CORREÇÕES ESPECÍFICAS PARA SLICK CAROUSEL */
+.slick-slide.slick-cloned a,
+.slick-slide.slick-cloned button {
+  tabindex: -1 !important;
+  pointer-events: none;
+}
+
+.slick-slide.slick-cloned[aria-hidden="true"] * {
+  tabindex: -1 !important;
+}
+
+/* 3. MELHORIAS DE FOCO PARA NAVEGAÇÃO POR TECLADO */
+.slider-navigation button:focus,
+.form-control:focus,
+.btn:focus,
+a:focus {
+  outline: 2px solid #1A75FF !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(26, 117, 255, 0.1) !important;
+}
+
+/* 4. SKIP LINK PARA NAVEGAÇÃO */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #1A75FF;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 9999;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* 5. MELHORAR VISIBILIDADE DE ELEMENTOS INTERATIVOS */
+input[type="range"] {
+  background: #e2e8f0;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+}
+
+input[type="range"]:focus {
+  outline: 2px solid #1A75FF;
+  outline-offset: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #1A75FF;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #1A75FF;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 6. ESTADOS DE LOADING ACESSÍVEIS */
+.loading-spinner[aria-live="polite"] {
+  position: relative;
+}
+
+.loading-spinner::after {
+  content: "Carregando...";
+  position: absolute;
+  left: -9999px; /* Oculto visualmente mas disponível para leitores de tela */
+}
+
+/* 7. BOTÕES E LINKS SEM TEXTO DEVEM TER ÁREA MÍNIMA */
+a[aria-label], button[aria-label] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 8. MELHORAR VISIBILIDADE DO RATING */
+.rating span {
+  color: #fbbf24; /* Cor dourada com melhor contraste */
+  font-size: 16px;
+}
+
+.rating .empty-star {
+  color: #d1d5db; /* Cinza com contraste adequado */
+}
+
+/* MELHORIAS ADICIONAIS DE CONTRASTE */
+
+/* Botões primários com contraste adequado */
+.btn-primary, .theme-btn {
+  background-color: #1A75FF !important;
+  border-color: #1A75FF !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.btn-primary:hover, .theme-btn:hover {
+  background-color: #0F5ECC !important;
+  border-color: #0F5ECC !important;
+  color: #ffffff !important;
+}
+
+/* Links com contraste adequado */
+.car-price, .vehicle-price {
+  color: #059669 !important; /* Verde escuro para R$ 15.000 */
+  font-weight: 700;
+}
+
+.car-old-price, .vehicle-old-price {
+  color: #6B7280 !important; /* Cinza com contraste adequado */
+  text-decoration: line-through;
+}
+
+/* Badges e tags com contraste */
+.badge, .tag, .vehicle-tag {
+  background-color: #1A75FF !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.badge.ofertas, .tag.ofertas {
+  background-color: #DC2626 !important; /* Vermelho com contraste */
+  color: #ffffff !important;
+}
+
+.badge.novos, .tag.novos {
+  background-color: #059669 !important; /* Verde com contraste */
+  color: #ffffff !important;
+}
+
+/* Melhorar visibilidade de estrelas de rating */
+.star-rating .star {
+  color: #F59E0B !important; /* Dourado com contraste adequado */
+  font-size: 16px;
+}
+
+.star-rating .star.empty {
+  color: #D1D5DB !important; /* Cinza claro com contraste */
+}
+
+/* Melhorar foco em elementos interativos */
+.car-card:focus-within,
+.vehicle-card:focus-within {
+  outline: 2px solid #1A75FF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(26, 117, 255, 0.1);
+}
+
+/* Estados de loading mais acessíveis */
+.loading-text {
+  color: #374151 !important; /* Cinza escuro */
+  font-weight: 500;
+}
+
+/* Breadcrumbs com contraste */
+.breadcrumb-link {
+  color: #0369A1 !important; /* Azul escuro */
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: #374151 !important; /* Cinza escuro */
+  font-weight: 600;
+}

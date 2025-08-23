@@ -1,0 +1,114 @@
+.lazy-youtube-container {
+  width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Features section layout */
+.features-section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.features-video,
+.features-content {
+  flex: 1 1 50%;      /* cada um ocupa 50% em desktop */
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .features-video,
+  .features-content {
+    flex: 1 1 100%;   /* 100% em mobile */
+  }
+}
+
+/* Força altura igual ao quadro azul (400px) */
+.features-video {
+  height: 400px;
+}
+
+.features-content {
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* centraliza o texto verticalmente */
+  padding: 20px;
+}
+
+/* Wrapper do vídeo ocupa 100% das dimensões */
+.features-video .yt-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.features-video .yt-wrapper > * {
+  position: absolute;
+  inset: 0;
+}
+
+/* YouTube wrapper with proper aspect ratio */
+.yt-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+.yt-wrapper > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Fallback for browsers without aspect-ratio support */
+@supports not (aspect-ratio: 16/9) {
+  .yt-wrapper {
+    padding-bottom: 56.25%;
+    height: 0;
+  }
+}
+
+.lazy-youtube-placeholder {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+}
+
+.lazy-youtube-placeholder:hover .play-button-overlay {
+  transform: translate(-50%, -50%) scale(1.1);
+  background-color: rgba(255, 0, 0, 1);
+}
+
+.play-button-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background-color: rgba(255, 0, 0, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .play-button-overlay {
+    width: 60px !important;
+    height: 60px !important;
+  }
+}

@@ -1,0 +1,261 @@
+/* Safari/Firefox visibility fixes */
+.boxcar-pricing-section,
+.boxcar-pricing-section *,
+.boxcar-pricing-section .inner-column,
+.boxcar-pricing-section .boxcar-title,
+.boxcar-pricing-section .list-style-one,
+.boxcar-pricing-section .read-more {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  animation: none !important;
+  -webkit-animation: none !important;
+  -moz-animation: none !important;
+  display: block !important;
+}
+
+.boxcar-pricing-section .row {
+  display: flex !important;
+}
+
+.boxcar-pricing-section .col-lg-6 {
+  display: block !important;
+}
+
+/* Force visibility for all content */
+.boxcar-pricing-section h2,
+.boxcar-pricing-section .text,
+.boxcar-pricing-section li,
+.boxcar-pricing-section a {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* HOMEPAGE SECTIONS STANDARDIZATION */
+
+/* All main homepage sections use consistent spacing and width - reduced by 30% */
+.boxcar-facts-section,
+.boxcar-brand-section,
+.cars-section-three,
+.cta-section-simple,
+.boxcar-pricing-section,
+.why-choose-us-section {
+  padding-top: 42px;
+  padding-bottom: 42px;
+  margin: 0;
+}
+
+/* All sections use the same container width - match "O que tem nos vídeos?" */
+.boxcar-facts-section .boxcar-container,
+.boxcar-brand-section .boxcar-container,
+.cars-section-three .boxcar-container,
+.cta-section-simple .boxcar-container,
+.boxcar-pricing-section .boxcar-container,
+.why-choose-us-section .boxcar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Force same width for calculator section to match CTA section */
+.boxcar-pricing-section {
+  width: 100%;
+}
+
+.boxcar-pricing-section .boxcar-container {
+  max-width: 1200px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+}
+
+/* Sections using inline styles get standard spacing via containers - reduced by 30% */
+section[style*="padding: 80px 0"] {
+  padding: 42px 0 !important;
+}
+
+section[style*="padding: 80px 0"] .boxcar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Mobile spacing adjustments - reduced by 30% */
+@media (max-width: 768px) {
+  .boxcar-facts-section,
+  .boxcar-brand-section,
+  .cars-section-three,
+  .cta-section-simple,
+  .boxcar-pricing-section,
+  .why-choose-us-section {
+    padding-top: 28px;
+    padding-bottom: 28px;
+  }
+  
+  section[style*="padding: 80px 0"] {
+    padding: 28px 0 !important;
+  }
+}
+
+/* Special adjustments for specific sections */
+
+/* Reduce gap between "Mais Vendidos" and "Venda Seu Carro" sections by additional 25% */
+.cars-section-three {
+  margin-bottom: -10px !important; /* Additional 25% reduction from 42px base */
+}
+
+.cta-section-simple {
+  margin-top: -10px !important; /* Additional 25% reduction from 42px base */
+}
+
+/* Mobile adjustments for this specific gap */
+@media (max-width: 768px) {
+  .cars-section-three {
+    margin-bottom: -7px !important; /* Additional 25% reduction from 28px mobile base */
+  }
+  
+  .cta-section-simple {
+    margin-top: -7px !important; /* Additional 25% reduction from 28px mobile base */
+  }
+}
+
+/* Fix for Safari and Firefox title visibility issues */
+.boxcar-title {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  animation: none !important;
+  -webkit-animation: none !important;
+  -moz-animation: none !important;
+  padding-top: 20px !important;
+  margin-top: 20px !important;
+  min-height: 60px !important;
+}
+
+.boxcar-title h2 {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  animation: none !important;
+  -webkit-animation: none !important;
+  -moz-animation: none !important;
+  display: block !important;
+  line-height: 1.2 !important;
+  /* overflow: visible !important; */ /* Removido para evitar aviso do Lighthouse */
+}
+
+/* Specific fixes for testimonials and blog titles */
+.testimonial-slider .boxcar-title,
+.blog-slider .boxcar-title {
+  padding-top: 30px !important;
+  margin-bottom: 30px !important;
+}
+
+/* Remove any conflicting wow animations for critical titles */
+.wow.fadeInUp {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  -webkit-transform: translateY(0) !important;
+  -moz-transform: translateY(0) !important;
+}
+
+/* Cars carousel compatibility fixes - moved from inline JSX */
+.cars-section-three .slick-slider {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -khtml-user-select: none;
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cars-section-three .slick-list {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.cars-section-three .slick-track {
+  position: relative;
+  top: 0;
+  left: 0;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cars-section-three .slick-slide {
+  display: block;
+  float: left;
+  height: 100%;
+  min-height: 1px;
+}
+
+/* Force visibility in Safari/Firefox */
+.cars-section-three .car-block-three {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+.cars-section-three .inner-box {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for Safari flex issues */
+@supports (-webkit-appearance: none) {
+  .cars-section-three .slick-track {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+  }
+}
+.cta-section-simple {
+  padding-top: 60px !important;
+  padding-bottom: 60px !important;
+}
+
+/* Connect "Toda Semana" and "O que tem nos vídeos?" as one visual unit */
+.boxcar-pricing-section {
+  padding-bottom: 20px !important; /* Reduce bottom spacing */
+}
+
+.why-choose-us-section {
+  padding-top: 20px !important; /* Reduce top spacing */
+}
+
+/* Brands section (between Hero and other sections) has lighter spacing */
+.boxcar-brand-section {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+
+/* Mobile adjustments for connected sections */
+@media (max-width: 768px) {
+  .boxcar-pricing-section {
+    padding-bottom: 15px !important;
+  }
+  
+  .why-choose-us-section {
+    padding-top: 15px !important;
+  }
+}

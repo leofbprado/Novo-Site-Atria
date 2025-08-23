@@ -1,0 +1,48 @@
+
+<!-- 🎯 ESTRATÉGIA DE CARREGAMENTO CSS OTIMIZADA -->
+
+<!-- 1. CSS Crítico já inline (4.6KB) -->
+
+<!-- 2. Preload CSS essencial -->
+<link rel="preload" href="/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+
+<!-- 3. Defer CSS não-crítico -->
+<link rel="preload" href="/css/non-critical-consolidated.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="/css/optimized-fontawesome.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+
+<!-- 4. Fallback para JS desabilitado -->
+<noscript>
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">  
+  <link rel="stylesheet" href="/css/non-critical-consolidated.css">
+  <link rel="stylesheet" href="/css/optimized-fontawesome.css">
+</noscript>
+
+<!-- 5. Script para carregamento progressivo -->
+<script>
+  // Carregar CSS não-crítico após interação do usuário ou 3s
+  function loadDeferredStyles() {
+    const deferredCSS = [
+      '/css/animate.css',
+      '/css/carousel-lazy.css',
+      '/css/animations-lazy.css'
+    ];
+    
+    deferredCSS.forEach(href => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    });
+  }
+  
+  // Carregar após primeira interação ou timeout
+  const events = ['scroll', 'click', 'touchstart', 'keydown'];
+  events.forEach(event => {
+    document.addEventListener(event, loadDeferredStyles, { once: true });
+  });
+  
+  // Timeout de segurança
+  setTimeout(loadDeferredStyles, 3000);
+</script>

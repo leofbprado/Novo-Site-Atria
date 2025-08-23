@@ -1,0 +1,210 @@
+/* CSS CRÍTICO INLINE - APENAS ABOVE THE FOLD */
+/* Variáveis CSS essenciais */
+:root {
+  --theme-color-dark: #1a2332;
+  --theme-color-light: #ffffff;
+  --title-font: "DM Sans", sans-serif;
+  --text-font: "DM Sans", sans-serif;
+  --h2-font-size: 40px;
+}
+
+/* Reset básico para evitar FOUC */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--title-font);
+  line-height: 1.6;
+}
+
+/* HEADER CRÍTICO */
+.main-header {
+  position: relative;
+  z-index: 999;
+  background: var(--theme-color-light);
+}
+
+.header-inner {
+  padding: 15px 0;
+}
+
+.container {
+  max-width: 1430px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* HERO SECTION CRÍTICO */
+.boxcar-banner-section-v1 {
+  height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boxcar-banner-section-v1 .banner-content {
+  width: 924px;
+  max-width: 90%;
+  margin: 0 auto;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.boxcar-banner-section-v1 .banner-content > span {
+  display: block;
+  color: #fff;
+  font-size: 16px;
+  line-height: 28px;
+  margin-bottom: 30px;
+}
+
+.boxcar-banner-section-v1 .banner-content h2 {
+  color: #fff;
+  font-size: 70px;
+  font-weight: 700;
+  margin-bottom: 48px;
+  text-transform: capitalize;
+}
+
+/* FORMS CRÍTICO */
+.boxcar-banner-section-v1 .banner-content .form-tab-pane form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #fff;
+  border-radius: 50px;
+  padding: 0 10px;
+  height: 76px;
+}
+
+.form_boxes {
+  width: 25%;
+  height: 76px;
+}
+
+.form-submit {
+  width: 25%;
+}
+
+.form-submit button {
+  background: linear-gradient(45deg, #405ff2, #00b67a);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 15px 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* MOBILE RESPONSIVO */
+@media (max-width: 767px) {
+  /* Altura fixa 80vh - sem auto ou unset */
+  .boxcar-banner-section-v1 {
+    height: 80vh !important;
+    min-height: 80vh !important;
+    max-height: 80vh !important;
+    padding: 0;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  
+  .boxcar-banner-section-v1 > div:first-child {
+    height: 80vh !important;
+    min-height: 80vh !important;
+    max-height: 80vh !important;
+  }
+  
+  .boxcar-banner-section-v1 .banner-content {
+    position: relative !important;
+    z-index: 30 !important;
+    padding-top: 120px;
+    width: 90%;
+    margin: 0 auto;
+  }
+  
+  .boxcar-banner-section-v1 .banner-content h2 {
+    font-size: 46px;
+    line-height: 58px;
+  }
+  
+  .boxcar-banner-section-v1 .banner-content .form-tab-pane form {
+    display: block;
+    height: unset;
+    border-radius: 20px;
+    padding: 20px;
+  }
+  
+  .form_boxes,
+  .form-submit {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
+
+/* FACTS SECTION CRÍTICO */
+.fun-fact-section {
+  padding: 60px 0;
+  background: var(--theme-color-light);
+}
+
+.fun-fact-section .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -15px;
+}
+
+.fun-fact-section .col-lg-3 {
+  flex: 0 0 25%;
+  padding: 15px;
+}
+
+@media (max-width: 767px) {
+  .fun-fact-section .col-lg-3 {
+    flex: 0 0 50%;
+  }
+}
+
+/* MOBILE: Respeita as classes Tailwind hidden no Hero */
+@media (max-width: 767px) {
+  .boxcar-banner-section-v1 .hidden {
+    display: none !important;
+  }
+}
+
+/* LOADING SPINNER PARA CSS LAZY */
+.css-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--theme-color-light);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.css-loading::after {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--theme-color-dark);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

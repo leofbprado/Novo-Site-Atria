@@ -1,0 +1,11 @@
+{
+  "criticalCSSSize": 5925,
+  "criticalCSSSizeKB": 5.79,
+  "asyncCSSFiles": 4,
+  "fontPreloads": 9,
+  "preconnects": 11,
+  "timestamp": "2025-08-07T22:57:59.986Z",
+  "recommendations": [
+    "Reduzir tamanho do Critical CSS inline"
+  ]
+}

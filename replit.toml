@@ -1,0 +1,14 @@
+[deployment]
+run = ["node", "start.js"]
+deploymentTarget = "autoscale"
+publicDir = "dist"
+ignorePaths = ["**/node_modules/**", "**/.git/**", "documentation/**", "node_modules/.cache/**"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
+exposeLocalhost = true
+
+[build]
+main = "start.js"
+run = "npm run build"

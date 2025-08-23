@@ -1,0 +1,214 @@
+/*
+ * CSS específico para Carousels - Carregado apenas quando necessário
+ * Extração das partes mais pesadas do slick.css
+ */
+
+/* Slick Carousel Core Styles - Lazy Loaded */
+.slick-slider {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -khtml-user-select: none;
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.slick-list {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.slick-list:focus {
+  outline: none;
+}
+
+.slick-list.dragging {
+  cursor: pointer;
+  cursor: hand;
+}
+
+.slick-slider .slick-track,
+.slick-slider .slick-list {
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+.slick-track {
+  position: relative;
+  top: 0;
+  left: 0;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.slick-track:before,
+.slick-track:after {
+  display: table;
+  content: '';
+}
+
+.slick-track:after {
+  clear: both;
+}
+
+.slick-loading .slick-track {
+  visibility: hidden;
+}
+
+.slick-slide {
+  display: none;
+  float: left;
+  height: 100%;
+  min-height: 1px;
+}
+
+[dir='rtl'] .slick-slide {
+  float: right;
+}
+
+.slick-slide img {
+  display: block;
+}
+
+.slick-slide.slick-loading img {
+  display: none;
+}
+
+.slick-slide.dragging img {
+  pointer-events: none;
+}
+
+.slick-initialized .slick-slide {
+  display: block;
+}
+
+.slick-loading .slick-slide {
+  visibility: hidden;
+}
+
+.slick-vertical .slick-slide {
+  display: block;
+  height: auto;
+  border: 1px solid transparent;
+}
+
+.slick-arrow.slick-hidden {
+  display: none;
+}
+
+/* 🎯 Melhorias específicas para carrossel touch-friendly */
+
+/* Dots de navegação otimizados para mobile */
+.slick-dots {
+  position: relative;
+  bottom: -30px;
+  display: flex !important;
+  justify-content: center;
+  padding: 0;
+  margin: 20px 0 0 0;
+  list-style: none;
+}
+
+.slick-dots li {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.slick-dots li button {
+  font-size: 0;
+  line-height: 0;
+  display: block;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  cursor: pointer;
+  color: transparent;
+  border: 0;
+  outline: none;
+  background: #ccc;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.slick-dots li.slick-active button,
+.slick-dots li button:hover {
+  background: #1A75FF;
+}
+
+/* Área de toque otimizada */
+.slick-slider {
+  touch-action: pan-y;
+}
+
+.slick-list {
+  overflow: hidden;
+  cursor: grab;
+}
+
+.slick-list:active {
+  cursor: grabbing;
+}
+
+/* Slides com padding otimizado para mobile */
+@media (max-width: 768px) {
+  .slick-slide {
+    padding: 0 10px;
+  }
+  
+  /* Center mode para mobile */
+  .slick-center {
+    transform: scale(1.05);
+  }
+  
+  .slick-slider.slick-initialized .slick-slide {
+    opacity: 0.8;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .slick-slider.slick-initialized .slick-slide.slick-center {
+    opacity: 1;
+  }
+}
+
+/* Melhorar performance do touch */
+.car-slider-three .slick-track {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Indicadores visuais de swipe */
+.car-slider-three::before {
+  content: '← Deslize para ver mais →';
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #999;
+  opacity: 0.8;
+  z-index: 10;
+}
+
+@media (min-width: 769px) {
+  .car-slider-three::before {
+    display: none;
+  }
+}

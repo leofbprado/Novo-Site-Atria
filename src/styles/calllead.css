@@ -1,0 +1,96 @@
+.calllead-overlay{
+  position: fixed; inset: 0;
+  display: grid; background: rgba(0,0,0,.35);
+  z-index: 2147483000; /* acima da barra fixa */
+}
+.calllead-panel{
+  position: relative; margin: auto; /* ocupa a tela no mobile */
+  inset: 0; background: #fff;
+  display: grid; grid-template-rows: auto 1fr auto;
+  width: 100%; height: 100%;
+}
+
+.calllead-header{
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid #e9eef5; background: #fff;
+}
+.calllead-header h2{ margin: 0; font-size: 18px; }
+.calllead-close{ background: none; border: 0; font-size: 20px; padding: 8px; }
+
+.calllead-content{
+  overflow: auto; padding: 16px;
+}
+.field{ display: grid; gap: 6px; margin-bottom: 12px; }
+.field input{
+  height: 44px; border: 1px solid #c8d2de; border-radius: 10px;
+  padding: 0 12px; font-size: 16px;
+}
+.disclaimer{ font-size: 12px; color: #64748b; margin: 6px 0 0; }
+
+.calllead-footer{
+  position: sticky; bottom: 0; z-index: 2;
+  display: grid; grid-template-columns: 1fr 2fr; gap: 12px;
+  padding: 12px 16px; border-top: 1px solid #e9eef5; background: #fff;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+.btn-outline{
+  height: 44px; border-radius: 10px; border: 1px solid #c8d2de; background: #fff; font-weight: 600;
+}
+.btn-primary{
+  height: 44px; border-radius: 10px; border: 0; background: #1a73e8; color: #fff; font-weight: 700;
+}
+
+/* Esconder barra fixa enquanto o modal do call estiver aberto */
+body.calllead-open .fixed-bottom-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+body.calllead-open { overflow: hidden; }
+
+/* Call button styling */
+.btn-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1A75FF 0%, #0056CC 100%);
+  color: #ffffff;
+  border: 0;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-call:hover {
+  background: linear-gradient(135deg, #0056CC 0%, #003D99 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 117, 255, 0.3);
+}
+
+.btn-call-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+  color: #ffffff;
+  border: 0;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-call-primary:hover {
+  background: linear-gradient(135deg, #E55A2B 0%, #CC4920 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+/* Desktop: modal de tamanho contido se quiser (opcional) */
+/* @media (min-width: 768px){
+  .calllead-panel{ max-width: 480px; height: auto; border-radius: 12px; }
+} */

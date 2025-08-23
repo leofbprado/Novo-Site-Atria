@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // === VEÍCULOS ===
+    match /veiculos/{id} {
+      allow read, write: if true;
+    }
+
+    // === BLOGS ===
+    match /blogs/{id} {
+      allow read, write: if true;
+    }
+
+    // === TAGS ===
+    match /tags/{id} {
+      allow read, write: if true;
+    }
+
+    // === LEADS ===
+    match /leads/{id} {
+      allow read, write: if true;
+    }
+
+    // === VÍDEOS ===
+    match /videos/{id} {
+      allow read, write: if true;
+    }
+
+    // === DEPOIMENTOS ===
+    match /depoimentos/{id} {
+      allow read, write: if true;
+    }
+
+    // BLOQUEIO PADRÃO
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

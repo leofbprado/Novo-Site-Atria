@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-08-06T14:11:08.849Z",
+  "backup": "backup-cloudinary-migration-2025-08-06T14-11-06.tar.gz",
+  "stats": {
+    "filesProcessed": 356,
+    "filesModified": 5,
+    "externalMigrations": 6,
+    "structureMigrations": 0,
+    "totalReplacements": 6
+  },
+  "migrations": {
+    "external": {
+      "https://i.postimg.cc/xdDfX2CY/freepik-the-style-is-candid-image-photography-with-natural-20064.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/freepik__the-style-is-candid-image-photography-with-natural__47739_g8kdq9",
+      "https://i.postimg.cc/cL811HdX/freepik-the-style-is-candid-image-photography-with-natural-20062.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/freepik__the-style-is-candid-image-photography-with-natural__47739_g8kdq9",
+      "https://i.postimg.cc/FKy9cBdS/freepik-the-style-is-candid-image-photography-with-natural-20063.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/freepik__the-style-is-candid-image-photography-with-natural__47739_g8kdq9",
+      "https://i.postimg.cc/1RVNzN1q/Design-sem-nome-10.png": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/hero/banner-six"
+    },
+    "structure": {
+      "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto:eco/v1/atria-site/financing-calculator": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/ferramentas/financing-calculator",
+      "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto:eco/v1/atria-site/sell-car-cta": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/sell-car-cta"
+    }
+  }
+}

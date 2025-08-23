@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Preconnect crítico para fontes e CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://res.cloudinary.com">
+  
+  <!-- Font display swap para performance -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  
+  <title>Átria Veículos - Concessionária de Veículos</title>
+  <meta name="description" content="Compra segura, preço justo e carros de qualidade na Átria Veículos">
+  
+  <!-- ✅ CSS CRÍTICO INLINE - Above the fold otimizado -->
+  <style>/* Reset mínimo e base */ *,*::before,*::after{box-sizing:border-box} body,h1,h2,p{margin:0;padding:0} body{font-family:"DM Sans",-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5;color:#333;background:#fff} /* Container crítico */ .container{max-width:1200px;margin:0 auto;padding:0 20px} /* Header mínimo */ .main-header{position:relative;z-index:999;background:transparent} .header-inner{padding:15px 0} /* Hero Section Ultra-otimizado */ .boxcar-banner-section-v1{position:relative;width:100%;min-height:80vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000 } .boxcar-banner-section-v1 img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1 } .banner-content{position:relative;z-index:20;color:#fff;text-align:center;max-width:90%;top:50%;left:50%;transform:translate(-50%,-50%) } .banner-content h2{font-size:3.5rem;font-weight:700;margin-bottom:1rem;text-shadow:2px 2px 4px rgba(0,0,0,.5) } .banner-content span{display:block;font-size:1.1rem;margin-bottom:2rem;opacity:.9 } /* Search form crítico */ .banner-search{background:#fff;border-radius:50px;padding:10px;max-width:600px;margin:0 auto;display:flex;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.1) } .search-input{flex:1;border:none;outline:none;padding:15px 20px;font-size:1rem } .search-btn{background:linear-gradient(135deg,#ff6b35 0%,#f7931e 100%);color:#fff;border:none;padding:15px 30px;border-radius:50px;font-weight:600;cursor:pointer } /* Mobile crítico */ @media (max-width:768px){.boxcar-banner-section-v1{min-height:80vh;padding-bottom:12px} .boxcar-banner-section-v1.mobile-banner{min-height:80vh} .banner-content{position:relative;transform:none;padding:50px 20px 0} .banner-content h2{font-size:2.5rem;line-height:1.2} .banner-content span{font-size:1.1rem} .banner-search{margin:0 20px;flex-direction:column;padding:20px;border-radius:20px} .search-input{width:100%;margin-bottom:15px} .search-btn{width:100%} } /* Overlay para contraste */ .banner-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.3);z-index:2 } /* Prevent FOUC */ .css-loading{display:none}</style>
+  
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  
+  <!-- CSS não-crítico carregado de forma assíncrona -->
+  <script>
+    // Carregamento assíncrono do CSS não-crítico
+    const loadCSS = (href) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    };
+    
+    // Carregar após carregamento inicial
+    window.addEventListener('load', () => {
+      // CSS principal (diferido)
+      loadCSS('/css/style.css');
+      loadCSS('/css/responsive.css');
+    });
+  </script>
+</body>
+</html>

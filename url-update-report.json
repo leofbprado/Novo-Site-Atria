@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-08-06T13:49:08.369Z",
+  "backup": "backup-before-url-update-2025-08-06T13-49-04.tar.gz",
+  "stats": {
+    "filesProcessed": 359,
+    "filesModified": 0,
+    "totalReplacements": 0,
+    "errors": []
+  },
+  "foundOldUrls": false
+}

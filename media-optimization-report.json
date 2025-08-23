@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-08-06T13:53:11.518Z",
+  "backup": "backup-media-attrs-2025-08-06T13-53-09.tar.gz",
+  "stats": {
+    "filesProcessed": 329,
+    "filesModified": 139,
+    "imagesOptimized": 371,
+    "videosOptimized": 2,
+    "errors": 0
+  }
+}

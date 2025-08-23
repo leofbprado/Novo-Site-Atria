@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-08-06T14:13:06.933Z",
+  "backup": "backup-final-urls-2025-08-06T14-13-04.tar.gz",
+  "stats": {
+    "filesProcessed": 6,
+    "filesModified": 4,
+    "totalChanges": 10
+  },
+  "migrations": {
+    "https://i.postimg.cc/mZ8XxK8r/freepik-a-photographic-style-image-of-a-luxury-car-dealersh-33.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/about/dealer1-2",
+    "https://i.postimg.cc/JzKCJzQW/freepik-the-style-is-automotive-landscape-design-A-visual-33.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/about/dealer1-2",
+    "https://i.postimg.cc/XqzKxK1s/freepik-the-style-is-automotive-landscape-design-A-visual-34.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/about/dealer1-2",
+    "https://i.postimg.cc/ydLNfHGZ/freepik-a-photographic-style-image-of-a-car-dealership-lot-34.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/about/dealer1-2",
+    "https://i.postimg.cc/0N8VD9Pz/freepik-a-photographic-style-image-of-a-car-salesman-shaki-34.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/about/dealer1-2",
+    "https://i.postimg.cc/xCzJNWhL/freepik-a-photographic-style-image-of-a-customer-and-sales-35.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/about/dealer1-2",
+    "https://i.postimg.cc/hG9zqqLX/Design-sem-nome-8.png": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/sell-car-cta",
+    "https://i.postimg.cc/7Zvv28w2/2.png": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/icons/logo-2",
+    "https://i.postimg.cc/xdDfX2CY/freepik-the-style-is-candid-image-photography-with-natural-20064.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/freepik__the-style-is-candid-image-photography-with-natural__47739_g8kdq9",
+    "https://i.postimg.cc/cL811HdX/freepik-the-style-is-candid-image-photography-with-natural-20062.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/freepik__the-style-is-candid-image-photography-with-natural__47739_g8kdq9",
+    "https://i.postimg.cc/FKy9cBdS/freepik-the-style-is-candid-image-photography-with-natural-20063.jpg": "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto/v1/atria-veiculos/images/misc/freepik__the-style-is-candid-image-photography-with-natural__47739_g8kdq9"
+  },
+  "processedFiles": [
+    "src/components/otherPages/AboutNew.jsx",
+    "src/components/otherPages/About.jsx",
+    "src/components/common/Cta.jsx",
+    "src/components/carSingles/Single1Boxcar.jsx",
+    "src/utils/cloudinary.js",
+    "public/sw.js"
+  ]
+}

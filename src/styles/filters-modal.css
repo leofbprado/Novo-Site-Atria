@@ -1,0 +1,105 @@
+.filters-overlay {
+  position: fixed; 
+  inset: 0;
+  display: none;
+  background: rgba(0,0,0,0.35);
+  z-index: 2147483000; /* garante ficar acima da barra fixa */
+  -webkit-overflow-scrolling: touch;
+}
+.filters-overlay.is-open { 
+  display: block; 
+}
+
+.filters-panel {
+  position: absolute; 
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #fff;
+}
+
+.filters-header {
+  position: sticky; 
+  top: 0; 
+  z-index: 1;
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  padding: 12px 16px; 
+  border-bottom: 1px solid #e9eef5; 
+  background: #fff;
+}
+
+.filters-header h2 { 
+  margin: 0; 
+  font-size: 18px; 
+}
+
+.filters-close { 
+  background: none; 
+  border: 0; 
+  padding: 8px; 
+  font-size: 20px; 
+  line-height: 1; 
+}
+
+.filters-content { 
+  overflow: auto; 
+  padding: 12px 16px 16px; 
+}
+
+.filters-footer {
+  position: sticky; 
+  bottom: 0; 
+  z-index: 2;
+  display: grid; 
+  grid-template-columns: 1fr 2fr; 
+  gap: 12px;
+  padding: 12px 16px; 
+  background: #fff; 
+  border-top: 1px solid #e9eef5;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.btn-outline {
+  height: 44px; 
+  border-radius: 10px; 
+  border: 1px solid #c8d2de; 
+  background: #fff; 
+  font-weight: 600;
+}
+
+.btn-primary {
+  height: 44px; 
+  border-radius: 10px; 
+  border: 0; 
+  background: #1a73e8; 
+  color: #fff; 
+  font-weight: 700;
+}
+
+/* Esconder a barra fixa inferior sem remover do DOM quando filtros abertos */
+body.filters-open .fixed-bottom-menu {
+  opacity: 0; 
+  visibility: hidden; 
+  pointer-events: none;
+}
+
+/* Redundância de segurança */
+body.filters-open { 
+  overflow: hidden; 
+}
+
+/* Desktop: não interferir no layout ≥768px */
+@media (min-width: 768px) {
+  .filters-overlay { 
+    display: none !important; 
+  }
+}
+
+/* Caso exista uma lista antiga de "filtros ativos" montada fora do FilterSidebar,
+   oculte-a apenas quando o modal estiver aberto para evitar duplicação visual. */
+body.filters-open .legacy-active-filters,
+body.filters-open [data-legacy-active-filters] {
+  display: none !important;
+}

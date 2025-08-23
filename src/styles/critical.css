@@ -1,0 +1,133 @@
+
+/* ===== CRITICAL CSS - ABOVE THE FOLD ===== */
+/* Reset e Base */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5; color: #333; }
+
+/* Layout Base */
+.boxcar-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.row { display: flex; flex-wrap: wrap; margin: 0 -15px; }
+.col-lg-6, .col-lg-12 { padding: 0 15px; }
+.col-lg-6 { flex: 0 0 50%; max-width: 50%; }
+.col-lg-12 { flex: 0 0 100%; max-width: 100%; }
+
+/* Header Critical */
+.boxcar-header { position: relative; z-index: 1000; background: transparent; padding: 15px 0; }
+.header-logo img { height: 60px; width: auto; }
+.header-nav { display: flex; align-items: center; justify-content: space-between; }
+
+/* Hero/Banner Critical */
+.boxcar-banner-section-v1 { 
+  position: relative; 
+  height: 100vh; 
+  min-height: 600px;
+  display: flex; 
+  align-items: center; 
+  background: #000;
+  overflow: hidden;
+}
+.boxcar-banner-section-v1 video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.boxcar-banner-section-v1::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 2;
+}
+.banner-content {
+  position: relative;
+  z-index: 3;
+  color: white;
+  text-align: center;
+  width: 100%;
+}
+.banner-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+.banner-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+/* Facts Section Critical */
+.boxcar-facts-section { 
+  background: white; 
+  padding: 80px 0; 
+  border-radius: 0 0 50px 50px;
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+}
+.fact-box {
+  text-align: center;
+  padding: 20px;
+}
+.fact-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a75ff;
+  display: block;
+}
+.fact-text {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* Search Bar Critical */
+.search-wrapper {
+  background: white;
+  padding: 20px;
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 15px 20px;
+  font-size: 1rem;
+}
+.search-button {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Mobile Critical */
+@media (max-width: 768px) {
+  .boxcar-banner-section-v1.mobile-banner { 
+    height: 80vh;
+    padding-top: 15vh;
+  }
+  .banner-title { font-size: 2.5rem; }
+  .banner-subtitle { font-size: 1.1rem; }
+  .col-lg-6 { flex: 0 0 100%; max-width: 100%; }
+  .search-wrapper { margin: 0 20px; }
+  .boxcar-container { padding: 0 15px; }
+}
+
+/* Hide non-critical initially */
+.slick-carousel,
+.photoswipe-gallery,
+.wow,
+.animate__animated { opacity: 0; }

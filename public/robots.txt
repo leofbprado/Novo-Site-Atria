@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Block admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /*?*
+
+# Block development files
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.json$
+
+# Allow specific file types
+Allow: /images/
+Allow: /icons/
+Allow: /favicon.ico
+
+# Crawl delay
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://www.atriaveiculos.com/sitemap.xml

@@ -1,0 +1,106 @@
+/* Header height variable for proper spacing */
+:root { 
+  --header-h: 88px; 
+}
+
+@media (max-width: 767px) { 
+  :root { 
+    --header-h: 64px; 
+  } 
+}
+
+/* Main page container padding to avoid header overlap */
+.page, main#page { 
+  padding-top: var(--header-h); 
+}
+
+/* Breadcrumb em linha, sem quebra */
+.breadcrumb{ margin:0 0 8px!important; padding:0!important; }
+.breadcrumb ol{
+  display:inline-flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  gap:0 !important;
+  white-space:nowrap !important;   /* não quebra linha */
+  margin:0 !important; padding:0 !important; list-style:none !important;
+}
+.breadcrumb li{ display:inline-flex !important; align-items:center !important; }
+.breadcrumb a{ display:inline !important; }           /* evita link em bloco */
+
+/* separador vai grudado ao item anterior (não cai sozinho na linha) */
+.breadcrumb li:not(:last-child)::after{
+  content:"/"; color:#94a3b8; margin:0 6px;
+}
+
+/* mata qualquer separador legado */
+.breadcrumb .divider,.breadcrumb .sep{ display:none !important; }
+
+/* Força em linha com alta especificidade */
+#bc-estoque > ol{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  gap:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+  padding-inline-start:0 !important;
+}
+#bc-estoque > ol > li{
+  display:inline-flex !important;
+  align-items:center !important;
+  width:auto !important;
+  max-width:none !important;
+}
+#bc-estoque > ol > li:not(:last-child)::after{
+  content:"/" !important;
+  display:inline-block !important;
+  margin:0 6px !important;
+  color:#94a3b8 !important;
+}
+/* mata qualquer separador legado */
+#bc-estoque .divider, #bc-estoque .sep{ display:none !important; }
+
+/* Hide empty list items and legacy separators */
+.breadcrumb li:empty { 
+  display: none !important; 
+}
+
+.breadcrumb .separator { 
+  display: none !important; 
+}
+
+/* Ensure only one breadcrumb - hide any in header */
+header nav[aria-label="breadcrumb"], 
+.boxcar-header nav[aria-label="breadcrumb"] { 
+  display: none !important; 
+}
+
+.breadcrumb a { 
+  text-decoration: none; 
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+  color: #1A75FF;
+  text-decoration: underline;
+}
+
+.breadcrumb li[aria-current="page"] { 
+  color: #0f172a; 
+  font-weight: 600; 
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .breadcrumb {
+    font-size: .8125rem;
+    padding: 0 10px !important;
+  }
+}
+
+/* Previne quebra em telas pequenas */
+@media (min-width: 480px) {
+  .breadcrumb { white-space: nowrap; }
+}

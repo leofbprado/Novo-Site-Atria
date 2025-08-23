@@ -1,0 +1,301 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { carBrands } from "@/data/brands";
+export default function Brands() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [availableBrands, setAvailableBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const sectionRef = useRef(null);
+
+  // Load available brands from inventory
+  const loadAvailableBrands = async () => {
+    try {
+      setLoading(true);
+      console.log('🔍 Carregando marcas disponíveis do estoque...');
+      
+      // ⚡ Firebase lazy loading - só carrega quando necessário
+      const { db } = await import('@/firebase/config');
+      const { collection, getDocs } = await import('firebase/firestore');
+      
+      const vehiclesCollection = collection(db, 'veiculos');
+      const querySnapshot = await getDocs(vehiclesCollection);
+      
+      // Extract unique brands from active vehicles
+      const brandsSet = new Set();
+      
+      querySnapshot.forEach((doc) => {
+        const vehicleData = doc.data();
+        
+        // Only include active vehicles
+        if (vehicleData.ativo !== false && vehicleData.marca) {
+          brandsSet.add(vehicleData.marca.trim());
+        }
+      });
+      
+      // Match extracted brands with brand data (logo, etc.)
+      const matchedBrands = [];
+      
+      [...brandsSet].forEach(brandName => {
+        // Find matching brand from static data
+        const brandData = carBrands.find(brand => 
+          brand.title.toLowerCase() === brandName.toLowerCase() ||
+          brand.title.toLowerCase().includes(brandName.toLowerCase()) ||
+          brandName.toLowerCase().includes(brand.title.toLowerCase())
+        );
+        
+        if (brandData) {
+          matchedBrands.push({
+            ...brandData,
+            realBrandName: brandName // Store the exact brand name from inventory
+          });
+        } else {
+          // If no logo found, create a basic entry with Cloudinary optimized logo
+          matchedBrands.push({
+            src: `https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_60,c_fit/v1754490506/brands/${brandName.toLowerCase().replace(/\s+/g, '-')}-logo.png`,
+            width: 100,
+            height: 60,
+            title: brandName,
+            realBrandName: brandName,
+            wowDelay: "0ms"
+          });
+        }
+      });
+      
+      // Sort brands alphabetically
+      matchedBrands.sort((a, b) => a.title.localeCompare(b.title));
+      
+      console.log(`✅ ${matchedBrands.length} marcas disponíveis no estoque:`, matchedBrands.map(b => b.title));
+      setAvailableBrands(matchedBrands);
+      
+    } catch (error) {
+      console.error('❌ Erro ao carregar marcas:', error);
+      // Fallback to static brands if Firebase fails
+      setAvailableBrands(carBrands.slice(0, 12));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Load brands from inventory
+    loadAvailableBrands();
+    
+    // ✅ UNIVERSAL ANIMATION: Intersection Observer
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
+  // ✅ CSS PURO UNIVERSAL - LOOP INFINITO PERFEITO
+  const carouselStyle = `
+    .brands-infinite-carousel {
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+      background: transparent;
+      white-space: nowrap;
+    }
+    
+    .brands-scroll-track {
+      display: inline-flex;
+      animation: brands-scroll-infinite 45s linear infinite;
+      gap: 20px;
+    }
+    
+    .brands-scroll-track:hover {
+      animation-play-state: paused;
+    }
+    
+    @keyframes brands-scroll-infinite {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+    
+    .brands-scroll-item {
+      flex: 0 0 auto;
+      display: inline-block;
+      white-space: normal;
+    }
+    
+    /* Responsive: Desktop 200px, Tablet 180px, Mobile 160px */
+    @media (min-width: 1025px) {
+      .brands-scroll-item {
+        width: 200px;
+      }
+    }
+    
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .brands-scroll-item {
+        width: 180px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .brands-scroll-item {
+        width: 160px;
+      }
+      .brands-scroll-track {
+        animation-duration: 35s;
+      }
+    }
+    
+    .brands-card {
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      padding: 25px 15px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid #e9ecef;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0;
+    }
+    
+    .brands-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .brands-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+    
+    .brands-animate.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .brands-image {
+      max-width: 60px !important;
+      max-height: 60px !important;
+      object-fit: contain !important;
+      display: block !important;
+    }
+    
+    .brands-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #2c3e50;
+      margin: 10px 0 0 0;
+      line-height: 1.2;
+      text-decoration: none;
+    }
+  `;
+
+  // ✅ DUPLICAR MARCAS PARA LOOP INFINITO PERFEITO (apenas marcas disponíveis)
+  const duplicatedBrands = [...availableBrands, ...availableBrands];
+
+  return (
+    <>
+      <style>{carouselStyle}</style>
+      {/* ✅ SEÇÃO UNIVERSAL - Compatível com todos os navegadores */}
+      <section 
+        ref={sectionRef}
+        className="boxcar-brand-section section-radius-top bg-1" 
+        style={{
+          backgroundColor: '#e9ecef',
+          paddingTop: '120px',
+          paddingBottom: '120px'
+        }}
+      >
+        <div className="boxcar-container">
+          <div className={`boxcar-title brands-animate ${isVisible ? 'visible' : ''}`} style={{ marginBottom: '40px' }}>
+            <h2>Procure por Marcas</h2>
+            <Link to={`/estoque`} className="btn-title">
+              Ver Todas as Marcas
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={14}
+                height={14}
+                viewBox="0 0 14 14"
+                fill="none"
+              >
+                <g clipPath="url(#clip0_601_3199)">
+                  <path
+                    d="M13.6109 0H5.05533C4.84037 0 4.66643 0.173943 4.66643 0.388901C4.66643 0.603859 4.84037 0.777802 5.05533 0.777802H12.6721L0.113697 13.3362C-0.0382246 13.4881 -0.0382246 13.7342 0.113697 13.8861C0.18964 13.962 0.289171 14 0.388666 14C0.488161 14 0.587656 13.962 0.663635 13.8861L13.222 1.3277V8.94447C13.222 9.15943 13.3959 9.33337 13.6109 9.33337C13.8259 9.33337 13.9998 9.15943 13.9998 8.94447V0.388901C13.9998 0.173943 13.8258 0 13.6109 0Z"
+                    fill="#050B20"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_601_3199">
+                    <rect width={14} height={14} fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </Link>
+          </div>
+          
+          {/* ✅ CARROSSEL INFINITO CSS PURO */}
+          {loading ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '60px 0',
+              color: '#6b7280',
+              fontSize: '16px'
+            }}>
+              Carregando marcas disponíveis...
+            </div>
+          ) : availableBrands.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '60px 0',
+              color: '#6b7280',
+              fontSize: '16px'
+            }}>
+              Nenhuma marca disponível no momento.
+            </div>
+          ) : (
+            <div className={`brands-infinite-carousel brands-animate ${isVisible ? 'visible' : ''}`} style={{
+              padding: '0 15px',
+              animationDelay: '0.3s'
+            }}>
+              <div className="brands-scroll-track">
+                {duplicatedBrands.map((car, index) => (
+                  <div key={`brand-${index}-${car.title}`} className="brands-scroll-item">
+                    <div className="brands-card">
+                      <Link to={`/estoque?marca=${encodeURIComponent(car.realBrandName || car.title)}`}>
+                        <img fetchpriority="low" className="brands-image" alt={car.title} src={car.src} width="60" height="60" loading="lazy" decoding="async" onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </Link>
+                      <Link to={`/estoque?marca=${encodeURIComponent(car.realBrandName || car.title)}`} className="brands-title">
+                        {car.title}
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}

@@ -1,0 +1,456 @@
+/* Responsive Design */
+
+/* Tablet Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    /* Navigation */
+    .nav-menu {
+        position: fixed;
+        top: 70px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background-color: #fff;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding-top: 50px;
+        transition: left 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-toggle {
+        display: flex;
+    }
+    
+    .nav-toggle.active span:nth-child(1) {
+        transform: rotate(-45deg) translate(-5px, 6px);
+    }
+    
+    .nav-toggle.active span:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .nav-toggle.active span:nth-child(3) {
+        transform: rotate(45deg) translate(-5px, -6px);
+    }
+    
+    /* Hero Section */
+    .hero {
+        padding: 120px 0 80px;
+    }
+    
+    .hero-content .container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        text-align: center;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    /* Page Header */
+    .page-header {
+        padding: 120px 0 60px;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+    }
+    
+    /* Sections */
+    .features,
+    .featured-vehicles,
+    .about-content,
+    .team-section,
+    .timeline-section,
+    .contact-section {
+        padding: 60px 0;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    /* Features Grid */
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    /* Vehicles Grid */
+    .vehicles-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    
+    /* Filters */
+    .filters-wrapper {
+        justify-content: center;
+    }
+    
+    .filter-group {
+        min-width: 140px;
+    }
+    
+    /* Vehicles Header */
+    .vehicles-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    /* About Values */
+    .values-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    /* Team Grid */
+    .team-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    /* Timeline */
+    .timeline::before {
+        left: 20px;
+    }
+    
+    .timeline-item {
+        flex-direction: row;
+        padding-left: 50px;
+    }
+    
+    .timeline-date {
+        left: 20px;
+        transform: translateX(-50%);
+    }
+    
+    .timeline-content {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Contact */
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    /* Vehicle Detail */
+    .vehicle-detail {
+        padding: 100px 0 60px;
+    }
+    
+    .vehicle-detail-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .vehicle-gallery {
+        height: 250px;
+    }
+    
+    .vehicle-actions-large {
+        justify-content: center;
+    }
+    
+    /* Footer */
+    .footer {
+        padding: 40px 0 20px;
+    }
+    
+    .footer-content {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 30px;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 10px;
+    }
+    
+    /* Typography */
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Hero */
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Page Header */
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Features */
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-card {
+        padding: 20px;
+    }
+    
+    /* Vehicles */
+    .vehicles-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .vehicle-card {
+        max-width: 100%;
+    }
+    
+    /* Filters */
+    .filters-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .filter-select {
+        min-width: auto;
+    }
+    
+    /* Stats */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    /* Values */
+    .value-card {
+        padding: 20px;
+    }
+    
+    /* Team */
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-member {
+        padding: 20px;
+    }
+    
+    /* Timeline */
+    .timeline-content {
+        padding: 20px;
+    }
+    
+    /* Contact */
+    .contact-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .contact-icon {
+        font-size: 1.2rem;
+    }
+    
+    /* Vehicle Detail */
+    .vehicle-price-large {
+        font-size: 2rem;
+    }
+    
+    .vehicle-actions-large {
+        flex-direction: column;
+    }
+    
+    /* Footer */
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .pagination button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 320px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .vehicle-price-large {
+        font-size: 1.8rem;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Landscape Orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        padding: 100px 0 60px;
+    }
+    
+    .page-header {
+        padding: 100px 0 40px;
+    }
+    
+    .hero-content .container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .logo,
+    .footer-logo {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    /* This can be expanded for dark mode support */
+    .vehicle-image,
+    .vehicle-gallery,
+    .map-placeholder {
+        background: linear-gradient(45deg, #2a2a2a, #1a1a1a);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header,
+    .footer,
+    .nav-toggle,
+    .hero-buttons,
+    .vehicle-actions,
+    .vehicle-actions-large,
+    .btn,
+    .pagination,
+    .filters,
+    .social-links {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    .hero,
+    .page-header {
+        padding: 20px 0;
+        background: none !important;
+        color: #333 !important;
+    }
+    
+    .section-title {
+        font-size: 18pt;
+    }
+    
+    .vehicle-card,
+    .feature-card,
+    .value-card,
+    .team-member {
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+}

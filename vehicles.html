@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veículos - AutoMax</title>
+    <meta name="description" content="Confira nossa ampla seleção de veículos de qualidade">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <img src="assets/logo.svg" alt="AutoMax" class="logo">
+                    <span class="brand-name">AutoMax</span>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Início</a></li>
+                    <li><a href="vehicles.html" class="nav-link active">Veículos</a></li>
+                    <li><a href="about.html" class="nav-link">Sobre</a></li>
+                    <li><a href="contact.html" class="nav-link">Contato</a></li>
+                </ul>
+                
+                <div class="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Nossos Veículos</h1>
+            <p class="page-subtitle">Encontre o veículo perfeito para você</p>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="filters">
+        <div class="container">
+            <div class="filters-wrapper">
+                <div class="filter-group">
+                    <label for="brand-filter">Marca:</label>
+                    <select id="brand-filter" class="filter-select">
+                        <option value="">Todas as marcas</option>
+                        <option value="chevrolet">Chevrolet</option>
+                        <option value="ford">Ford</option>
+                        <option value="volkswagen">Volkswagen</option>
+                        <option value="fiat">Fiat</option>
+                        <option value="honda">Honda</option>
+                        <option value="toyota">Toyota</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="type-filter">Tipo:</label>
+                    <select id="type-filter" class="filter-select">
+                        <option value="">Todos os tipos</option>
+                        <option value="sedan">Sedan</option>
+                        <option value="hatchback">Hatchback</option>
+                        <option value="suv">SUV</option>
+                        <option value="pickup">Pickup</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="price-filter">Preço máximo:</label>
+                    <select id="price-filter" class="filter-select">
+                        <option value="">Qualquer preço</option>
+                        <option value="30000">Até R$ 30.000</option>
+                        <option value="50000">Até R$ 50.000</option>
+                        <option value="80000">Até R$ 80.000</option>
+                        <option value="100000">Até R$ 100.000</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="year-filter">Ano mínimo:</label>
+                    <select id="year-filter" class="filter-select">
+                        <option value="">Qualquer ano</option>
+                        <option value="2020">2020 ou mais novo</option>
+                        <option value="2018">2018 ou mais novo</option>
+                        <option value="2015">2015 ou mais novo</option>
+                        <option value="2010">2010 ou mais novo</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" onclick="clearFilters()">Limpar Filtros</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vehicles Grid -->
+    <section class="vehicles-section">
+        <div class="container">
+            <div class="vehicles-header">
+                <div class="results-count">
+                    <span id="results-count">Carregando veículos...</span>
+                </div>
+                <div class="sort-options">
+                    <label for="sort-select">Ordenar por:</label>
+                    <select id="sort-select" class="sort-select">
+                        <option value="newest">Mais recentes</option>
+                        <option value="price-low">Menor preço</option>
+                        <option value="price-high">Maior preço</option>
+                        <option value="year-new">Ano mais novo</option>
+                        <option value="year-old">Ano mais antigo</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="vehicles-grid" id="vehicles-grid">
+                <!-- Vehicles will be loaded by JavaScript -->
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Pagination will be generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <img src="assets/logo.svg" alt="AutoMax" class="footer-logo">
+                        <span class="brand-name">AutoMax</span>
+                    </div>
+                    <p>Sua concessionária de confiança para veículos de qualidade</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Início</a></li>
+                        <li><a href="vehicles.html">Veículos</a></li>
+                        <li><a href="about.html">Sobre</a></li>
+                        <li><a href="contact.html">Contato</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-phone"></i> (11) 99999-9999</p>
+                        <p><i class="fas fa-envelope"></i> contato@automax.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Rua das Flores, 123 - SP</p>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Horário de Funcionamento</h4>
+                    <div class="hours">
+                        <p>Segunda a Sexta: 8h às 18h</p>
+                        <p>Sábado: 8h às 14h</p>
+                        <p>Domingo: Fechado</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 AutoMax. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+    <script src="js/vehicles.js"></script>
+</body>
+</html>

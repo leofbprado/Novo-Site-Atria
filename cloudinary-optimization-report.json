@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-08-06T13:50:40.655Z",
+  "backup": "backup-cloudinary-update-2025-08-06T13-50-38.tar.gz",
+  "stats": {
+    "filesProcessed": 356,
+    "filesModified": 0,
+    "totalReplacements": 0,
+    "urlsFound": 6,
+    "urlsOptimized": 0
+  },
+  "sampleUrls": []
+}

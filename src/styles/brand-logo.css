@@ -1,0 +1,7 @@
+.brand-logo {
+  image-rendering: -webkit-optimize-contrast;
+}
+.brand-fallback {
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

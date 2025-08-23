@@ -1,0 +1,88 @@
+/* Estilos para o componente de fallback de erro */
+.error-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 20px;
+  background: #fff;
+  gap: 24px;
+}
+
+/* Logo da Átria */
+.error-logo {
+  max-width: 200px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Botão de retorno */
+.error-button {
+  padding: 12px 24px;
+  background: #1A75FF;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.error-button:hover {
+  background: #0066FF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 117, 255, 0.3);
+}
+
+/* Desktop: logo maior */
+@media (min-width: 768px) {
+  .error-fallback {
+    min-height: 500px;
+    padding: 40px;
+  }
+  
+  .error-logo {
+    max-width: 300px;
+  }
+  
+  .error-button {
+    padding: 14px 32px;
+    font-size: 18px;
+  }
+}
+
+/* Mobile landscape */
+@media (max-width: 767px) and (orientation: landscape) {
+  .error-fallback {
+    min-height: 300px;
+  }
+  
+  .error-logo {
+    max-width: 180px;
+  }
+}
+
+/* Estilos para a página 404 */
+.error-logo-404 {
+  max-width: 250px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto 30px;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .error-logo-404 {
+    max-width: 350px;
+    margin: 0 auto 40px;
+  }
+}
+
+@media (max-width: 767px) {
+  .error-logo-404 {
+    max-width: 200px;
+    margin: 0 auto 20px;
+  }
+}

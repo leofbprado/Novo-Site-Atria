@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "novo-site-atria",
+  "private_key_id": "2764e9169a7a594d168f216b2a2b00f06a416973",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCs7Y2iuDyT2/gE\nMOWugs7cAij7nvBkc7eVjb1MxWzs0wJtXoK3Cc8jiSanAdoe/cusX1nHhQHTfgpU\nZmcLnjBYsEbLFx0DS9Xud0px1o7LvfgnnfCKKOcsHxPiohsnmufs6JLR1JJYi0AL\nXZme7Whj9RELPasdPjCF3WkP9D2/2BUQXEUUl79G9qWlc0ZVIHn9AdYatt+qy+56\n74YbpQ8nuWfi6QrBKLtRZb8UWidvrifzjjVqozb15TMo6znZC24dkLCb8Y13LfGv\nDs+RciaTbTghicjGL18u4MCVgk3CfYn2QWOy0bjrttMc9PUypeLJMt6S0q7785z5\n2SGd9Ie7AgMBAAECggEAJRRQ1O3FS30Uqq1jam5w9Zre98kmSZvIZyB70SzaBNPg\nBtyHkcDgMgH0EEZk41VPKVhOs2nxMMyrYVqNyN90BWhS3bRIi87kgdwBUfSMLOLA\nhZonnDBWFU9an7NbuDvOdC2QYb6/XI4LPwSkboAAbMJ9E5h3Cu+tTt7hasLXxL0x\nEzTQrWN48/4HuCLY9nZHkH8zF204rwz4KemhBaS++oduqEDRhwSJJ5Lc3v6Mi+CH\nzr+4RlPapJwr/OC87IGteEJ3iIUzS7Ob00eSaQRPRs1PxTi2KzGQPdS1WUR5JtgU\n75RRxVP4zezK0hV7i6xDhcChpLPFGGpvm/Jp7aKWOQKBgQDvtgikDP8c4lvwuM4p\nNlYKm2ydlz063Qk3G/l6XWYCCMffMgaMQnJnRqAhiD3azNdjwcRC6lmAGS6KWAx+\nDI6CjRvzNkPckOV2qd86UfMhMdtN7e6LPc6v/HErc6tS3Y8dmbtzAtucM7/zqT77\nyKu4KcG68Lj/G2vFKvjHv/f6uQKBgQC4rcYCUzkYmON453X+HiO+0n1RYxsz59Ow\n5ZUVv6c7/T4weps/93u6mE12rIn5+dpaErNLIxOG9c1f77CVWwmKa9AYQbaMSyCV\nff8VtyvfGGFF6ElyPMVv1r1QG13hoUuEqRYWjK3QY7wEXy70Ix/F014q7FZ7b1YU\n66Z8Wg5MEwKBgHWovAUJ/A6JbOdzTn4cFY+PSnjvyzYhWGycZpARWAiXlsOPInem\nBdF7cQ4EeZf0A6ULbvIJZXTi510warFUKH8cFCQE9rpExNzB9LgDkXsxpZtStkvS\nQqlPF51kYSuDZMP6uW9yb6j0HbvTzv53ORJkLJs9nRBavUNCHGqvZ2DBAoGARszw\nHZIUUJbElmR+OtcJMy31N098bVDSOn45wqXAEmKLBgDrJgHWIHolMHsDRp+AE4oZ\nzJN89/+iJcZ5dzj4lmWw2KvQtUZUDpvIQGYB3ry1Bh0Ak1gzBSZZW62yNz8j+Y7t\nVeXG+R5TRYXMNXKFysy2zFPg79+GK+0P3ZqU4psCgYEAmh2aUP/A+JUqS+h8C7EH\nupDKcjpbnDAYCq9drumOoiT6LchB6WRfnVIt8fQNNGqcRO2nPKom27BF6sjffxnX\nZWztHenojBOdIJQqvvlPJ4lhJKXeAzVFsIfml7v8FVY1y98QNAAJrasjAUD04cBv\nKjIGao/TesFq2iTix/d3jIw=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@novo-site-atria.iam.gserviceaccount.com",
+  "client_id": "103696210235486322825",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40novo-site-atria.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

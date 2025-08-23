@@ -1,0 +1,151 @@
+{
+  "timestamp": "2025-08-06T14:35:08.796Z",
+  "totalMigrated": 18,
+  "errors": [],
+  "results": [
+    {
+      "brand": "audi",
+      "originalPath": "public/images/brands/audi.png",
+      "originalSize": "16 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490887/atria-veiculos/brands/atria-veiculos/brands/audi.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/audi.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/audi"
+    },
+    {
+      "brand": "bmw",
+      "originalPath": "public/images/bmw-logo.png",
+      "originalSize": "15 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490888/atria-veiculos/brands/atria-veiculos/brands/bmw.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/bmw.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/bmw"
+    },
+    {
+      "brand": "ford",
+      "originalPath": "public/images/ford-logo.png",
+      "originalSize": "12 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490889/atria-veiculos/brands/atria-veiculos/brands/ford.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/ford.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/ford"
+    },
+    {
+      "brand": "mercedes-benz",
+      "originalPath": "public/images/brands/mercedes-benz.png",
+      "originalSize": "8 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490890/atria-veiculos/brands/atria-veiculos/brands/mercedes-benz.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/mercedes-benz.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/mercedes-benz"
+    },
+    {
+      "brand": "peugeot",
+      "originalPath": "public/images/brands/peugeot.png",
+      "originalSize": "11 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490891/atria-veiculos/brands/atria-veiculos/brands/peugeot.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/peugeot.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/peugeot"
+    },
+    {
+      "brand": "volkswagen",
+      "originalPath": "public/images/brands/volkswagen.png",
+      "originalSize": "4 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490892/atria-veiculos/brands/atria-veiculos/brands/volkswagen.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/volkswagen.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/volkswagen"
+    },
+    {
+      "brand": "toyota",
+      "originalPath": "public/images/brands/toyota.png",
+      "originalSize": "18 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490893/atria-veiculos/brands/atria-veiculos/brands/toyota.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/toyota.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/toyota"
+    },
+    {
+      "brand": "chevrolet",
+      "originalPath": "public/images/brands/chevrolet.png",
+      "originalSize": "8 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490894/atria-veiculos/brands/atria-veiculos/brands/chevrolet.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/chevrolet.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/chevrolet"
+    },
+    {
+      "brand": "renault",
+      "originalPath": "public/images/brands/renault.png",
+      "originalSize": "3 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490896/atria-veiculos/brands/atria-veiculos/brands/renault.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/renault.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/renault"
+    },
+    {
+      "brand": "kia",
+      "originalPath": "public/images/brands/kia-new.png",
+      "originalSize": "3 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490897/atria-veiculos/brands/atria-veiculos/brands/kia.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/kia.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/kia"
+    },
+    {
+      "brand": "volvo",
+      "originalPath": "public/images/brands/volvo.png",
+      "originalSize": "21 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490898/atria-veiculos/brands/atria-veiculos/brands/volvo.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/volvo.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/volvo"
+    },
+    {
+      "brand": "caoa-chery",
+      "originalPath": "public/images/resource/brand-caoa-chery.png",
+      "originalSize": "8 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490899/atria-veiculos/brands/atria-veiculos/brands/caoa-chery.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/caoa-chery.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/caoa-chery"
+    },
+    {
+      "brand": "fiat",
+      "originalPath": "public/images/resource/brand-fiat.png",
+      "originalSize": "3 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490901/atria-veiculos/brands/atria-veiculos/brands/fiat.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/fiat.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/fiat"
+    },
+    {
+      "brand": "jeep",
+      "originalPath": "public/images/resource/brand-jeep.png",
+      "originalSize": "3 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490902/atria-veiculos/brands/atria-veiculos/brands/jeep.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/jeep.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/jeep"
+    },
+    {
+      "brand": "honda",
+      "originalPath": "public/images/resource/honda.png",
+      "originalSize": "5 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490904/atria-veiculos/brands/atria-veiculos/brands/honda.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/honda.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/honda"
+    },
+    {
+      "brand": "hyundai",
+      "originalPath": "public/images/resource/hyundai.png",
+      "originalSize": "3 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490905/atria-veiculos/brands/atria-veiculos/brands/hyundai.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/hyundai.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/hyundai"
+    },
+    {
+      "brand": "citroen",
+      "originalPath": "public/images/resource/citroen.png",
+      "originalSize": "8 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490906/atria-veiculos/brands/atria-veiculos/brands/citroen.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/citroen.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/citroen"
+    },
+    {
+      "brand": "jac",
+      "originalPath": "public/images/jac-logo.png",
+      "originalSize": "9 KB",
+      "cloudinaryUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/v1754490907/atria-veiculos/brands/atria-veiculos/brands/jac.png",
+      "optimizedUrl": "https://res.cloudinary.com/dyngqkiyl/image/upload/c_fit,h_100,q_auto:good,w_100/v1/atria-veiculos/brands/jac.webp?_a=BAMAK+eA0",
+      "publicId": "atria-veiculos/brands/atria-veiculos/brands/jac"
+    }
+  ]
+}

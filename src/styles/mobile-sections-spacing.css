@@ -1,0 +1,80 @@
+/* Mobile Sections Spacing - Fix for excessive vertical spacing */
+
+/* Standardize mobile spacing for main homepage sections */
+@media (max-width: 768px) {
+  /* Cars Section (Mais Vendidos) */
+  .cars-section-three {
+    margin-top: 48px !important;
+    margin-bottom: 48px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* CTA Section (Venda Seu Carro com Segurança) */
+  .cta-section-simple {
+    margin-top: 48px !important;
+    margin-bottom: 48px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Features Section (Toda Semana, Oportunidades Únicas) */
+  .boxcar-pricing-section {
+    margin-top: 48px !important;
+    margin-bottom: 48px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Testimonials Section (O que nossos clientes dizem) */
+  .testimonials-section-homepage {
+    margin-top: 48px !important;
+    margin-bottom: 48px !important;
+    padding: 0 !important;
+  }
+  
+  /* Blog Section (Últimas do blog) */
+  .blog-section-homepage {
+    margin-top: 48px !important;
+    margin-bottom: 48px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Remove excessive margins from containers */
+  .boxcar-container {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Adjust CTA wrapper spacing */
+  .cta-wrapper {
+    margin: 0 15px !important;
+  }
+  
+  /* Ensure consistent spacing for all mobile sections */
+  .cars-section-three .boxcar-container,
+  .cta-section-simple .boxcar-container,
+  .boxcar-pricing-section .boxcar-container,
+  .testimonials-section-homepage .boxcar-container,
+  .blog-section-homepage .boxcar-container {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* Extra small screens - slightly reduced spacing */
+@media (max-width: 480px) {
+  .cars-section-three,
+  .cta-section-simple,
+  .boxcar-pricing-section,
+  .testimonials-section-homepage,
+  .blog-section-homepage {
+    margin-top: 40px !important;
+    margin-bottom: 40px !important;
+  }
+  
+  .cta-wrapper {
+    margin: 0 10px !important;
+  }
+}

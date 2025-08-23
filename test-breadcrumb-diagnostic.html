@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Breadcrumb Diagnostic Test</title>
+</head>
+<body>
+    <h1>Breadcrumb Diagnostic for Átria Veículos</h1>
+    <p>Execute this in the browser console on a vehicle detail page:</p>
+    
+    <pre id="diagnostic-code">
+// PASSO 1 - Confirmar quantos breadcrumbs existem e onde estão
+const breadcrumbDiagnostic = () => {
+    const result = [...document.querySelectorAll('nav[aria-label="breadcrumb"]')].map((n,i)=>({
+        idx: i,
+        text: n.innerText.trim().replace(/\s+/g,' '),
+        inHeader: !!n.closest('header, .boxcar-header'),
+        path: (el => { 
+            const p=[]; 
+            while(el && el!==document.body){ 
+                p.unshift(el.tagName.toLowerCase()+(el.id?`#${el.id}`:'')+(el.className?'.'+[...el.classList].join('.'):'') ); 
+                el=el.parentElement; 
+            } 
+            return p.join(' > '); 
+        })(n)
+    }));
+    
+    console.log('🔍 BREADCRUMB DIAGNOSTIC RESULTS:', result);
+    
+    if (result.length === 0) {
+        console.log('❌ NO BREADCRUMBS FOUND - VehicleBreadcrumb may not be rendering');
+    } else if (result.length === 1) {
+        const breadcrumb = result[0];
+        if (breadcrumb.inHeader) {
+            console.log('⚠️ SINGLE BREADCRUMB IN HEADER - Should be in main content');
+        } else {
+            console.log('✅ SINGLE BREADCRUMB CORRECTLY POSITIONED - Check for spacing issues');
+        }
+    } else {
+        console.log('❌ MULTIPLE BREADCRUMBS FOUND - Duplicate breadcrumb issue');
+        result.forEach((bc, i) => {
+            console.log(`Breadcrumb ${i+1}:`, bc.inHeader ? 'IN HEADER' : 'IN MAIN', '→', bc.text);
+        });
+    }
+    
+    return result;
+};
+
+breadcrumbDiagnostic();
+    </pre>
+
+    <button onclick="navigator.clipboard.writeText(document.getElementById('diagnostic-code').textContent)">
+        Copy Code to Clipboard
+    </button>
+
+    <h2>Instructions:</h2>
+    <ol>
+        <li>Go to any vehicle detail page (e.g., /carros/hyundai/hb20/2018-AMM26)</li>
+        <li>Open browser console (F12 → Console)</li>
+        <li>Paste and execute the code above</li>
+        <li>Report back the console output</li>
+    </ol>
+
+    <h2>Expected Results:</h2>
+    <ul>
+        <li><strong>0 breadcrumbs:</strong> VehicleBreadcrumb not rendering</li>
+        <li><strong>1 breadcrumb + inHeader: false:</strong> ✅ Correct (check spacing)</li>
+        <li><strong>1 breadcrumb + inHeader: true:</strong> ⚠️ Wrong position</li>
+        <li><strong>2+ breadcrumbs:</strong> ❌ Duplicates exist</li>
+    </ul>
+</body>
+</html>

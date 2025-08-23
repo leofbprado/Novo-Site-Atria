@@ -1,0 +1,18 @@
+/* 
+ * ARQUIVO PLACEHOLDER - SUBSTITUA COM O CSS DO CHROME COVERAGE
+ * 
+ * 1. Abra http://localhost:5000 no Chrome
+ * 2. Abra DevTools (F12) → Ctrl+Shift+P → "Coverage"
+ * 3. Clique em "Start instrumenting coverage and reload page" 🔄
+ * 4. NÃO ROLE A PÁGINA (queremos apenas above the fold)
+ * 5. Clique no arquivo CSS principal (index-XXXXX.css)
+ * 6. Copie APENAS as linhas em AZUL relacionadas a:
+ *    - Header/Navegação
+ *    - Banner principal
+ *    - Filtros de busca
+ *    - Botões CTA
+ * 7. Cole o CSS aqui e salve
+ * 8. Execute: node extract-critical-css-coverage.js
+ */
+
+/* Cole o CSS extraído do Coverage abaixo desta linha */

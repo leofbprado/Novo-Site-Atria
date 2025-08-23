@@ -1,0 +1,48 @@
+/*
+ * CSS de animações - Carregado apenas quando necessário
+ * Versão minificada das animações mais usadas
+ */
+
+/* Fade In/Out */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fade-in { animation: fadeIn 0.3s ease-in-out; }
+.fade-out { animation: fadeOut 0.3s ease-in-out; }
+
+/* Slide In/Out */
+@keyframes slideInFromBottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.slide-in-bottom { animation: slideInFromBottom 0.4s ease-out; }
+.slide-in-top { animation: slideInFromTop 0.4s ease-out; }
+
+/* Scale animations */
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.scale-in { animation: scaleIn 0.3s ease-out; }
+
+/* Loading spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner { animation: spin 1s linear infinite; }

@@ -1,0 +1,28 @@
+/* DM Sans Subset Otimizado - Português Brasileiro */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/public/fonts/dm-sans-400.woff2') format('woff2');
+  unicode-range: U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-2019,U+201C-201D,U+2026,U+20AC;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/public/fonts/dm-sans-700.woff2') format('woff2');
+  unicode-range: U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-2019,U+201C-201D,U+2026,U+20AC;
+}
+
+/* Fallback para caracteres especiais não incluídos no subset */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/dmsans/v11/rP2Hp2ywxg089UriCZOIHQ.woff2') format('woff2');
+  unicode-range: U+0100-017F, U+0180-024F, U+1E00-1EFF;
+}

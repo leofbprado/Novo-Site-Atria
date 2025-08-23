@@ -1,0 +1,1280 @@
+@import "../../public/main.css";
+@import "./mobile-sections-spacing.css";
+
+/* Filter Sidebar Styles */
+
+.filter-sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  cursor: pointer;
+}
+
+.filter-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 420px;
+  height: 100%;
+  background: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 5px 0 30px rgba(0, 0, 0, 0.1);
+}
+
+.filter-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e1e1e1;
+  background: #f8f9fa;
+}
+
+.filter-sidebar-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.close-button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.close-sidebar-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-sidebar-button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.filter-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+  padding: 0;
+}
+
+.filter-section {
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.filter-section-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.filter-section-header:hover {
+  background: #f8f9fa;
+}
+
+.filter-section-header.expanded {
+  background: #fff5f0;
+  border-bottom: 1px solid #ffd9cc;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.section-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+  color: #666;
+}
+
+.filter-section-header.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+
+.filter-section-body {
+  overflow: hidden;
+}
+
+.filter-section-content {
+  padding: 0 24px 24px 24px;
+}
+
+.price-range-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.price-inputs {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.price-separator {
+  font-size: 16px;
+  color: #666;
+  margin: 0 8px;
+  align-self: center;
+  padding-bottom: 12px;
+}
+
+.price-input {
+  flex: 1;
+}
+
+.price-input label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.price-display {
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border: 1px solid #e1e1e1;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.slider-container {
+  padding: 0 4px;
+}
+
+/* Price Distribution Chart Styles */
+.price-distribution {
+  margin: 20px 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e1e1e1;
+}
+
+.price-chart {
+  position: relative;
+  height: 80px;
+  background: white;
+  border-radius: 6px;
+  padding: 8px;
+  border: 1px solid #e8eaed;
+}
+
+.price-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 60px;
+  gap: 1px;
+  padding: 0 8px;
+}
+
+.price-bar {
+  flex: 1;
+  background: #e8eaed;
+  border-radius: 1px 1px 0 0;
+  min-height: 3px;
+  transition: all 0.3s ease;
+}
+
+.price-bar:hover {
+  opacity: 0.8;
+}
+
+.price-range-indicators {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.range-indicator {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: transparent;
+}
+
+.range-handle {
+  position: absolute;
+  bottom: -6px;
+  left: -8px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid #4285f4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.handle-circle {
+  width: 8px;
+  height: 8px;
+  background: #4285f4;
+  border-radius: 50%;
+}
+
+.price-ranges-link {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.view-price-ranges {
+  color: #4285f4;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.view-price-ranges:hover {
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.checkbox-item:hover {
+  background: #f8f9fa;
+  margin: 0 -12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.checkbox-item input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark {
+  background: #ff6b35;
+  border-color: #ff6b35;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark:after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.label-text {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.select-container {
+  margin-bottom: 16px;
+}
+
+.select-container label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.dual-select {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.select-group {
+  flex: 1;
+}
+
+.select-group label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.mechanics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mechanics-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Popular Brands Section */
+.popular-brands-section {
+  margin-bottom: 24px;
+}
+
+.popular-brands-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.popular-brands-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+}
+
+.brand-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  min-height: 100px;
+  position: relative;
+}
+
+.brand-card:hover {
+  border-color: #4285f4;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.1);
+  transform: translateY(-2px);
+}
+
+.brand-card.selected {
+  border-color: #4285f4;
+  background: #f0f4ff;
+}
+
+.brand-card img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  object-position: center;
+  margin-bottom: 8px;
+  display: block;
+  max-width: 100%;
+  background: transparent;
+}
+
+.brand-card span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.2;
+}
+
+.all-brands-section {
+  border-top: 1px solid #e1e1e1;
+  padding-top: 20px;
+}
+
+.all-brands-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Active Filters Section */
+.active-filters-section {
+  padding: 20px 24px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.active-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.active-filters-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.clear-all-button {
+  background: none;
+  border: none;
+  color: #4285f4;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.clear-all-button:hover {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.active-filters-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #4285f4;
+  border-radius: 20px;
+  color: #4285f4;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-tag:hover {
+  background: #f0f4ff;
+}
+
+.filter-tag-text {
+  line-height: 1.2;
+}
+
+.remove-filter-button {
+  background: none;
+  border: none;
+  color: #4285f4;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  width: 16px;
+  height: 16px;
+}
+
+.remove-filter-button:hover {
+  background: #4285f4;
+  color: white;
+}
+
+.remove-filter-button svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Model Filter Section */
+.model-search-container {
+  margin-bottom: 20px;
+  padding: 0 16px; /* Alinhamento consistente com outros campos */
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  margin: 0; /* Remove margem extra para alinhamento perfeito */
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+}
+
+.search-icon {
+  color: #666;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.model-search-input {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #333;
+  width: 100%;
+  outline: none;
+}
+
+.model-search-input::placeholder {
+  color: #999;
+}
+
+.popular-models-section {
+  margin-bottom: 24px;
+  padding: 0 16px; /* Alinhamento consistente com outros campos */
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+}
+
+.popular-models-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.popular-models-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+}
+
+.model-chip {
+  background: #f8f9fa;
+  border: 1px solid #e1e1e1;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+  overflow: hidden; /* Cortar texto longo se necessário */
+  white-space: nowrap; /* Manter texto em uma linha */
+  text-overflow: ellipsis; /* Adicionar ... se texto for muito longo */
+}
+
+.model-chip:hover {
+  background: #e3f2fd;
+  border-color: #4285f4;
+  color: #4285f4;
+}
+
+.model-chip.selected {
+  background: #4285f4;
+  border-color: #4285f4;
+  color: white;
+}
+
+.alphabetical-models-section {
+  border-top: 1px solid #e1e1e1;
+  padding: 20px 16px 0 16px; /* Alinhamento consistente com outros campos */
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+}
+
+.model-group {
+  margin-bottom: 20px;
+}
+
+.model-group h5 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.model-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: color 0.3s ease;
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+  overflow: hidden; /* Cortar texto longo se necessário */
+}
+
+.checkbox-item:hover {
+  color: #4285f4;
+}
+
+.checkbox-item input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark {
+  background: #4285f4;
+  border-color: #4285f4;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark::after {
+  content: "✓";
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.label-text {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Year and Mileage Section */
+.year-section {
+  margin-bottom: 24px;
+}
+
+.year-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.year-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-width: 100%; /* Prevenir overflow */
+  box-sizing: border-box;
+}
+
+.year-button {
+  padding: 12px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.year-button:hover {
+  border-color: #4285f4;
+  background: #f8f9ff;
+  color: #4285f4;
+}
+
+.year-button.selected {
+  border-color: #4285f4;
+  background: #4285f4;
+  color: white;
+}
+
+.mileage-section {
+  border-top: 1px solid #e1e1e1;
+  padding-top: 20px;
+}
+
+.mileage-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.mileage-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-group {
+  flex: 1;
+}
+
+.input-group label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.mileage-input {
+  width: 100%;
+  padding: 12px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background: white;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.mileage-input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.mileage-input::placeholder {
+  color: #999;
+}
+
+.separator {
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 4px;
+  padding-bottom: 8px;
+}
+
+/* Mechanics Section */
+.mechanics-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mechanics-section {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+.mechanics-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mechanics-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Lateral Expansion Layout */
+.filter-sidebar-layout {
+  display: flex;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+.filter-menu-panel {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid #e1e1e1;
+  background: #f9f9f9;
+}
+
+.filter-menu-item {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: #666;
+}
+
+.filter-menu-item:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.filter-menu-item.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-right: 3px solid #1976d2;
+}
+
+.menu-item-text {
+  font-weight: 500;
+}
+
+.menu-chevron {
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.filter-menu-item.active .menu-chevron {
+  opacity: 1;
+  color: #1976d2;
+}
+
+.filter-detail-panel {
+  flex: 1;
+  background: white;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+  position: relative;
+  max-width: 100%; /* Limitar largura máxima */
+}
+
+.detail-panel-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e1e1e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.detail-panel-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Botão de fechar removido - painel nunca deve ficar vazio */
+
+.detail-panel-content {
+  padding: 24px;
+}
+
+/* Adjust sidebar width for lateral layout */
+.filter-sidebar {
+  width: 100vw;
+  max-width: 800px;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .filter-sidebar {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+  }
+  
+  .filter-sidebar-layout {
+    height: calc(100vh - 80px);
+    flex-direction: row;
+  }
+  
+  .filter-menu-panel {
+    width: 30%;
+    height: 100%;
+    max-height: none;
+    border-right: 1px solid #e1e1e1;
+    border-bottom: none;
+    overflow-y: auto;
+  }
+  
+  .filter-menu-item {
+    padding: 12px 8px;
+    font-size: 11px;
+    text-align: left;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .filter-detail-panel {
+    width: 70%;
+    height: 100%;
+    position: relative;
+  }
+  
+  .detail-panel-header {
+    padding: 16px 20px;
+  }
+  
+  .detail-panel-header h4 {
+    font-size: 16px;
+  }
+  
+  .detail-panel-content {
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-sidebar-layout {
+    height: calc(100vh - 60px);
+    flex-direction: row;
+  }
+  
+  .filter-menu-panel {
+    width: 30%;
+    height: 100%;
+    max-height: none;
+  }
+  
+  .filter-detail-panel {
+    width: 70%;
+    height: 100%;
+  }
+  
+  .filter-menu-item {
+    padding: 12px 6px;
+    font-size: 11px;
+    text-align: left;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .detail-panel-header {
+    padding: 12px 16px;
+  }
+  
+  .detail-panel-content {
+    padding: 12px 16px;
+  }
+  
+  /* Adjust brand logos grid for mobile */
+  .popular-brands-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .brand-logo-item {
+    padding: 8px !important;
+    min-height: 60px !important;
+  }
+  
+  .brand-logo-item img {
+    max-width: 35px !important;
+    max-height: 35px !important;
+  }
+  
+  /* Adjust year buttons grid for mobile */
+  .year-buttons-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+  }
+  
+  .year-button {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Adjust popular models grid for mobile */
+  .popular-models-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .model-item {
+    padding: 10px !important;
+    font-size: 11px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  
+  /* Mobile filter sidebar header adjustments */
+  .filter-sidebar-header {
+    padding: 12px 16px !important;
+  }
+  
+  .filter-sidebar-header h3 {
+    font-size: 16px !important;
+  }
+  
+  /* Mobile active filters adjustments */
+  .active-filters-section {
+    padding: 12px 16px !important;
+  }
+  
+  .filter-tag {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+  
+  /* Mobile price inputs adjustments */
+  .price-inputs {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  .price-input {
+    text-align: center !important;
+  }
+  
+  .price-separator {
+    display: none !important;
+  }
+  
+  /* Mobile mileage inputs adjustments */
+  .mileage-inputs {
+    flex-direction: row !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+  
+  .mileage-input {
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Prevent horizontal scroll and ensure containment */
+  .filter-sidebar {
+    overflow-x: hidden !important;
+  }
+  
+  .filter-sidebar-layout {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+  
+  .filter-menu-panel,
+  .filter-detail-panel {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .detail-panel-content {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure all grid items fit without overflow */
+  .year-buttons-grid,
+  .popular-brands-grid,
+  .popular-models-grid {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .year-button,
+  .brand-logo-item,
+  .model-item {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Standardize all content fonts in expanded panel */
+  .detail-panel-content * {
+    font-size: 11px !important;
+  }
+  
+  /* Car type checkboxes */
+  .car-type-item {
+    padding: 12px 16px !important;
+    font-size: 11px !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+  
+  .car-type-checkbox {
+    margin-right: 12px !important;
+    transform: scale(1.1) !important;
+  }
+  
+  /* Price range inputs */
+  .price-input, .mileage-input {
+    font-size: 11px !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Section headers and labels */
+  .detail-panel-content h4,
+  .detail-panel-content h5,
+  .detail-panel-content label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  /* Hide section headers in mobile expanded panel */
+  .detail-panel-header {
+    display: none !important;
+  }
+  
+  /* Standardize brand logos container */
+  .popular-brands-section h4 {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+}
+
+.filter-sidebar-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e1e1e1;
+  background: #f8f9fa;
+  display: flex;
+  gap: 12px;
+}
+
+.clear-filters-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.apply-filters-btn {
+  flex: 2;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7941d 100%);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.apply-filters-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .filter-sidebar {
+    width: 100vw;
+    max-width: 100%;
+  }
+  
+
+  
+  .price-inputs {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .dual-select {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

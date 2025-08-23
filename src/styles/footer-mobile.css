@@ -1,0 +1,187 @@
+/* Footer Mobile Styles */
+@media (max-width: 768px) {
+  /* Ensure footer is not cut off on mobile */
+  body {
+    margin-bottom: 0px !important;
+    padding-bottom: 0px !important;
+  }
+  
+  footer {
+    margin-bottom: 0px !important;
+  }
+  
+  /* Logo Mobile */
+  .footer-logo {
+    height: 70px !important;
+    max-width: 240px !important;
+    margin-bottom: 30px !important;
+    margin-top: 20px !important;
+    object-fit: contain !important;
+  }
+  /* Newsletter Section Mobile */
+  .footer-newsletter-form {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+  
+  .footer-newsletter-form input {
+    min-width: unset !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 16px 24px !important;
+    font-size: 16px !important;
+  }
+  
+  .footer-newsletter-form button {
+    width: 100% !important;
+    max-width: 400px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    font-size: 16px !important;
+    border-radius: 28px !important;
+  }
+  
+  /* Footer Columns Mobile */
+  .footer-columns {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+    text-align: left !important;
+  }
+  
+  /* Social Media Mobile */
+  .footer-social-links {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 15px !important;
+  }
+  
+  .footer-social-links a {
+    width: 45px !important;
+    height: 45px !important;
+  }
+  
+  /* Footer Bottom Mobile */
+  .footer-bottom-content {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 15px !important;
+  }
+  
+  .footer-bottom-links {
+    justify-content: center !important;
+  }
+  
+  /* Typography Adjustments */
+  .footer-newsletter-title {
+    font-size: 24px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .footer-newsletter-subtitle {
+    font-size: 14px !important;
+    padding: 0 20px !important;
+  }
+  
+  .footer-column-title {
+    font-size: 16px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  /* Padding Adjustments */
+  .footer-newsletter-section {
+    padding: 50px 0 40px !important;
+    min-height: 400px !important;
+  }
+  
+  .footer-columns-section {
+    padding: 40px 0 !important;
+  }
+  
+  .footer-social-section {
+    padding: 30px 0 30px !important;
+  }
+  
+  .footer-bottom-section {
+    padding: 20px 0 20px !important;
+  }
+  
+  /* Store Information Mobile */
+  .footer-store-info {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+  
+  .footer-store-maps-link {
+    display: inline-block !important;
+    margin-top: 10px !important;
+    padding: 5px 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra Small Screens */
+  .footer-logo {
+    height: 65px !important;
+    max-width: 220px !important;
+    margin-bottom: 25px !important;
+    margin-top: 25px !important;
+    object-fit: contain !important;
+  }
+  
+  .footer-newsletter-title {
+    font-size: 20px !important;
+  }
+  
+  .footer-newsletter-form input {
+    height: 52px !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    padding: 14px 20px !important;
+    border-radius: 26px !important;
+  }
+  
+  .footer-newsletter-form button {
+    height: 52px !important;
+    min-height: 52px !important;
+    font-size: 16px !important;
+    padding: 0 30px !important;
+    border-radius: 26px !important;
+  }
+  
+  /* Footer links */
+  .footer-link {
+    font-size: 13px !important;
+    padding: 3px 0 !important;
+    display: inline-block !important;
+  }
+  
+  /* WhatsApp link */
+  .footer-whatsapp {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Store columns spacing */
+  .footer-store-item {
+    margin-bottom: 30px !important;
+  }
+  
+  .footer-store-item:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Tablet Specific */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .footer-columns {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 30px !important;
+  }
+  
+  .footer-newsletter-form {
+    max-width: 500px !important;
+  }
+}

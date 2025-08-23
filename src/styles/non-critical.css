@@ -1,0 +1,22 @@
+/* =========================================================================
+   CSS NÃO-CRÍTICO - CARREGADO APÓS FIRST PAINT
+   Componentes abaixo da dobra e funcionalidades secundárias
+   ========================================================================= */
+
+/* Importações de bibliotecas não críticas */
+@import "../../public/css/bootstrap.min.css";
+@import "../../public/css/slick-theme.css";
+@import "../../public/css/slick.css";
+@import "../../public/css/mmenu.css";
+@import "react-modal-video/css/modal-video.css";
+
+/* Componentes específicos não críticos */
+@import "./filter-sidebar.css";
+@import "./mobile-search-filter.css";
+@import "./no-spinner.css";
+
+/* CSS principal não crítico */
+@import "../../public/css/style.css";
+
+/* CSS customizado */
+@import "../../public/custom.css";

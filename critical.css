@@ -1,0 +1,124 @@
+
+/* ⚡ CRITICAL CSS - Above the Fold Only (Hero + Nav) */
+
+/* Reset essencial */
+*{box-sizing:border-box}
+html{font-family:sans-serif;line-height:1.15;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+body{margin:0;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:400;line-height:1.6;color:#222;background-color:#fff}
+
+/* Container e grid crítico */
+.container{width:100%;padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto}
+@media (min-width:576px){.container{max-width:540px}}
+@media (min-width:768px){.container{max-width:720px}}
+@media (min-width:992px){.container{max-width:960px}}
+@media (min-width:1200px){.container{max-width:1140px}}
+@media (min-width:1400px){.container{max-width:1320px}}
+
+.row{display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-15px;margin-left:-15px}
+.col-12{position:relative;width:100%;padding-right:15px;padding-left:15px;-ms-flex:0 0 100%;flex:0 0 100%;max-width:100%}
+
+/* Header crítico */
+.boxcar-header{position:absolute;top:0;left:0;width:100%;z-index:999;padding:20px 0;transition:all .3s ease}
+.boxcar-header.fixed-header{position:fixed;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+
+.main-box{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:justify;justify-content:space-between}
+
+.logo-box .logo{max-height:60px;width:auto}
+.logo-box a{display:block}
+
+/* Navegação crítica */
+.navbar{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;list-style:none;margin:0;padding:0}
+.navbar li{position:relative;margin:0 20px}
+.navbar li a{color:#222;font-weight:500;text-decoration:none;transition:color .3s ease;padding:10px 0;display:block}
+.navbar li a:hover{color:#1A75FF}
+
+/* Header actions */
+.header-actions{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;gap:15px}
+
+/* Hero section crítico */
+.boxcar-banner-section-v1{position:relative;min-height:100vh;display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;background:#1a2332;overflow:hidden}
+
+.banner-bg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+.banner-bg img{width:100%;height:100%;object-fit:cover;filter:brightness(.7)}
+
+.banner-content{position:relative;z-index:10;text-align:center;color:#fff;max-width:800px;margin:0 auto;padding:0 20px}
+
+.banner-content h2{font-size:3.5rem;font-weight:700;line-height:1.2;margin-bottom:20px;text-shadow:2px 2px 4px rgba(0,0,0,.5)}
+
+.banner-content .text{font-size:1.2rem;margin-bottom:40px;opacity:.9}
+
+/* Search form crítico */
+.banner-search{background:#fff;border-radius:50px;padding:15px;max-width:600px;margin:0 auto;display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+
+.search-input{-ms-flex:1;flex:1;border:none;outline:none;padding:15px 20px;font-size:16px;background:transparent}
+.search-input::placeholder{color:#999}
+
+.search-btn{background:linear-gradient(135deg,#ff6b35 0%,#f7931e 100%);color:#fff;border:none;padding:15px 30px;border-radius:50px;font-weight:600;cursor:pointer;transition:transform .2s ease}
+.search-btn:hover{transform:translateY(-2px)}
+
+/* Botões críticos */
+.theme-btn{display:inline-block;background:linear-gradient(135deg,#ff6b35 0%,#f7931e 100%);color:#fff;padding:12px 30px;border-radius:50px;text-decoration:none;font-weight:600;transition:all .3s ease;border:none;cursor:pointer}
+.theme-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,107,53,.3)}
+
+/* Font Awesome crítico - apenas ícones usados above fold */
+@font-face{
+  font-family:"Font Awesome 6 Free";
+  font-style:normal;
+  font-weight:900;
+  font-display:swap;
+  src:url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2) format("woff2")
+}
+.fas{font-family:"Font Awesome 6 Free";font-weight:900;font-style:normal;font-variant:normal;text-rendering:auto;line-height:1}
+
+/* Mobile crítico */
+@media (max-width:991px){
+  .boxcar-header{padding:15px 0}
+  .navbar{display:none}
+  
+  .banner-content h2{font-size:2.5rem}
+  .banner-content .text{font-size:1rem}
+  
+  .banner-search{flex-direction:column;padding:20px;border-radius:20px}
+  .search-input{width:100%;margin-bottom:15px;text-align:center}
+  .search-btn{width:100%}
+}
+
+@media (max-width:768px){
+  .boxcar-banner-section-v1{min-height:80vh;padding:50px 0}
+  .banner-content{padding:0 15px}
+  .banner-content h2{font-size:2rem;line-height:1.3}
+  .container{padding-left:10px;padding-right:10px}
+}
+
+/* Loading states críticos */
+.loading-placeholder{
+  background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size:200% 100%;
+  animation:loading 1.5s infinite;
+}
+
+@keyframes loading{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
+/* Preload states */
+img[loading="lazy"]{
+  opacity:0;
+  transition:opacity .3s ease;
+}
+
+img[loading="lazy"].loaded{
+  opacity:1;
+}
+
+/* Critical utilities */
+.d-block{display:block!important}
+.d-flex{display:-ms-flexbox!important;display:flex!important}
+.text-center{text-align:center!important}
+.mb-3{margin-bottom:1rem!important}
+.mt-4{margin-top:1.5rem!important}
+.p-0{padding:0!important}
+.w-100{width:100%!important}
+.position-relative{position:relative!important}
+.position-absolute{position:absolute!important}

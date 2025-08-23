@@ -1,0 +1,119 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "redirects": [
+      {
+        "source": "/inventory-list-01**",
+        "destination": "/estoque",
+        "type": 301
+      },
+      {
+        "source": "/veiculos**",
+        "destination": "/estoque",
+        "type": 301
+      },
+      {
+        "source": "/listings**",
+        "destination": "/estoque",
+        "type": 301
+      },
+      {
+        "source": "/seminovos**",
+        "destination": "/estoque",
+        "type": 301
+      },
+      {
+        "source": "/carros-usados**",
+        "destination": "/estoque",
+        "type": 301
+      },
+      {
+        "source": "/blog-list-02**",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/loan-calculator**",
+        "destination": "/simulador",
+        "type": 301
+      },
+      {
+        "source": "/about**",
+        "destination": "/sobre",
+        "type": 301
+      },
+      {
+        "source": "/compare**",
+        "destination": "/comparar",
+        "type": 301
+      },
+      {
+        "source": "/venda-seu-carro**",
+        "destination": "/vender",
+        "type": 301
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/sitemap.xml",
+        "destination": "/sitemap.xml"
+      },
+      {
+        "source": "/robots.txt",
+        "destination": "/robots.txt"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self' https:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline' data:; img-src 'self' https: data:; font-src 'self' https: data:;"
+          }
+        ]
+      },
+      {
+        "source": "/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(js|jsx|ts|tsx|css|woff|woff2|ttf|eot|otf|png|jpg|jpeg|gif|svg|webp|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      }
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false
+  }
+}

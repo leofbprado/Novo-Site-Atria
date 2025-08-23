@@ -1,0 +1,11 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .brand-text { fill: #ffffff; font-family: 'Arial', sans-serif; font-weight: bold; }
+      .tagline-text { fill: #ffffff; font-family: 'Arial', sans-serif; font-style: italic; font-size: 8px; }
+    </style>
+  </defs>
+  <text x="60" y="20" text-anchor="middle" class="brand-text" font-size="18">ÁTRIA</text>
+  <line x1="10" y1="25" x2="110" y2="25" stroke="#ffffff" stroke-width="1"/>
+  <text x="60" y="35" text-anchor="middle" class="tagline-text">Guiada por você</text>
+</svg>

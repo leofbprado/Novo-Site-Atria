@@ -1,0 +1,53 @@
+<svg width="600" height="300" viewBox="0 0 600 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Car Body -->
+  <ellipse cx="300" cy="220" rx="200" ry="60" fill="#f8f9fa" opacity="0.3"/>
+  
+  <!-- Main Car Shape -->
+  <path d="M100 180c0-20 20-40 40-40h80l40-20h80l40 20h80c20 0 40 20 40 40v40c0 20-20 40-40 40H140c-20 0-40-20-40-40v-40z" fill="#007bff"/>
+  
+  <!-- Car Top -->
+  <path d="M180 140c0-20 20-40 40-40h120c20 0 40 20 40 40v40H180v-40z" fill="#0056b3"/>
+  
+  <!-- Windows -->
+  <rect x="190" y="110" width="50" height="30" rx="5" fill="#e3f2fd"/>
+  <rect x="250" y="110" width="60" height="30" rx="5" fill="#e3f2fd"/>
+  <rect x="320" y="110" width="50" height="30" rx="5" fill="#e3f2fd"/>
+  
+  <!-- Wheels -->
+  <circle cx="160" cy="220" r="25" fill="#333"/>
+  <circle cx="160" cy="220" r="15" fill="#666"/>
+  <circle cx="160" cy="220" r="8" fill="#999"/>
+  
+  <circle cx="440" cy="220" r="25" fill="#333"/>
+  <circle cx="440" cy="220" r="15" fill="#666"/>
+  <circle cx="440" cy="220" r="8" fill="#999"/>
+  
+  <!-- Headlights -->
+  <ellipse cx="480" cy="180" rx="15" ry="10" fill="#fff"/>
+  <ellipse cx="480" cy="180" rx="10" ry="6" fill="#ffd700"/>
+  
+  <!-- Grille -->
+  <rect x="470" y="170" width="30" height="20" rx="2" fill="#333"/>
+  <line x1="475" y1="175" x2="495" y2="175" stroke="#666" stroke-width="1"/>
+  <line x1="475" y1="180" x2="495" y2="180" stroke="#666" stroke-width="1"/>
+  <line x1="475" y1="185" x2="495" y2="185" stroke="#666" stroke-width="1"/>
+  
+  <!-- Door Handle -->
+  <rect x="350" y="170" width="8" height="3" rx="1" fill="#333"/>
+  
+  <!-- Side Mirror -->
+  <ellipse cx="190" cy="160" rx="8" ry="5" fill="#333"/>
+  <ellipse cx="190" cy="160" rx="5" ry="3" fill="#e3f2fd"/>
+  
+  <!-- Decorative Elements -->
+  <path d="M100 200h400" stroke="#0056b3" stroke-width="2"/>
+  <path d="M140 190h320" stroke="#007bff" stroke-width="1"/>
+  
+  <!-- License Plate -->
+  <rect x="450" y="200" width="40" height="15" rx="2" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="470" y="210" text-anchor="middle" fill="#333" font-family="Arial, sans-serif" font-size="8">AUTO</text>
+  
+  <!-- Exhaust -->
+  <ellipse cx="120" cy="210" rx="8" ry="4" fill="#333"/>
+  <ellipse cx="120" cy="210" rx="5" ry="2" fill="#666"/>
+</svg>

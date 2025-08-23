@@ -1,0 +1,10 @@
+/* ⚡ Font Awesome Subset - Apenas ícones usados */
+@font-face{
+  font-family:"Font Awesome 6 Free";
+  font-style:normal;
+  font-weight:900;
+  font-display:swap;
+  src:url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2) format("woff2")
+}
+.fas{font-family:"Font Awesome 6 Free";font-weight:900}
+.fa-search:before{content:"\f563"}.fa-phone:before{content:"\fd9e"}.fa-envelope:before{content:"\f824"}.fa-location-dot:before{content:"\f044"}.fa-car:before{content:"\f0be"}.fa-gas-pump:before{content:"\f120"}.fa-gauge:before{content:"\fd70"}.fa-gear:before{content:"\f33d"}.fa-star:before{content:"\f8ac"}.fa-heart:before{content:"\f097"}.fa-share:before{content:"\ff43"}.fa-eye:before{content:"\f294"}.fa-chevron-left:before{content:"\f8ba"}.fa-chevron-right:before{content:"\f462"}.fa-bars:before{content:"\f904"}.fa-times:before{content:"\f794"}

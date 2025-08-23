@@ -1,0 +1,13 @@
+node_modules/
+.next/
+dist/
+build/
+.tmp/
+.cache/
+.vite/
+.parcel-cache/
+.turbo/
+.eslintcache
+*.log
+/*.tar.gz
+/*.zip
