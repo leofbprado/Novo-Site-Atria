@@ -1,0 +1,56 @@
+/* === ESTOQUE: header azul com altura padronizada === */
+.page-estoque .boxcar-header.header-style-v1.style-two.inner-header.estoque-header {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  min-height: 76px;
+}
+
+/* === ESTOQUE: encostar o PRIMEIRO bloco no header (qualquer componente) === */
+.page-estoque .boxcar-header + #estoque-main > *:first-child {
+  margin-top: 0 !important;
+  padding-top: 24px !important;
+}
+
+/* Se houver um wrapper dentro do primeiro bloco, ajustar também */
+.page-estoque .boxcar-header + #estoque-main > *:first-child > .container,
+.page-estoque .boxcar-header + #estoque-main > *:first-child > .container-fluid,
+.page-estoque .boxcar-header + #estoque-main > *:first-child > div:first-child {
+  margin-top: 0 !important;
+  padding-top: 24px !important;
+}
+
+/* Título + curva/shape comuns */
+.page-estoque #estoque-main h1:first-of-type {
+  margin-top: 0 !important;
+  line-height: 1.15;
+}
+.page-estoque #estoque-main .curve,
+.page-estoque #estoque-main .shape,
+.page-estoque #estoque-main .page-shape,
+.page-estoque #estoque-main .breadcrumb-shape {
+  margin-top: -8px !important;
+}
+
+/* Fallback para nomes de seção usados em templates */
+.page-estoque #estoque-main .breadcrumb-one,
+.page-estoque #estoque-main .breadcrumbs,
+.page-estoque #estoque-main .page-hero,
+.page-estoque #estoque-main .page-title,
+.page-estoque #estoque-main .page-title-area,
+.page-estoque #estoque-main .section-breadcrumb {
+  margin-top: 0 !important;
+  padding-top: 24px !important;
+}
+
+/* Mobile compacto */
+@media (max-width: 767px) {
+  .page-estoque .boxcar-header.header-style-v1.style-two.inner-header.estoque-header {
+    padding-top: 12px; padding-bottom: 12px; min-height: 64px;
+  }
+  .page-estoque .boxcar-header + #estoque-main > *:first-child,
+  .page-estoque .boxcar-header + #estoque-main > *:first-child > .container,
+  .page-estoque .boxcar-header + #estoque-main > *:first-child > .container-fluid,
+  .page-estoque .boxcar-header + #estoque-main > *:first-child > div:first-child {
+    padding-top: 16px !important;
+  }
+}

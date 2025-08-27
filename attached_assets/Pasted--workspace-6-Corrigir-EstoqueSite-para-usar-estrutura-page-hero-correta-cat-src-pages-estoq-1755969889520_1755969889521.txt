@@ -1,0 +1,74 @@
+}~/workspace$ # 6. Corrigir EstoqueSite para usar estrutura page-hero correta
+cat > src/pages/estoque/EstoqueSite_updated.jsx << 'EOF'
+import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link, useSearchParams } from "react-router-dom";
+import { useFilters } from '../../contexts/FilterContext';
+import { VehicleImage } from '../../components/common/OptimizedImage';
+import BrandLogo from '../../components/BrandLogo';
+import StaticSEO from '../../components/seo/StaticSEO';
+import Header1 from "../../components/headers/Header1";
+import Footer1 from "../../components/footers/Footer1";
+import FixedBottomMenu from '../../components/common/FixedBottomMenu';
+import '../../styles/brand-logo.css';
+import '../../styles/overrides.css';
+
+export default function EstoqueSite() {
+  const [searchParams] = useSearchParams();
+  const [vehicles, setVehicles] = useState([]);
+  const [filteredVehicles, setFilteredVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { updateFilters, toggleArrayFilter } = useFilters();
+  const [customTags, setCustomTags] = useState([]);
+  const [filters, setFilters] = useState({
+    search: '',
+    brands: [],
+    models: [],
+    yearMin: null,
+    yearMax: null,
+    priceMin: null,
+    priceMax: null,
+    mileageMax: null,
+    fuel: [],
+    transmission: []
+  });
+
+  // Get brand and vehicle type from URL parameters
+  const urlBrand = searchParams.get('marca');
+  const urlTipo = searchParams.get('tipo');
+
+  // Função para obter tag personalizada por nome
+  const getCustomTagByName = (tagName) => {
+    return customTags.find(tag => tag.nome === tagName);
+  };
+
+  // Carregar tags personalizadas do Firebase
+  const loadCustomTags = async () => {
+    try {
+      const { db } = await import('../../firebase/config');
+      const { collection, getDocs } = await import('firebase/firestore');
+EOF
+
+# Continuar com o resto do arquivo preservando a lógica existente
+tail -n +45 src/pages/estoque/EstoqueSite.jsx | head -200 >> src/pages/estoque/EstoqueSite_updated.jsx
+
+# Adicionar a parte do return com a estrutura correta
+cat >> src/pages/estoque/EstoqueSite_updated.jsx << 'EOF'
+
+  return (
+    <>
+      <StaticSEO page="estoque" />
+      
+      {/* Header padrão do site */}
+      <Header1 headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1" white={true} />
+      
+      {/* Hero Section com estrutura padrão */}
+      <section className="page-hero" id="inv-hero">
+        <div className="container">
+          <nav id="bc-estoque" aria-label="breadcrumb" className="breadcrumb">
+echo "✅ EstoqueSite.jsx atualizado com estrutura page-hero correta"ueSite.jsxe_updated.jsx
+
+=== BACKUP E SUBSTITUIR ===
+✅ EstoqueSite.jsx atualizado com estrutura page-hero correta
+~/workspace$ 

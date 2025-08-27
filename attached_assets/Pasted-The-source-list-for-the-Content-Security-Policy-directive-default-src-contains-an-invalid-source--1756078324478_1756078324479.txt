@@ -1,0 +1,893 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+Novo-Site-Atria:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+Novo-Site-Atria:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+Novo-Site-Atria:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+_app-b13afe02cc15fed0.js:16 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-b13afe02cc15fed0.js:16 [LaunchDarkly] LaunchDarkly client initialized
+framework-13156f2ca0af0e01.js:1 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'battery'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-13156f2ca0af0e01.js:1
+framework-13156f2ca0af0e01.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-13156f2ca0af0e01.js:1
+m.stripe.com/6:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+Novo-Site-Atria:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html:32 Unrecognized feature: 'battery'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+Failed to decode downloaded font: <URL>
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+OTS parsing error: invalid sfntVersion: 1008813135
+d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/:1 The resource https://res.cloudinary.com/dyngqkiyl/image/upload/f_avif,q_auto,w_1920/v1754491147/freepik__the-style-is-candid-image-photography-with-natural__92107_yf4xgx.avif was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+workspace_iframe.html:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+(index):164 Font loading failed: NetworkError: A network error occurred.
+(anonymous) @ (index):164
+(index):257 ✅ CSS não-crítico carregado
+client:495 [vite] connecting...
+(index):150 ⚡ DOMContentLoaded: 1079.70ms
+resourceDeferrer.js:28 ✅ Resource deferrer initialized
+main.jsx:122 ✅ Resource deferrer loaded
+main.jsx:199 ✅ CSS não-crítico carregado de forma assíncrona
+main.jsx:208 ✅ Console filter carregado
+(index):150 📊 Total Load Time: 191.20ms
+(index):150 📊 CSS Load Complete: 191.30ms
+main.jsx:191 ✅ Safari fixes CSS carregado
+main.jsx:184 ✅ Call-to-Call lead CSS carregado
+consoleFilter.js:80 ❌ Erro ao carregar veículos no contexto: FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 ❌ Erro ao carregar veículos no contexto: FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+main.jsx:177 ✅ CSS principal da aplicação carregado
+client:618 [vite] connected.
+FilterContext.jsx:76 🔄 Filtros aplicados com debounce: Object
+Cars.jsx:201 🎯 Inicializando carrossel...
+Features.jsx:31 🔍 Buscando vídeo da semana no Firebase...
+Cars.jsx:201 🎯 Inicializando carrossel...
+Features.jsx:31 🔍 Buscando vídeo da semana no Firebase...
+Cars.jsx:224 ✅ CSS do carousel carregado
+Cars.jsx:224 ✅ CSS do carousel carregado
+Cars.jsx:229 ✅ Carrossel habilitado
+Cars.jsx:61 🔍 Carregando veículos "Mais Vendidos" do Firestore...
+consoleFilter.js:80 ❌ Erro ao carregar veículos "Mais Vendidos": FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 ❌ Erro ao carregar tags: FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 ❌ Erro ao buscar vídeo da semana: FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+Cars.jsx:61 🔍 Carregando veículos "Mais Vendidos" do Firestore...
+consoleFilter.js:80 ❌ Erro ao carregar veículos "Mais Vendidos": FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 ❌ Erro ao carregar tags: FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 ❌ Erro ao buscar vídeo da semana: FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+console.error @ consoleFilter.js:80
+resourceDeferrer.js:130 ✅ CSS loaded: slick-css
+resourceDeferrer.js:130 ✅ CSS loaded: slick-theme-css
+slick.min.js:1 Uncaught ReferenceError: jQuery is not defined
+resourceDeferrer.js:200 ✅ Script loaded: slick-js
+resourceDeferrer.js:179 ✅ Slick carousel loaded
+Cars.jsx:229 ✅ Carrossel habilitado
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+chunk-OU5AQDZK.js?v=1ae0c4fd:1074 Uncaught TypeError: Cannot read properties of null (reading 'useRef')
+    at useRef (chunk-OU5AQDZK.js?v=1ae0c4fd:1074:29)
+    at useOnVisible (useOnVisible.js:4:15)
+    at Testimonials (Testimonials.jsx:8:26)
+    at renderWithHooks (chunk-WRD5HZVH.js?v=b18b19b7:11548:26)
+    at updateFunctionComponent (chunk-WRD5HZVH.js?v=b18b19b7:14582:28)
+    at mountLazyComponent (chunk-WRD5HZVH.js?v=b18b19b7:14833:23)
+    at beginWork (chunk-WRD5HZVH.js?v=b18b19b7:15918:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WRD5HZVH.js?v=b18b19b7:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WRD5HZVH.js?v=b18b19b7:3699:24)
+    at invokeGuardedCallback (chunk-WRD5HZVH.js?v=b18b19b7:3733:39)
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+chunk-OU5AQDZK.js?v=1ae0c4fd:1074 Uncaught TypeError: Cannot read properties of null (reading 'useRef')
+    at useRef (chunk-OU5AQDZK.js?v=1ae0c4fd:1074:29)
+    at useOnVisible (useOnVisible.js:4:15)
+    at Blogs (Blogs.jsx:8:26)
+    at renderWithHooks (chunk-WRD5HZVH.js?v=b18b19b7:11548:26)
+    at updateFunctionComponent (chunk-WRD5HZVH.js?v=b18b19b7:14582:28)
+    at mountLazyComponent (chunk-WRD5HZVH.js?v=b18b19b7:14833:23)
+    at beginWork (chunk-WRD5HZVH.js?v=b18b19b7:15918:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WRD5HZVH.js?v=b18b19b7:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WRD5HZVH.js?v=b18b19b7:3699:24)
+    at invokeGuardedCallback (chunk-WRD5HZVH.js?v=b18b19b7:3733:39)
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+chunk-OU5AQDZK.js?v=1ae0c4fd:1074 Uncaught TypeError: Cannot read properties of null (reading 'useRef')
+    at useRef (chunk-OU5AQDZK.js?v=1ae0c4fd:1074:29)
+    at useOnVisible (useOnVisible.js:4:15)
+    at Testimonials (Testimonials.jsx:8:26)
+    at renderWithHooks (chunk-WRD5HZVH.js?v=b18b19b7:11548:26)
+    at updateFunctionComponent (chunk-WRD5HZVH.js?v=b18b19b7:14582:28)
+    at mountLazyComponent (chunk-WRD5HZVH.js?v=b18b19b7:14833:23)
+    at beginWork (chunk-WRD5HZVH.js?v=b18b19b7:15918:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WRD5HZVH.js?v=b18b19b7:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WRD5HZVH.js?v=b18b19b7:3699:24)
+    at invokeGuardedCallback (chunk-WRD5HZVH.js?v=b18b19b7:3733:39)
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 Warning: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+console.error @ consoleFilter.js:80
+chunk-OU5AQDZK.js?v=1ae0c4fd:1074 Uncaught TypeError: Cannot read properties of null (reading 'useRef')
+    at useRef (chunk-OU5AQDZK.js?v=1ae0c4fd:1074:29)
+    at useOnVisible (useOnVisible.js:4:15)
+    at Blogs (Blogs.jsx:8:26)
+    at renderWithHooks (chunk-WRD5HZVH.js?v=b18b19b7:11548:26)
+    at updateFunctionComponent (chunk-WRD5HZVH.js?v=b18b19b7:14582:28)
+    at mountLazyComponent (chunk-WRD5HZVH.js?v=b18b19b7:14833:23)
+    at beginWork (chunk-WRD5HZVH.js?v=b18b19b7:15918:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WRD5HZVH.js?v=b18b19b7:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WRD5HZVH.js?v=b18b19b7:3699:24)
+    at invokeGuardedCallback (chunk-WRD5HZVH.js?v=b18b19b7:3733:39)
+consoleFilter.js:80 The above error occurred in the <Testimonials> component:
+
+    at Testimonials (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/components/homes/home-1/Testimonials.jsx:7:26)
+    at Suspense
+    at HomePage1
+    at RenderedRoute (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4088:5)
+    at RenderedRoute (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4088:5)
+    at Routes (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4558:5)
+    at Suspense
+    at div
+    at Context (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/context/Context.jsx:8:35)
+    at FilterProvider (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/contexts/FilterContext.jsx:10:34)
+    at AuthProvider (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/context/AuthContext.jsx:10:32)
+    at App (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/App.jsx:58:24)
+    at _a (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-helmet-async.js?v=b18b19b7:624:5)
+    at Router (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4501:15)
+    at BrowserRouter (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:5247:5)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+console.error @ consoleFilter.js:80
+consoleFilter.js:80 The above error occurred in the <Blogs> component:
+
+    at Blogs (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/components/homes/home-1/Blogs.jsx:6:33)
+    at Suspense
+    at HomePage1
+    at RenderedRoute (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4088:5)
+    at RenderedRoute (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4088:5)
+    at Routes (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4558:5)
+    at Suspense
+    at div
+    at Context (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/context/Context.jsx:8:35)
+    at FilterProvider (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/contexts/FilterContext.jsx:10:34)
+    at AuthProvider (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/context/AuthContext.jsx:10:32)
+    at App (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/src/App.jsx:58:24)
+    at _a (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-helmet-async.js?v=b18b19b7:624:5)
+    at Router (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:4501:15)
+    at BrowserRouter (https://d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=b18b19b7:5247:5)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+console.error @ consoleFilter.js:80
+chunk-WRD5HZVH.js?v=b18b19b7:19413 Uncaught TypeError: Cannot read properties of null (reading 'useRef')
+    at useRef (chunk-OU5AQDZK.js?v=1ae0c4fd:1074:29)
+    at useOnVisible (useOnVisible.js:4:15)
+    at Testimonials (Testimonials.jsx:8:26)
+    at renderWithHooks (chunk-WRD5HZVH.js?v=b18b19b7:11548:26)
+    at updateFunctionComponent (chunk-WRD5HZVH.js?v=b18b19b7:14582:28)
+    at mountLazyComponent (chunk-WRD5HZVH.js?v=b18b19b7:14833:23)
+    at beginWork (chunk-WRD5HZVH.js?v=b18b19b7:15918:22)
+    at beginWork$1 (chunk-WRD5HZVH.js?v=b18b19b7:19753:22)
+    at performUnitOfWork (chunk-WRD5HZVH.js?v=b18b19b7:19201:20)
+    at workLoopSync (chunk-WRD5HZVH.js?v=b18b19b7:19137:13)
+main.jsx:132 ✅ jQuery carregado sob demanda
+main.jsx:219 ✅ Slick CSS carregado
+main.jsx:227 ✅ jQuery + Slick CSS prontos
+(index):172 ✅ Ícones não-críticos carregados
+d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/:1 The resource https://res.cloudinary.com/dyngqkiyl/image/upload/f_avif,q_auto,w_1920/v1754491147/freepik__the-style-is-candid-image-photography-with-natural__92107_yf4xgx.avif was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+_app-b13afe02cc15fed0.js:16 [Violation] 'requestAnimationFrame' handler took 74ms
+[Violation] Forced reflow while executing JavaScript took 119ms
+d2266e1b-31d5-44a3-b657-a3c9069ad848-00-2sp7joi2ur5w6.riker.replit.dev/:1 The resource https://res.cloudinary.com/dyngqkiyl/image/upload/f_avif,q_auto,w_1920/v1754491147/freepik__the-style-is-candid-image-photography-with-natural__92107_yf4xgx.avif was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.

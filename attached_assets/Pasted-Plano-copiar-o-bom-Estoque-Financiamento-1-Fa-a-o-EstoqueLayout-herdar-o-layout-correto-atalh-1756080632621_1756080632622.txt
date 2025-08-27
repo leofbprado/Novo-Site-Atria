@@ -1,0 +1,58 @@
+Plano “copiar o bom”: Estoque = Financiamento
+1) Faça o EstoqueLayout herdar o layout correto (atalho simples)
+
+Em vez de manter um layout próprio para o estoque, aponte o arquivo para o mesmo layout do Financiamento:
+
+src/layouts/EstoqueLayout.jsx
+
+- import { Outlet } from "react-router-dom";
+- import Header1 from "@/components/headers/Header1";
+- import Footer1 from "@/components/footers/Footer1";
+-
+- export default function EstoqueLayout() {
+-   return (
+-     <>
+-       <Header1
+-         headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1"
+-         white={true}
+-       />
+-       <Outlet />
+-       <Footer1 />
+-     </>
+-   );
+- }
++// Alias: o Estoque usa exatamente o mesmo layout das páginas internas (Financiamento)
++import FinanciamentoLayout from "./FinanciamentoLayout";
++export default FinanciamentoLayout;
+
+
+Isso garante o mesmo header, mesmas curvas e mesma estrutura DOM das páginas internas que já estão certas.
+
+2) Garanta que não haja header duplicado dentro da página do estoque
+
+Remova qualquer <Header1 ...> dentro das páginas de listagem/estoque (deixe o header só no layout):
+
+rg -n "<\s*Header1" src/pages/car-listings/inventory-list-01
+# Se aparecer, remova esse Header1 da página.
+
+3) Remova os “overrides” que criamos só para o estoque
+
+Abra src/styles/overrides.css e apague tudo que seja .page-estoque, .estoque-header ou regras específicas do estoque que mexem em padding/margin/curvas.
+Objetivo: zero CSS especial — o Estoque passa a usar exatamente o que o Financiamento usa.
+
+4) (Opcional, mas recomendado) Curvas globais do header interno
+
+Se alguma página interna ainda estiver sem as curvas, mantenha um único CSS global para todas as internas (é o mesmo que o Financiamento já usa):
+
+src/styles/overrides.css (pode deixar no final do arquivo)
+
+/* Curvas no cabeçalho interno (todas as páginas internas) */
+.boxcar-header.header-style-v1.style-two.inner-header {
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  overflow: hidden;
+}
+
+5) Hard reload (sem cache)
+
+Abra DevTools > Network > marque Disable cache e recarregue a página.

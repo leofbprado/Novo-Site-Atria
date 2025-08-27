@@ -1,0 +1,64 @@
+1) EstoqueLayout – mantenha o header marcado (se já estiver assim, não mexa)
+
+src/layouts/EstoqueLayout.jsx
+
+-  <Header1
+-    headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1 estoque-header"
+-    white={true}
+-  />
++  <Header1
++    headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1 estoque-header"
++    white={true}
++  />
+
+
+(sem mudança funcional aqui — só garantindo a classe estoque-header que usaremos no CSS)
+
+2) overrides.css – curvas no header do Estoque + respiro igual ao Financiamento
+
+src/styles/overrides.css (adicione ao final, mantendo o que você já tem)
+
+/* === ESTOQUE: curvas no PRÓPRIO header, como no Financiamento === */
+.page-estoque .estoque-header {
+  position: relative;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  overflow: hidden;                   /* garante que a curva recorte o fundo */
+  padding-top: 12px;                  /* mesmo respiro do financiamento */
+  padding-bottom: 12px;
+  min-height: 66px;
+}
+
+/* === ESTOQUE: primeiro bloco (H1/breadcrumb) colado no header com respiro menor === */
+.page-estoque .boxcar-header + #estoque-main > *:first-child {
+  margin-top: 0 !important;
+  padding-top: 16px !important;       /* reduz de 24 → 16 para ficar igual ao financiamento */
+  padding-bottom: 12px;               /* opcional, dá “peso” semelhante */
+}
+
+.page-estoque #estoque-main h1:first-of-type { 
+  margin-top: 0 !important;
+  line-height: 1.15;
+}
+
+/* se existir shape/curve dentro do bloco, aproxima */
+.page-estoque #estoque-main .curve,
+.page-estoque #estoque-main .shape,
+.page-estoque #estoque-main .page-shape,
+.page-estoque #estoque-main .breadcrumb-shape {
+  margin-top: -6px !important;
+}
+
+/* Mobile: compacto */
+@media (max-width: 767px) {
+  .page-estoque .estoque-header {
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    min-height: 60px;
+  }
+  .page-estoque .boxcar-header + #estoque-main > *:first-child {
+    padding-top: 14px !important;
+  }
+}

@@ -637,7 +637,7 @@ export default function Listings1({ searchQuery = "", onVehiclesChange }) {
   }
 
   return (
-    <div className="boxcar-container" style={{ paddingTop: '30px' }}>
+    <div className="boxcar-container" >
 
         
         {/* TESTE: MobileSearchFilter removido - usando filtro simplificado */}

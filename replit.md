@@ -56,3 +56,10 @@ The application is a Single-Page Application (SPA) built with React.js and Vite,
 - **CRM Integration**: Autopop360 CRM (for lead forwarding).
 - **Financing Plugin**: Credere (for financing simulation).
 - **Hosting-related**: Netlify, Replit Autoscale.
+
+- # Regras do Projeto (Site Átria)
+- Editar código diretamente. Nada de plano extenso.
+- Comandos: dev (npm run dev), build (npm run build), preview (npm run preview).
+- Porta 5000, host 0.0.0.0. Não mudar sem pedido.
+- Não criar backend/Express. Repo é front (Vite + React Router).
+- Commits pequenos e claros (feat|fix|chore).

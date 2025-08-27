@@ -1,0 +1,100 @@
+Átria Veículos — Project Brief (One-Pager)
+1) Purpose & Goals
+
+Main purpose: Build a fast, trustworthy, conversion-focused website for a used-car dealership (Átria Veículos) with 200+ vehicles in stock.
+
+Primary goal: Generate qualified leads (forms, WhatsApp, financing simulation) while keeping the UX fast, reliable, and mobile-first.
+
+Brand refs: Kavak (BR), CarMax & AutoNation (US).
+
+2) Target Users
+
+Shoppers in Campinas/SP and RMC searching for semi-new cars.
+
+Mobile-first behavior; quick scan of price/KM/year, easy contact, simple financing simulation.
+
+3) Key Features (MVP)
+
+Inventory list (/estoque) with fast filters (brand/model/type/year/price/KM).
+
+Vehicle detail (/carros/{brand}/{model}/{year-shortId}) with rich info, photos, CTAs (WhatsApp, call, lead form).
+
+Financing simulator (Credere embed) loading automatically when container exists (no extra click).
+
+Lead capture: WhatsApp clicks, forms (name/phone), and click-to-call.
+
+Content: Blog, About, “Sell my car”.
+
+4) Technical Requirements & Constraints
+
+Performance: LCP < 2.5s, CLS < 0.1, TBT low; page load target < 3s. Images WebP/AVIF, lazy-load, local fonts w/ preload, code splitting, cache+compression.
+
+SEO: Clean URLs, sitemap.xml, robots.txt, canonicals, Schema.org (Organization/AutoDealer/LocalBusiness, Vehicle on car pages, BreadcrumbList), OpenGraph/Twitter, geo tags (Campinas).
+
+Tracking: GA4, GTM, Meta Pixel, events for WhatsApp clicks, form submit, scroll/CTA, heatmaps (Hotjar/Clarity). Don’t change IDs—already configured.
+
+Tech stack: React (Vite), Firebase Hosting. Images via Cloudinary (optimized). CSP already tuned; do not relax CSP.
+
+Security & Trust: HTTPS, visible privacy policy, reviews/testimonials, clear contact.
+
+5) Current Status (what’s already done)
+
+Sitemap/robots served by Firebase; short URLs for vehicles; stable deploy with SEO base.
+
+Dynamic titles/descriptions for vehicles (brand/model/year | location); static SEO for Home/About/Blog/Estoque/Financing.
+
+Structured data implemented; Breadcrumbs fixed across pages using explicit / separator element and one breadcrumb per page (scoped ids like #bc-estoque, #bc-veiculo, etc.).
+
+Pages Financing, Sell my car, and Blog already have the correct header/hero curved card look & spacing (the reference design).
+
+6) Issues to Fix (highest priority)
+
+Header/hero parity on: Estoque, Vehicle detail, About — make them match EXACTLY the working pattern used on Financing / Sell my car / Blog:
+
+Same white “page-hero” card immediately after the blue header band.
+
+Same top border-radius (desktop 40px, mobile 28px), same spacing/offset, same z-index (no overlap under header), no extra blue gap.
+
+Do not alter global header or other pages that are already correct.
+
+Ensure only one breadcrumb visible per page and no pseudo separators from theme.
+
+Keep Credere auto-loading when its container exists (no extra click).
+
+7) Non-Goals / Do-Not-Touch
+
+Do not change header component, menu behavior, or global CSS variables.
+
+Do not loosen CSP or modify GA4/GTM/Pixel IDs.
+
+Do not add global CSS rules for .breadcrumb or main that affect other pages; scope per page.
+
+8) Acceptance Criteria (visual + technical)
+
+On Estoque, Vehicle, About:
+
+Hero card appears immediately below the blue header, same curve and height as Financing/Sell/Blog.
+
+No content hidden under header; no extra blue band; no oval/capsule weirdness.
+
+Exactly one breadcrumb, inline with a single black / separator element; link “Início” in blue.
+
+Schema BreadcrumbList valid in Rich Results Test.
+
+No regressions on Financing/Sell/Blog.
+
+9) Success Metrics
+
+Lead rate ↑ (form/WhatsApp), Core Web Vitals within targets, organic visibility for: “seminovos em Campinas”, “[brand model year] Campinas”.
+
+10) Workflow / Checkpoints
+
+Work on one page at a time (Estoque → Vehicle → About).
+
+Scoped CSS only (IDs/classes per page). No global overrides.
+
+After each page is fixed, create a checkpoint and attach 2 screenshots:
+
+Top header+hero comparing with Financing page
+
+Footer curve

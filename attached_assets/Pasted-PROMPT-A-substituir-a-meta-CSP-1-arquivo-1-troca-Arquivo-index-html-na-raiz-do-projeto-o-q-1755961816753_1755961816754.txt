@@ -1,0 +1,62 @@
+PROMPT A — substituir a meta CSP (1 arquivo, 1 troca)
+
+Arquivo: index.html na raiz do projeto (é o que o Vite usa no dev).
+
+Abra index.html e remova qualquer <meta http-equiv="Content-Security-Policy" …> existente.
+
+Cole exatamente esta linha no <head>:
+
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  base-uri 'self';
+  img-src 'self' data: https:;
+  font-src 'self' data: https:;
+  style-src 'self' 'unsafe-inline' https:;
+  script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https:;
+  connect-src 'self' https: wss:;
+  frame-src 'self' https:;
+  form-action 'self';
+  upgrade-insecure-requests;
+  report-uri https://o1151714.ingest.sentry.io/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e;
+">
+
+Aceitação
+
+Recarregue o preview. No console, não deve aparecer:
+
+invalid source: 'unsafe-dynamic'
+
+report-uri as a source expression
+
+invalid path … ?query
+
+O Vite WebSocket conecta (por causa de wss: em connect-src).
+
+Se não encontrar a meta no HTML
+
+Use o fallback: a CSP pode estar vindo por header no Firebase. Aí faça:
+
+PROMPT B — (só se não existir meta) ajustar no firebase.json
+
+Abra firebase.json e substitua (ou adicione) este bloco dentro de "hosting":
+
+{
+  "hosting": {
+    "headers": [
+      {
+        "source": "/index.html",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; base-uri 'self'; img-src 'self' data: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https:; connect-src 'self' https: wss:; frame-src 'self' https:; form-action 'self'; upgrade-insecure-requests; report-uri https://o1151714.ingest.sentry.io/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e;"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+No dev (Vite) a meta do index.html prevalece; em produção, o header do Firebase será aplicado.
+
+me avise quando aplicar o PROMPT A (ou B, se for o caso) e me diga se os avisos de CSP sumiram. Aí seguimos para o próximo micro-ajuste do topo do Estoque.

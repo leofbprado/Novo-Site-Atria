@@ -1,0 +1,264 @@
+~/workspace$ echo "=== STATUS DOS SERVIÇOS ==="
+echo "✅ React App: http://localhost:5000/ (funcionando)"
+echo "✅ Preview Build: http://localhost:4173/ (rodando)" 
+echo "❌ Production Server: Erro de rota (path-to-regexp)"
+echo
+
+echo "=== VERIFICAR SE HÁ PROBLEMA NAS ROTAS ==="
+grep -n "estoque" src/App.jsx | head -5
+
+echo -e "\n=== TESTAR A PÁGINA ESTOQUE ==="
+echo "🌐 Acesse: http://localhost:5000/estoque"
+echo "📝 Use o React App (porta 5000) que está funcionando"
+echo
+
+echo "=== VERIFICAR ESTRUTURA ATUAL DO ESTOQUE ==="
+echo "Layout: $(cat src/layouts/EstoqueLayout.jsx | head -2)"
+echo "Página: $(grep -c "page-estoque\|estoque-main" src/pages/car-listings/inventory-list-01/index.jsx) marcadores encontrados"
+
+echo -e "\n=== PRÓXIMOS PASSOS ==="
+echo "1. Acesse http://localhost:5000/estoque"
+echo "2. Verifique se os breadcrumbs duplicados foram removidos"
+echo "3. Confirme se o header tem a mesma altura do Financiamento"
+echo "4. Teste responsividade"
+=== STATUS DOS SERVIÇOS ===
+✅ React App: http://localhost:5000/ (funcionando)
+✅ Preview Build: http://localhost:4173/ (rodando)
+❌ Production Server: Erro de rota (path-to-regexp)
+
+=== VERIFICAR SE HÁ PROBLEMA NAS ROTAS ===
+48:const EstoqueTestePage = lazy(() => import("./pages/estoque/EstoqueTestePage"));
+61:const EstoqueSite = lazy(() => import("./pages/estoque/EstoqueSite"));
+62:const EstoqueAdmin = lazy(() => import("./pages/estoque/EstoqueAdmin"));
+114:              <Route path="estoque" element={<EstoqueLayout />}>
+118:                path="estoque/:identifier" 
+
+=== TESTAR A PÁGINA ESTOQUE ===
+🌐 Acesse: http://localhost:5000/estoque
+📝 Use o React App (porta 5000) que está funcionando
+
+=== VERIFICAR ESTRUTURA ATUAL DO ESTOQUE ===
+Layout: import { Outlet } from "react-router-dom";
+import Header1 from "@/components/headers/Header1";
+Página: 2 marcadores encontrados
+
+=== PRÓXIMOS PASSOS ===
+1. Acesse http://localhost:5000/estoque
+2. Verifique se os breadcrumbs duplicados foram removidos
+3. Confirme se o header tem a mesma altura do Financiamento
+4. Teste responsividade
+~/workspace$ echo "=== 1. VERIFICAR ARQUIVO .REPLIT ==="
+cat .replit
+
+echo -e "\n=== 2. CRIAR/ATUALIZAR .REPLIT PARA MAPEAR PORTAS CORRETAMENTE ==="
+cat > .replit << 'EOF'
+run = "npm run dev"
+entrypoint = "src/main.jsx"
+
+[nix]
+channel = "stable-24_11"
+
+[deployment]
+run = ["sh", "-c", "npm run preview"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 4173
+externalPort = 4173
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[env]
+PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin:$PATH"
+EOF
+
+echo -e "\n=== 3. VERIFICAR REPLIT.NIX ==="
+ls replit.nix 2>/dev/null && echo "✅ replit.nix existe" || echo "⚠️ replit.nix não encontrado"
+
+echo -e "\n=== 4. REINICIAR O SERVIDOR DE DESENVOLVIMENTO ==="
+pkill -f "vite" 2>/dev/null || true
+sleep 2
+
+echo -e "\n=== 5. STATUS FINAL ==="
+echo "✅ .replit configurado com mapeamento de portas"
+echo "✅ Porta 5000 → 80 (principal)"
+echo "✅ Porta 4173 → 4173 (preview)"
+echo "✅ Porta 3001 → 3001 (API)"
+echo ""
+echo "🔄 Clique em 'Stop' e depois 'Run' no topo do Replit"
+echo "🌐 Depois abra o webview ou use a URL externa"
+=== 1. VERIFICAR ARQUIVO .REPLIT ===
+run = "npm run dev"
+
+modules = ["nodejs-20", "python-3.11"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["imagemagick"]
+
+[deployment]
+build = "npm install && npm run build"
+run   = "node deploy-server.js"
+publicDir = "dist"
+deploymentTarget = "autoscale"
+
+[[deployment.ports]]
+localPort = 80
+externalPort = 80
+
+ignorePaths = ["**/node_modules/**", "**/.git/**", "documentation/**", "node_modules/.cache/**"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "React App"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Production Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Preview Build"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "API Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Generate SEO Files"
+
+[[workflows.workflow]]
+name = "React App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Production Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node serve-production.js"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Preview Build"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run build && npm run preview"
+waitForPort = 4173
+
+[[workflows.workflow]]
+name = "API Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node api-server.js"
+waitForPort = 3001
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "Generate SEO Files"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/generate-sitemap.js"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 80
+externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 8081
+
+[[ports]]
+localPort = 4173
+externalPort = 4200
+
+[[ports]]
+localPort = 4174
+externalPort = 5173
+
+[[ports]]
+localPort = 4175
+externalPort = 6000
+
+[[ports]]
+localPort = 4176
+externalPort = 8000
+
+[[ports]]
+localPort = 4177
+externalPort = 8080
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 5001
+externalPort = 3000
+
+[[ports]]
+localPort = 5002
+externalPort = 3001
+
+[[ports]]
+localPort = 5003
+externalPort = 6800
+
+[[ports]]
+localPort = 5004
+externalPort = 8008
+
+[[ports]]
+localPort = 9005
+externalPort = 3002
+
+[[ports]]
+localPort = 9006
+externalPort = 3003
+
+=== 2. CRIAR/ATUALIZAR .REPLIT PARA MAPEAR PORTAS CORRETAMENTE ===
+
+=== 3. VERIFICAR REPLIT.NIX ===
+⚠️ replit.nix não encontrado
+
+=== 4. REINICIAR O SERVIDOR DE DESENVOLVIMENTO ===
+
+=== 5. STATUS FINAL ===
+✅ .replit configurado com mapeamento de portas
+✅ Porta 5000 → 80 (principal)
+✅ Porta 4173 → 4173 (preview)
+✅ Porta 3001 → 3001 (API)
+
+🔄 Clique em 'Stop' e depois 'Run' no topo do Replit
+🌐 Depois abra o webview ou use a URL externa

@@ -1,0 +1,77 @@
+~/workspace$ echo "=== VERIFICAR TAMANHO DO ARQUIVO ATUAL ==="
+ls -la src/pages/estoque/EstoqueSite.jsx
+
+echo -e "\n=== MOSTRAR INÍCIO DO ARQUIVO ATUAL ==="
+head -50 src/pages/estoque/EstoqueSite.jsx
+
+echo -e "\n=== VERIFICAR SE TEM A ESTRUTURA PAGE-HERO ==="
+grep -n "page-hero\|breadcrumb\|container py-5" src/pages/estoque/EstoqueSite.jsx | head -5
+
+echo -e "\n=== COMPARAR COM O BACKUP ==="
+echo "Arquivo atual: $(wc -l src/pages/estoque/EstoqueSite.jsx)"
+echo "Arquivo backup: $(wc -l src/pages/estoque/EstoqueSite.jsx.bak)"
+
+[2]+  Stopped                 cd /home/runner/workspace && npm run dev
+=== VERIFICAR TAMANHO DO ARQUIVO ATUAL ===
+-rw-r--r-- 1 runner runner 4989 Aug 23 17:38 src/pages/estoque/EstoqueSite.jsx
+
+=== MOSTRAR INÍCIO DO ARQUIVO ATUAL ===
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useFilters } from "../../contexts/FilterContext";
+import { VehicleImage } from "../../components/common/OptimizedImage";
+import BrandLogo from "../../components/BrandLogo";
+import StaticSEO from "../../components/seo/StaticSEO";
+import Header1 from "../../components/headers/Header1";
+import Footer1 from "../../components/footers/Footer1";
+import FixedBottomMenu from "../../components/common/FixedBottomMenu";
+import "../../styles/brand-logo.css";
+import "../../styles/overrides.css";
+
+export default function EstoqueSite() {
+  const { updateFilters } = useFilters();
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const { db } = await import("../../firebase/config");
+        const { collection, getDocs } = await import("firebase/firestore");
+        const vehiclesRef = collection(db, "veiculos");
+        const querySnapshot = await getDocs(vehiclesRef);
+        const vehiclesList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setVehicles(vehiclesList);
+      } catch (err) {
+        console.error("Erro ao carregar veículos:", err);
+        setError("Erro ao carregar veículos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVehicles();
+  }, [updateFilters]);
+
+  const formatPrice = (price) =>
+    !price || price === 0
+      ? "Consulte"
+      : new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(price);
+
+=== VERIFICAR SE TEM A ESTRUTURA PAGE-HERO ===
+68:      <section className="page-hero layout-radius">
+71:            <nav id="bc-estoque" aria-label="breadcrumb" className="breadcrumb">
+
+=== COMPARAR COM O BACKUP ===
+Arquivo atual: 140 src/pages/estoque/EstoqueSite.jsx
+Arquivo backup: 639 src/pages/estoque/EstoqueSite.jsx.bak
+~/workspace$ 

@@ -1,0 +1,64 @@
+-/* (REMOVER) — isso afetou todas as páginas internas */
+-.boxcar-header.header-style-v1.style-two.inner-header {
+-  padding-top: 16px;
+-  padding-bottom: 16px;
+-  min-height: 76px;
+-}
+
+ /* 2) Colar o hero/breadcrumb no header para páginas do ESTOQUE */
+-#estoque-main > .breadcrumb-one:first-child,
+-#estoque-main > .page-hero:first-child,
+-#estoque-main > section.page-hero:first-child {
++.page-estoque #estoque-main > .breadcrumb-one:first-child,
++.page-estoque #estoque-main > .page-hero:first-child,
++.page-estoque #estoque-main > section.page-hero:first-child {
+   margin-top: 0 !important;
+   padding-top: 24px !important;
+ }
+
+-#estoque-main .breadcrumb-one h1,
+-#estoque-main .page-hero h1 {
++.page-estoque #estoque-main .breadcrumb-one h1,
++.page-estoque #estoque-main .page-hero h1 {
+   margin-top: 0 !important;
+   line-height: 1.15;
+ }
+
+-#estoque-main .breadcrumb-one .shape,
+-#estoque-main .page-hero .shape,
+-#estoque-main .curve {
++.page-estoque #estoque-main .breadcrumb-one .shape,
++.page-estoque #estoque-main .page-hero .shape,
++.page-estoque #estoque-main .curve {
+   margin-top: -8px;
+ }
+
++/* Header interno — AJUSTE SÓ NO ESTOQUE */
++.page-estoque .boxcar-header.header-style-v1.style-two.inner-header.estoque-header {
++  padding-top: 16px;
++  padding-bottom: 16px;
++  min-height: 76px;
++}
++
+ @media (max-width: 767px) {
+-  .boxcar-header.header-style-v1.style-two.inner-header {
+-    padding-top: 12px;
+-    padding-bottom: 12px;
+-    min-height: 64px;
+-  }
+-
+-  #estoque-main > .breadcrumb-one:first-child,
+-  #estoque-main > .page-hero:first-child,
+-  #estoque-main > section.page-hero:first-child {
++  .page-estoque .boxcar-header.header-style-v1.style-two.inner-header.estoque-header {
++    padding-top: 12px;
++    padding-bottom: 12px;
++    min-height: 64px;
++  }
++
++  .page-estoque #estoque-main > .breadcrumb-one:first-child,
++  .page-estoque #estoque-main > .page-hero:first-child,
++  .page-estoque #estoque-main > section.page-hero:first-child {
+     padding-top: 16px !important;
+   }
+ }

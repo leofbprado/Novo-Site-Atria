@@ -1,0 +1,61 @@
+O que está interferindo no cabeçalho
+
+Header1 força estilo via inline quando “é página interna”
+No Header1.jsx, a flag isInnerPage = white || headerClass.includes('inner-header').
+Quando true, ele aplica inline + !important:
+background: #1a2332, position: sticky, etc. (linhas 9–20, 63–67, 131–141).
+Isso sempre vence o CSS de critical.css que tenta deixar transparente.
+
+O layout do estoque injeta o gatilho de “página interna”
+EstoqueLayout.jsx renderiza o próprio <Header1> com
+headerClass="... inner-header ..." (linhas 12–14).
+Só isso já ativa isInnerPage e, portanto, o fundo azul/escuro.
+
+Risco de header duplicado em páginas de listagem
+Como há muitos usos diretos de <Header1> em páginas, é fácil ter layout + página rendendo header ao mesmo tempo (duplicidade).
+Precisamos garantir que, na rota do estoque, só o layout (ou só a página) renderize Header1 — nunca os dois.
+
+Por que “mexemos e nada muda”
+
+O critical.css tenta background: transparent, mas perde para o inline com !important do Header1.
+
+Alterar só CSS raramente surtirá efeito enquanto inner-header/white estiverem presentes.
+
+Prova nos seus resultados (resumo)
+
+Header1.jsx: isInnerPage + background: #1a2332 !important (várias linhas).
+
+EstoqueLayout.jsx: renderiza <Header1 ... inner-header ...> (linhas 12–14).
+
+critical.css: define .boxcar-header { ... background: transparent; }, mas é sobreposto.
+
+Caminho seguro para “desamarrar” a interferência (mínimo de mudança)
+
+Escolha um dono do header por rota (layout ou página). Para o estoque:
+
+Single source of truth (recomendado agora): deixe o Header1 apenas no EstoqueLayout.jsx e remova qualquer Header1 interno nas páginas-filhas do estoque (se houver).
+Cheque rapidamente:
+
+grep -RIn "<\s*Header1" src/pages/car-listings/inventory-list-01
+
+
+Se aparecer, remova esse <Header1> da página (o layout já cuida).
+
+Defina a aparência desejada do estoque:
+
+Header escuro (igual Financiamento): mantenha inner-header ou passe white no EstoqueLayout (já está assim; é por isso que fica escuro).
+
+Header transparente (como Home): remova inner-header e white do <Header1> no EstoqueLayout.
+Isso desativa isInnerPage e o inline some, liberando o CSS transparente.
+
+Observação: Evite mexer na lógica do Header1.jsx agora (ela afeta o site todo). Resolver via props/classes no layout é mais previsível e não quebra outras páginas.
+
+Check de sanidade pós-ajuste
+
+Em /estoque, verifique que só um <Header1> é renderizado (layout ou página, nunca ambos).
+
+Sem inner-header/white, o console/Styles não deve mais mostrar background: #1a2332 inline.
+
+O critical.css volta a valer e o header fica como esperado.
+
+Se quiser, te passo um micro-patch cirúrgico só no EstoqueLayout.jsx (uma linha removendo inner-header) e, em paralelo, um grep para garantir que nenhuma página do estoque ainda injete <Header1>.

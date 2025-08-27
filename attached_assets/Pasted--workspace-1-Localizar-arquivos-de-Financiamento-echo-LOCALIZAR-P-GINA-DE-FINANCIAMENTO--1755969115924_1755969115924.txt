@@ -1,0 +1,66 @@
+~/workspace$ # 1. Localizar arquivos de Financiamento
+echo "=== LOCALIZAR PÁGINA DE FINANCIAMENTO ==="
+find src -name "*financ*" -type f | grep -E "\.(jsx|js)$"
+
+echo -e "\n=== VER ESTRUTURA DA PÁGINA DE FINANCIAMENTO ==="
+cat src/pages/otherPages/Financing.jsx | head -50
+
+echo -e "\n=== VER ESTRUTURA ATUAL DA PÁGINA DE ESTOQUE ==="
+cat src/pages/estoque/EstoqueSite.jsx | head -50
+=== LOCALIZAR PÁGINA DE FINANCIAMENTO ===
+
+=== VER ESTRUTURA DA PÁGINA DE FINANCIAMENTO ===
+cat: src/pages/otherPages/Financing.jsx: No such file or directory
+
+=== VER ESTRUTURA ATUAL DA PÁGINA DE ESTOQUE ===
+import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { useSearchParams } from "react-router-dom";
+import { useFilters } from '../../contexts/FilterContext';
+import { VehicleImage } from '../../components/common/OptimizedImage';
+import BrandLogo from '../../components/BrandLogo';
+import StaticSEO from '../../components/seo/StaticSEO';
+import '../../styles/brand-logo.css';
+// TESTE: Removendo componentes pesados temporariamente
+// import HeaderInventory from '../../components/headers/HeaderInventory';
+// import Footer1 from '../../components/footers/Footer1';
+// import FixedBottomMenu from '../../components/common/FixedBottomMenu';
+// REMOVIDO: import SideFilterLite from '../../components/carListings/SideFilterLite';
+
+export default function EstoqueSite() {
+  const [searchParams] = useSearchParams();
+  const [vehicles, setVehicles] = useState([]);
+  const [filteredVehicles, setFilteredVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { updateFilters, toggleArrayFilter } = useFilters();
+  const [customTags, setCustomTags] = useState([]);
+  const [filters, setFilters] = useState({
+    search: '',
+    brands: [],
+    models: [],
+    yearMin: null,
+    yearMax: null,
+    priceMin: null,
+    priceMax: null,
+    mileageMax: null,
+    fuel: [],
+    transmission: []
+  });
+
+  // Get brand and vehicle type from URL parameters
+  const urlBrand = searchParams.get('marca');
+  const urlTipo = searchParams.get('tipo');
+
+  // Função para obter tag personalizada por nome
+  const getCustomTagByName = (tagName) => {
+    return customTags.find(tag => tag.nome === tagName);
+  };
+
+  // Carregar tags personalizadas do Firebase
+  const loadCustomTags = async () => {
+    try {
+      // Usar o mesmo sistema de import que loadVehicles para evitar duplicação
+      const { db } = await import('../../firebase/config');
+      const { collection, getDocs } = await import('firebase/firestore');
+~/workspace$ 

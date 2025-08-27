@@ -1,10 +1,9 @@
-import "../../styles/overrides.css";
 import React from "react";
 import { Link } from "react-router-dom";
 
 const AboutNew = () => {
   return (
-    <div className="page-sobre" data-page="sobre">
+    <>
       {/* Hero Section */}
       <section className="inventory-section pb-0 layout-radius">
         <div className="boxcar-container">
@@ -16,7 +15,7 @@ const AboutNew = () => {
                 <li aria-current="page">Sobre a Átria</li>
               </ol>
             </nav>
-            <h1 className="title">Sobre a Átria Veículos</h1>
+            <h2 className="title">Sobre a Átria Veículos</h2>
           </div>
         </div>
       </section>
@@ -292,11 +291,17 @@ const AboutNew = () => {
       `}</style>
       
       {/* Hero padronizado com breadcrumb e título */}
+      <PageHero
+        breadcrumbId="bc-sobre"
+        breadcrumbItems={[{ text: "Sobre a Átria" }]}
+        title="Sobre a Átria Veículos"
+        className="page-hero-section"
+      />
       
       <section className="about-section-main pb-0">
         <div className="boxcar-container">
+          {/* Lead text abaixo do PageHero */}
           <div className="boxcar-title wow fadeInUp" style={{ textAlign: 'left', paddingTop: '20px' }}>
-            <h1 className="title">Sobre a Átria Veículos</h1>
             <p className="lead-text" style={{ textAlign: 'left', margin: '0' }}>
               Desde 2014, a Átria Veículos transforma sonhos em realidade sobre rodas
             </p>
@@ -437,7 +442,7 @@ const AboutNew = () => {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 };
 

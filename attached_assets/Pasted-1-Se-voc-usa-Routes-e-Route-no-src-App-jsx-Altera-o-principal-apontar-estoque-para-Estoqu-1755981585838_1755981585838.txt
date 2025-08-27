@@ -1,0 +1,119 @@
+1) Se você usa <Routes> e <Route> no src/App.jsx
+Alteração principal (apontar “/estoque” para EstoqueSite)
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -1,12 +1,19 @@
+ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+-import InventoryListPage1 from "@/pages/car-listings/inventory-list-01";
++import { Suspense, lazy } from "react";
++const EstoqueSite = lazy(() => import("@/pages/estoque/EstoqueSite.jsx"));
+ 
+ export default function App() {
+   return (
+-    <BrowserRouter>
+-      <Routes>
+-        <Route path="/estoque" element={<InventoryListPage1 />} />
++    <BrowserRouter>
++      <Suspense fallback={<div className="min-h-screen p-8">Carregando estoque…</div>}>
++        <Routes>
++          {/* Agora /estoque carrega o componente novo */}
++          <Route path="/estoque" element={<EstoqueSite />} />
++
++          {/* Redireciona rotas antigas para /estoque */}
++          <Route path="/car-listings/inventory-list-01" element={<Navigate to="/estoque" replace />} />
++          <Route path="/carros" element={<Navigate to="/estoque" replace />} />
+ 
+-        {/* ...demais rotas */}
+-      </Routes>
+-    </BrowserRouter>
++          {/* ...demais rotas */}
++        </Routes>
++      </Suspense>
++    </BrowserRouter>
+   );
+ }
+
+2) Se você usa Data Router (createBrowserRouter) no src/routes.jsx (ou src/App.jsx)
+--- a/src/routes.jsx
++++ b/src/routes.jsx
+@@ -1,12 +1,22 @@
+-import { createBrowserRouter } from "react-router-dom";
+-import InventoryListPage1 from "@/pages/car-listings/inventory-list-01";
++import { createBrowserRouter, Navigate } from "react-router-dom";
++import { lazy } from "react";
++const EstoqueSite = lazy(() => import("@/pages/estoque/EstoqueSite.jsx"));
+ import RootLayout from "@/layouts/RootLayout";
+ 
+ export const router = createBrowserRouter([
+   {
+     element: <RootLayout />,
+     children: [
+-      { path: "/estoque", element: <InventoryListPage1 /> },
++      // Agora /estoque usa o componente novo
++      { path: "/estoque", element: <EstoqueSite /> },
++
++      // Redireciona rotas antigas para /estoque
++      { path: "/car-listings/inventory-list-01", element: <Navigate to="/estoque" replace /> },
++      { path: "/carros", element: <Navigate to="/estoque" replace /> },
+ 
+       // ...demais rotas
+     ],
+   },
+ ]);
+
+
+Se existir um EstoqueLayout, mantenha a hierarquia assim:
+
+{
+  element: <RootLayout />,
+  children: [
+    {
+      path: "/estoque",
+      element: <EstoqueLayout />,
+      children: [{ index: true, element: <EstoqueSite /> }],
+    },
+  ],
+}
+
+3) Remover duplicidades e imports antigos
+
+Procure por rotas antigas que ainda apontem para a página velha:
+
+Replit/VSCode: busque por inventory-list-01 e /estoque.
+
+Garanta que só exista uma definição exata para path="/estoque".
+Em React Router v6, se houver duas rotas idênticas, a primeira pode prevalecer.
+
+Se o menu lateral (hambúrguer) ou algum link apontar para o caminho antigo, troque para "/estoque".
+
+Exemplos de ajustes em links:
+
+- <Link to="/car-listings/inventory-list-01">Estoque</Link>
++ <Link to="/estoque">Estoque</Link>
+
+4) Teste rápido (confirmação no console)
+
+No início do EstoqueSite.jsx adicione uma linha provisória:
+
+console.log("EstoqueSite MONTADO");
+
+
+Recarregue e navegue até /estoque.
+
+O console deve mostrar “EstoqueSite MONTADO” (e não mais InventoryListPage1(...)).
+
+5) Checklist anti-interferência
+
+ Layout/wrapper: se existir EstoqueLayout, ele não deve renderizar InventoryListPage1 internamente.
+
+ Redirects: não deixe nenhum Navigate mandando /estoque para o caminho antigo.
+
+ Links: todos os CTAs/botões de “Ver estoque” apontando para "/estoque".
+
+ Code-splitting: manter o lazy() e Suspense como no patch (melhora LCP e não quebra nada).
+
+ Ordem das rotas: em v6 a prioridade é por especificidade, mas evite duplicidades com o mesmo path.
+
+Se preferir, posso adaptar o patch exatamente ao seu arquivo (nome e caminho reais de EstoqueSite.jsx), mas com o diff acima você já corrige e valida em minutos.
+
+Contexto do projeto (Átria Veículos).

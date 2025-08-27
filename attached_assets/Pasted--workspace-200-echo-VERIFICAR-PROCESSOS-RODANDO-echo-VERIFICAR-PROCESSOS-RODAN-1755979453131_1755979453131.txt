@@ -1,0 +1,40 @@
+~/workspace$ ^[[200~echo "=== VERIFICAR PROCESSOS RODANDO ==="
+echo \"=== VERIFICAR PROCESSOS RODANDO ===\"bash: echo: command not found
+~/workspace$ ps aux | grep -E "(node|proxy|python)"
+runner      58  0.0  0.0 1032244 54980 pts/0   Ssl+ 19:52   0:00 /nix/store/lz7iav1hd92jbv44zf2rdd7b2mj23536-nodejs-20.19.3/bin/node api-server.js
+runner     165  0.4  0.1 12090744 129424 pts/2 Sl+  19:52   0:03 /nix/store/lz7iav1hd92jbv44zf2rdd7b2mj23536-nodejs-20.19.3/bin/node /home/runner/workspace/node_modules/.bin/vite
+runner     196  0.3  0.0 926428 28204 pts/2    Sl+  19:52   0:02 /home/runner/workspace/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.21.5 --ping
+runner     301  0.0  0.1 11796232 81572 pts/3  Sl+  19:53   0:00 /nix/store/lz7iav1hd92jbv44zf2rdd7b2mj23536-nodejs-20.19.3/bin/node /home/runner/workspace/node_modules/.bin/vite preview
+runner     312  0.0  0.0 721488 11524 pts/3    Sl+  19:53   0:00 /home/runner/workspace/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.21.5 --ping
+runner    1071  0.0  0.0   6940  2560 pts/5    S+   20:03   0:00 /nix/store/8b4vn1iyn6kqiisjvlmv67d1c0p3j6wj-gnugrep-3.11/bin/grep --color=auto -E (node|proxy|python)
+~/workspace$ 
+~/workspace$ echo -e "\n=== VERIFICAR SE EXISTE PROXY SERVER ==="
+
+=== VERIFICAR SE EXISTE PROXY SERVER ===
+~/workspace$ ls -la proxy-server.js
+-rw-r--r-- 1 runner runner 408 Aug 23 16:57 proxy-server.js
+~/workspace$ 
+~/workspace$ echo -e "\n=== VERIFICAR PORTA 80 ==="
+
+=== VERIFICAR PORTA 80 ===
+~/workspace$ netstat -tlnp | grep ":80 "
+bash: netstat: command not found
+~/workspace$ 
+~/workspace$ echo -e "\n=== TENTAR REINICIAR PROXY SERVER ==="
+
+=== TENTAR REINICIAR PROXY SERVER ===
+~/workspace$ nohup node proxy-server.js > proxy.log 2>&1 &
+[1] 1144
+~/workspace$ 
+~/workspace$ echo -e "\n=== AGUARDAR UM POUCO E VERIFICAR ==="
+
+=== AGUARDAR UM POUCO E VERIFICAR ===
+~/workspace$ sleep 3
+~/workspace$ ps aux | grep proxy
+runner    1144  8.7  0.1 1305404 65932 pts/5   Sl   20:03   0:00 /nix/store/lz7iav1hd92jbv44zf2rdd7b2mj23536-nodejs-20.19.3/bin/node proxy-server.js
+runner    1197  0.0  0.0   6940  2816 pts/5    S+   20:03   0:00 /nix/store/8b4vn1iyn6kqiisjvlmv67d1c0p3j6wj-gnugrep-3.11/bin/grep --color=auto proxy
+~/workspace$ 
+~/workspace$ echo -e "\n=== VERIFICAR LOG DO PROXY ==="
+
+=== VERIFICAR LOG DO PROXY ===
+~/workspace$ cat proxy.log~

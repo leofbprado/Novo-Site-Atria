@@ -1,0 +1,14 @@
+~/workspace$ # 3b. VERIFICAR PROCESSOS (comando corrigido)
+ps aux | grep -E "node|vite" | grep -v grep | head -10
+runner    4585  0.0  0.0   2936  1664 pts/1    S+   16:23   0:00 sh -c vite --host 0.0.0.0 --port 5000
+runner    4586  0.4  0.1 12086496 129632 pts/1 Sl+  16:23   0:05 /nix/store/lz7iav1hd92jbv44zf2rdd7b2mj23536-nodejs-20.19.3/bin/node /home/runner/workspace/node_modules/.bin/vite --host 0.0.0.0 --port 5000
+runner    4597  0.0  0.0 722448 14568 pts/1    Sl+  16:23   0:00 /home/runner/workspace/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.21.5 --ping
+runner    4656  0.0  0.1 1123356 70748 ?       Sl   16:26   0:00 /nix/store/r1smm331j6crqs02mn986g06f7cpbggh-nodejs-22.17.0/bin/node /nix/store/rb3xzs9lwfnlz6f3ij7b3yqy6xdw9zj9-typescript-language-server-4.3.3/lib/node_modules/typescript-language-server/lib/cli.mjs --stdio
+runner    4667  0.1  0.2 1095004 154824 ?      Sl   16:26   0:01 /nix/store/r1smm331j6crqs02mn986g06f7cpbggh-nodejs-22.17.0/bin/node /nix/store/jm6f250skx57gnfbisb8kkqgkc0ph9p5-typescript-5.8.3/lib/node_modules/typescript/lib/tsserver.js --serverMode partialSemantic --useInferredProjectPerProjectRoot --disableAutomaticTypingAcquisition --cancellationPipeName /tmp/d533450939f2dde0c405d5e95f98267f/tscancellation* --locale en --validateDefaultNpmLocation --useNodeIpc
+runner    4668  3.3  1.1 1721996 778324 ?      Sl   16:26   0:40 /nix/store/r1smm331j6crqs02mn986g06f7cpbggh-nodejs-22.17.0/bin/node /nix/store/jm6f250skx57gnfbisb8kkqgkc0ph9p5-typescript-5.8.3/lib/node_modules/typescript/lib/tsserver.js --useInferredProjectPerProjectRoot --cancellationPipeName /tmp/691ce2dcaeb04078acf179a358c43ecb/tscancellation* --locale en --validateDefaultNpmLocation --useNodeIpc
+runner    4681  0.0  0.1 1061280 111336 ?      Sl   16:26   0:00 /nix/store/r1smm331j6crqs02mn986g06f7cpbggh-nodejs-22.17.0/bin/node /nix/store/jm6f250skx57gnfbisb8kkqgkc0ph9p5-typescript-5.8.3/lib/node_modules/typescript/lib/typingsInstaller.js --globalTypingsCacheLocation /home/runner/workspace/.cache/typescript/5.8 --typesMapLocation /nix/store/jm6f250skx57gnfbisb8kkqgkc0ph9p5-typescript-5.8.3/lib/node_modules/typescript/lib/typesMap.json --validateDefaultNpmLocation
+runner    6260  0.0  0.0   2936  1792 pts/0    S+   16:41   0:00 sh -c vite preview
+runner    6261  0.1  0.1 11858388 79528 pts/0  Sl+  16:41   0:00 /nix/store/lz7iav1hd92jbv44zf2rdd7b2mj23536-nodejs-20.19.3/bin/node /home/runner/workspace/node_modules/.bin/vite preview
+runner    6272  0.0  0.0 721936 11276 pts/0    Sl+  16:41   0:00 /home/runner/workspace/node_modules/@esbuild/linux-x64/bin/esbuild --service=0.21.5 --ping
+~/workspace$ # 3c. VERIFICAR TODAS AS PORTAS ATIVAS
+netstat -tlnp 2>/dev/null | grep LISTEN | head -20

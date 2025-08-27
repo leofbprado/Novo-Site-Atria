@@ -67,7 +67,6 @@ if (currentPath.startsWith('/estoque')) {
 
 // ⚡ CRITICAL: Only load essential CSS immediately
 import './styles/accessibility-fixes.css';
-import './styles/overrides.css'; // High-specificity overrides
 
 // ✅ CONSOLE FILTER: Defer non-critical utilities
 const loadConsoleFilter = () => import('./utils/consoleFilter.js');
@@ -264,3 +263,5 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </StrictMode>
 );
+
+import "@/styles/overrides.css";

@@ -1,0 +1,360 @@
+~/workspace$ # 5. Ver apenas o hero/header do LoanCalculator
+echo "=== VER APENAS O HERO DO LoanCalculator ==="
+cat src/components/otherPages/LoanCalculator.jsx | grep -A 15 "page-hero\|breadcrumb\|<h1"
+
+echo -e "\n=== VER HERO ATUAL DO EstoqueSite ==="
+cat src/pages/estoque/EstoqueSite.jsx | grep -B 5 -A 20 "return ("
+
+echo -e "\n=== VER CSS DO PAGE-HERO COMPLETO ==="
+cat src/styles/overrides.css
+=== VER APENAS O HERO DO LoanCalculator ===
+        .financing-page-breadcrumb {
+          padding: 0 !important;
+          background: transparent !important;
+          margin-bottom: 0 !important;
+        }
+        .financing-page-breadcrumb .boxcar-title-three {
+          margin-bottom: 0 !important;
+        }
+        .financing-page-breadcrumb .boxcar-title-three .breadcrumb {
+          margin-bottom: 20px !important;
+        }
+        .financing-page-breadcrumb .boxcar-title-three .title {
+          font-size: 40px !important;
+          font-weight: 700 !important;
+          color: #1a2332 !important;
+          margin: 0 !important;
+          line-height: 1.2 !important;
+        }
+        .financing-content {
+          margin-top: 30px !important;
+          padding-top: 0 !important;
+        }
+        
+        /* Hide any "Loan Calculator" text that might appear */
+        .financing-page-breadcrumb::before,
+        .financing-page-breadcrumb *::before,
+        .boxcar-title-three::before,
+        .boxcar-title-three *::before {
+          content: none !important;
+          display: none !important;
+        }
+        
+        /* Ensure no gray subtitle text appears */
+        .financing-page-breadcrumb .subtitle,
+        .financing-page-breadcrumb .sub-title,
+        .financing-page-breadcrumb .page-subtitle {
+          display: none !important;
+        }
+        
+        .financing-tabs {
+          border-bottom: 2px solid #e2e8f0;
+          margin-bottom: 40px;
+        }
+        .financing-tabs .tab-button {
+          background: none;
+          border: none;
+          padding: 15px 30px;
+          font-size: 16px;
+          font-weight: 600;
+          color: #64748b;
+          cursor: pointer;
+--
+            <nav id="bc-financiamento" aria-label="breadcrumb" className="breadcrumb">
+              <ol>
+                <li><Link to="/">Início</Link></li>
+                <li className="bc-sep" aria-hidden="true">/</li>
+                <li aria-current="page">Financiamento</li>
+              </ol>
+            </nav>
+            <h2 className="title">Financiamento de Veículos</h2>
+          </div>
+          
+          {/* Content within the same section like inventory page */}
+          <div className="financing-content">
+          {/* Hero Section */}
+          <div className="row mb-5">
+            <div className="col-12 text-center">
+              <h3 style={{ fontSize: '28px', color: '#1a2332', marginBottom: '15px' }}>
+
+=== VER HERO ATUAL DO EstoqueSite ===
+  const handleViewDetails = (vehicle) => {
+    // Redirecionar para página de detalhes
+    window.location.href = `/veiculo-individual/${vehicle.id}`;
+  };
+
+  return (
+    <>
+      <StaticSEO page="estoque" />
+
+      {/* HEADER PÚBLICO LIMPO */}
+      <div style={{ 
+        backgroundColor: '#1a2332', 
+        color: 'white', 
+        padding: '20px 0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
+      }}>
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto', 
+          padding: '0 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+--
+                      })();
+                      
+                      // Renderizar apenas se for tag válida
+                      if (!validTag) return null;
+
+                      return (
+                        <div className="absolute top-4 left-4">
+                          <span 
+                            className="text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg"
+                            style={{ 
+                              backgroundColor: validTag.cor || '#10B981',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                          >
+                            {validTag.nome}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Vehicle Info */}
+                  <div className="p-6">
+                    {/* Title with Brand Logo */}
+                    <div className="mb-3">
+                      <div className="flex items-center gap-3 mb-1">
+
+=== VER CSS DO PAGE-HERO COMPLETO ===
+/* High-specificity overrides for breadcrumb layouts */
+
+/* Estoque */
+
+/* zera qualquer separador herdado do tema */
+#bc-estoque li::before,
+#bc-estoque li::after { content:none !important; }
+
+/* layout em linha, sem folgas estranhas */
+#bc-estoque ol{
+  display:flex !important;
+  align-items:baseline !important;
+  gap:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+}
+#bc-estoque ol > li{
+  display:inline-flex !important;
+  align-items:baseline !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+/* separador explícito (preto) */
+#bc-estoque .bc-sep{
+  display:inline-block !important;
+  margin:0 8px !important;
+  color:#0f172a !important; /* preto */
+  line-height:1;
+}
+
+/* Veículo */
+
+/* zera pseudo-separadores do tema */
+#bc-veiculo li::before, #bc-veiculo li::after{ content:none!important; }
+
+/* inline, sem folgas estranhas */
+#bc-veiculo ol{
+  display:flex!important; align-items:baseline!important;
+  gap:0!important; margin:0!important; padding:0!important; list-style:none!important;
+}
+#bc-veiculo ol>li{
+  display:inline-flex!important; align-items:baseline!important;
+  margin:0!important; padding:0!important;
+}
+
+/* separador explícito (preto) */
+#bc-veiculo .bc-sep{
+  display:inline-block!important; margin:0 8px!important; color:#0f172a!important; line-height:1;
+}
+
+/* Página de veículo usa o PageHero padrão agora */
+.vehicle-page{ padding-top: 0 !important; }
+
+/* garante que nada no header reapareça */
+header nav[aria-label="breadcrumb"], .boxcar-header nav[aria-label="breadcrumb"]{ display:none !important; }
+
+/* Financiamento breadcrumb styling */
+/* zera separadores herdados e folgas */
+#bc-financiamento li::before,
+#bc-financiamento li::after { content:none !important; margin:0 !important; }
+#bc-financiamento ol{
+  display:flex !important; align-items:baseline !important;
+  gap:0 !important; margin:0 !important; padding:0 !important; list-style:none !important;
+}
+#bc-financiamento ol > li{
+  display:inline-flex !important; align-items:baseline !important;
+  margin:0 !important; padding:0 !important;
+}
+#bc-financiamento ol > li a{ display:inline !important; }
+
+/* único separador, com espaçamento padrão */
+#bc-financiamento .bc-sep{
+  display:inline-block !important;
+  margin:0 8px !important;     /* ajuste fino do espaço */
+  color:#0f172a !important;    /* preto */
+  line-height:1;
+}
+
+/* mata qualquer "divider" legado que gere barra extra */
+#bc-financiamento .divider,
+#bc-financiamento .sep,
+#bc-financiamento [role="separator"]{ display:none !important; }
+
+/* Vender Meu Carro breadcrumb styling */
+/* zera separadores herdados e folgas */
+#bc-vender li::before,
+#bc-vender li::after { content:none !important; margin:0 !important; }
+
+#bc-vender ol{
+  display:flex !important;
+  align-items:baseline !important;
+  gap:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+}
+
+#bc-vender ol > li{
+  display:inline-flex !important;
+  align-items:baseline !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+#bc-vender .bc-sep{
+  display:inline-block !important;
+  margin:0 8px !important;   /* mesmo espaçamento padrão */
+  color:#0f172a !important;  /* preto */
+  line-height:1;
+}
+
+/* mata qualquer "divider" legado */
+#bc-vender .divider,
+#bc-vender .sep,
+#bc-vender [role="separator"]{ display:none !important; }
+
+/* Blog breadcrumb styling */
+#bc-blog li::before, #bc-blog li::after{ content:none!important; margin:0!important; }
+#bc-blog ol{ display:flex!important; align-items:baseline!important; gap:0!important; margin:0!important; padding:0!important; list-style:none!important; }
+#bc-blog ol>li{ display:inline-flex!important; align-items:baseline!important; margin:0!important; padding:0!important; }
+#bc-blog .bc-sep{ display:inline-block!important; margin:0 8px!important; color:#0f172a!important; line-height:1; }
+
+/* ESCOPADO só para Sobre a Átria */
+.about-page{ --about-hero-lift: -48px; }                  /* ajuste fino: -32 a -64px */
+
+/* card branco do topo (breadcrumb + H1 ficam dentro dele) */
+#about-hero{
+  background:#fff;
+  margin-top: var(--about-hero-lift);                     /* sobe e diminui a faixa azul */
+  padding: 40px 24px 80px;                                /* respiro interno ajustado */
+  box-shadow: 0 8px 24px rgba(16,24,40,.06);
+  overflow:hidden;
+}
+
+/* Ajuste para alinhar com footer - usa curvas padrão do site */
+#about-hero.layout-radius {
+  border-bottom-left-radius: var(--curve-desktop) !important;
+  border-bottom-right-radius: var(--curve-desktop) !important;
+}
+
+/* responsivo: sobe um pouco menos no mobile */
+@media (max-width: 767px){
+  .about-page{ --about-hero-lift: -28px; }
+}
+
+/* breadcrumb com espaçamento enxuto (padrão Átria) */
+#bc-sobre{ margin: 0 0 8px; }
+#bc-sobre ol{ display:flex; gap:0; margin:0; padding:0; list-style:none; align-items:baseline; }
+#bc-sobre li{ display:inline-flex; margin:0; padding:0; }
+#bc-sobre .bc-sep{ display:inline-block; margin:0 8px; color:#0f172a; line-height:1; }
+#bc-sobre li::before, #bc-sobre li::after, #bc-sobre li::marker{ content:none; }
+/* Link color consistent with other pages - not blue */
+#bc-sobre a{ color: #666; text-decoration: none; }
+#bc-sobre a:hover{ color: #1A75FF; }
+
+/* Remove breadcrumbs duplicados do header */
+header nav[aria-label="breadcrumb"],
+.boxcar-header nav[aria-label="breadcrumb"] { 
+  display:none !important; 
+}
+
+/* esconde qualquer breadcrumb fora do nosso id nesta página */
+.vehicle-page nav[aria-label="breadcrumb"]:not(#bc-veiculo){display:none!important;}
+/* se alguém meteu breadcrumb no header, some também */
+header nav[aria-label="breadcrumb"], .boxcar-header nav[aria-label="breadcrumb"]{display:none!important;}
+
+/* compensa o header fixo sem afetar outras páginas */
+.vehicle-page{ padding-top:88px; }             /* ajuste para o seu header real */
+
+/* ========= PADRÃO GLOBAL ========= */
+:root{
+  /* curva padrão do site */
+  --curve-desktop: 40px;
+  --curve-mobile: 28px;
+
+  /* altura do cabeçalho (ajuste fino se preciso) */
+  --header-h-desktop: 96px;   /* 88–104px, escolha o seu */
+  --header-h-mobile: 64px;
+}
+
+/* 1) Compensação do cabeçalho (sem mexer no header) */
+@media (min-width:768px){
+  main.page{ padding-top: var(--header-h-desktop) !important; }
+}
+@media (max-width:767px){
+  main.page{ padding-top: var(--header-h-mobile) !important; }
+}
+
+/* 2) Curvas consistentes no topo dos cards "hero" de cada página
+      (estoque, veículo, blog, sobre, financiamento, vender etc.) */
+section[id$="-hero"],
+.page-hero,
+.hero-card,
+#about-hero,
+#finance-hero,
+#bc-estoque:where(:not(html)) ~ h1,      /* fallback p/ páginas que não usam -hero */
+#bc-veiculo:where(:not(html)) ~ h1{
+  border-top-left-radius: var(--curve-desktop) !important;
+  border-top-right-radius: var(--curve-desktop) !important;
+  background: #fff;               /* garante o card branco */
+}
+@media (max-width:767px){
+  section[id$="-hero"],
+  .page-hero,
+  .hero-card,
+  #about-hero{
+    border-top-left-radius: var(--curve-mobile) !important;
+    border-top-right-radius: var(--curve-mobile) !important;
+  }
+}
+
+/* 3) Curva no FOOTER (topo do rodapé) */
+footer, .site-footer, #footer{
+  border-top-left-radius: var(--curve-desktop) !important;
+  border-top-right-radius: var(--curve-desktop) !important;
+  overflow: hidden;               /* evita vazar o fundo escuro nas curvas */
+}
+@media (max-width:767px){
+  footer, .site-footer, #footer{
+    border-top-left-radius: var(--curve-mobile) !important;
+    border-top-right-radius: var(--curve-mobile) !important;
+  }
+}~/workspace$ 

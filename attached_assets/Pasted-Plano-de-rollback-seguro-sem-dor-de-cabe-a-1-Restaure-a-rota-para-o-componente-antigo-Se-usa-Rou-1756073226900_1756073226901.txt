@@ -1,0 +1,105 @@
+Plano de rollback seguro (sem dor de cabeça)
+1) Restaure a rota para o componente antigo
+Se usa <Routes>/<Route> em src/App.jsx
+
+Remova o lazy()/Suspense do EstoqueSite (se só serviam a ele).
+
+Volte a importar o antigo e a rota:
+
+- import { Suspense, lazy } from "react";
+- const EstoqueSite = lazy(() => import("@/pages/estoque/EstoqueSite.jsx"));
++ import InventoryListPage1 from "@/pages/car-listings/inventory-list-01";
+
+...
+- <Suspense fallback={<div className="min-h-screen p-8">Carregando estoque…</div>}>
+-   <Routes>
+-     <Route path="/estoque" element={<EstoqueSite />} />
+-     {/* redirecionamentos adicionados para o novo */}
+-     {/* <Route path="/car-listings/inventory-list-01" element={<Navigate to="/estoque" replace />} /> */}
+-     {/* <Route path="/carros" element={<Navigate to="/estoque" replace />} /> */}
+-     {/* ... */}
+-   </Routes>
+- </Suspense>
++ <Routes>
++   <Route path="/estoque" element={<InventoryListPage1 />} />
++   {/* (opcional) mantenha quaisquer redirecionamentos originais que já existiam antes */}
++   {/* ...demais rotas */}
++ </Routes>
+
+Se usa createBrowserRouter em src/routes.jsx
+- import { createBrowserRouter, Navigate } from "react-router-dom";
+- import { lazy } from "react";
+- const EstoqueSite = lazy(() => import("@/pages/estoque/EstoqueSite.jsx"));
++ import { createBrowserRouter } from "react-router-dom";
++ import InventoryListPage1 from "@/pages/car-listings/inventory-list-01";
+...
+- { path: "/estoque", element: <EstoqueSite /> },
+- { path: "/car-listings/inventory-list-01", element: <Navigate to="/estoque" replace /> },
+- { path: "/carros", element: <Navigate to="/estoque" replace /> },
++ { path: "/estoque", element: <InventoryListPage1 /> },
+
+
+Se você criou um EstoqueLayout só para o novo, remova essa entrada de rota (ou mantenha, mas sem usá-la em /estoque).
+
+2) Limpe referências e redirecionamentos do “novo”
+
+Rodar buscas rápidas:
+
+rg -n "EstoqueSite|/estoque-v2" src
+rg -n "Navigate\\s+to=.*(estoque|inventory-list-01)" src
+
+
+Apague redirecionamentos que você adicionou especificamente para a migração.
+
+Corrija qualquer <Link to="..."> que tenha sido alterado durante o teste (o certo é to="/estoque").
+
+3) Valide visual e console (runtime)
+
+Hard reload com cache desativado (DevTools > Network > Disable cache).
+
+Console deve voltar a mostrar algo como:
+
+at InventoryListPage1 (.../inventory-list-01/index.jsx:17:38)
+
+Listings1 na árvore do React DevTools.
+
+Layout volta ao “antigo”: mesma barra, grid, etc.
+
+4) Remova o novo componente com cautela
+
+Antes de excluir o arquivo, garanta que nada mais o importa:
+
+rg -n "EstoqueSite" src
+
+
+Se não houver referências:
+
+Apague src/pages/estoque/EstoqueSite.jsx (e a pasta /estoque se existir só pra ele).
+
+Remova CSS/JS auxiliares criados só para o novo (ex.: estoque-site.css|scss, helpers).
+Busque por:
+
+rg -n "estoque-site|page-hero|breadcrumb" src
+
+
+Se preferir manter para testes futuros, renomeie para EstoqueSite.draft.jsx ou mova para src/_archive/EstoqueSite.jsx em vez de deletar.
+
+5) (Opcional) Git/Versionamento
+
+Faça um commit “Rollback: /estoque -> InventoryListPage1; remove EstoqueSite”.
+
+Se tiver criado commits de migração, você também pode git revert <commit_da_mudança_da_rota>.
+
+6) Checklist final
+
+ /estoque renderiza o layout antigo (InventoryListPage1 + Listings1).
+
+ Nenhum erro 404/500 no console.
+
+ Sem chunks JS do novo (Network não carrega EstoqueSite).
+
+ Links/menus apontam para /estoque.
+
+ SEO/Schema/GA4/Pixel intactos (nada de ID duplicado em layouts).
+
+Se quiser, deixo um “switch” para no futuro ativar o novo por query param (?newEstoque=1) ou env flag — mas agora já está tudo pronto para voltar 100% ao estoque antigo com segurança.

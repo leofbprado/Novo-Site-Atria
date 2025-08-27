@@ -1,0 +1,74 @@
+1) src/layouts/EstoqueLayout.jsx
+
+(garante o wrapper e uma classe para escopo do header)
+
+ import { Outlet } from "react-router-dom";
+ import Header1 from "@/components/headers/Header1";
+ import Footer1 from "@/components/footers/Footer1";
+
+ export default function EstoqueLayout() {
+   return (
+-    <>
+-      <Header1
+-        headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1"
+-        white={true}
+-      />
+-      <main id="estoque-main">
+-        <Outlet />
+-      </main>
+-      <Footer1 />
+-    </>
++    <div className="page-estoque" data-page="estoque">
++      <Header1
++        headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1 estoque-header"
++        white={true}
++      />
++      <main id="estoque-main">
++        <Outlet />
++      </main>
++      <Footer1 />
++    </div>
+   );
+ }
+
+2) src/styles/overrides.css
+
+(reverte o global e aplica só no estoque)
+
+-/* (REMOVER se existir) — isso afetava TODAS as páginas internas */
+-.boxcar-header.header-style-v1.style-two.inner-header {
+-  padding-top: 16px;
+-  padding-bottom: 16px;
+-  min-height: 76px;
+-}
+
++/* ESTOQUE — header azul com altura padronizada, sem afetar outras rotas */
++.page-estoque .boxcar-header.header-style-v1.style-two.inner-header.estoque-header {
++  padding-top: 16px;
++  padding-bottom: 16px;
++  min-height: 76px;
++}
+
++/* ESTOQUE — aproxima o H1/curva do header */
++.page-estoque #estoque-main > .breadcrumb-one:first-child,
++.page-estoque #estoque-main > .page-hero:first-child,
++.page-estoque #estoque-main > section.page-hero:first-child {
++  margin-top: 0 !important;
++  padding-top: 24px !important; /* ajuste fino sob header sticky */
++}
++.page-estoque #estoque-main .breadcrumb-one h1,
++.page-estoque #estoque-main .page-hero h1 { margin-top: 0 !important; line-height: 1.15; }
++.page-estoque #estoque-main .breadcrumb-one .shape,
++.page-estoque #estoque-main .page-hero .shape,
++.page-estoque #estoque-main .curve { margin-top: -8px; }
+
++@media (max-width: 767px) {
++  .page-estoque .boxcar-header.header-style-v1.style-two.inner-header.estoque-header {
++    padding-top: 12px; padding-bottom: 12px; min-height: 64px;
++  }
++  .page-estoque #estoque-main > .breadcrumb-one:first-child,
++  .page-estoque #estoque-main > .page-hero:first-child,
++  .page-estoque #estoque-main > section.page-hero:first-child {
++    padding-top: 16px !important;
++  }
++}

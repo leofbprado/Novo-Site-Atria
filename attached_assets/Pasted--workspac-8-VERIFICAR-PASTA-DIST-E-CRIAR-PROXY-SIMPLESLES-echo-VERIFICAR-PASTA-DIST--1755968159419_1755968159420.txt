@@ -1,0 +1,94 @@
+});~/workspac# 8. VERIFICAR PASTA DIST E CRIAR PROXY SIMPLESLES
+echo "=== VERIFICAR PASTA DIST ==="
+ls -la dist/ 2>/dev/null || echo "Pasta dist não existe"
+
+echo -e "\n=== CRIAR SERVIDOR PROXY SIMPLES ==="
+cat > proxy-server.js << 'EOF'
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const app = express();
+const PORT = 80;
+
+// Proxy tudo para o Vite na porta 5000
+app.use('/', createProxyMiddleware({
+  target: 'http://localhost:5000',
+  changeOrigin: true,
+  ws: true
+}));
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Proxy rodando na porta ${PORT} -> redirecionando para 5000`);
+});
+EOF
+
+echo "=== INSTALAR DEPENDÊNCIA DO PROXY ==="
+npm install http-proxy-middleware --save-dev
+=== VERIFICAR PASTA DIST ===
+total 7024
+drwxr-xr-x 1 runner runner    1482 Aug 23 16:41 .
+drwxr-xr-x 1 runner runner   10640 Aug 23 16:54 ..
+drwxr-xr-x 1 runner runner    9306 Aug 23 16:41 assets
+-rw-r--r-- 1 runner runner    2595 Aug 23 16:41 atria-logo.avif
+-rw-r--r-- 1 runner runner    8737 Aug 23 16:41 atria-logo.png
+-rw-r--r-- 1 runner runner     682 Aug 23 16:41 banner-fallback.jpg
+-rw-r--r-- 1 runner runner     682 Aug 23 16:41 banner-fallback.webp
+-rw------- 1 runner runner 1172331 Aug 23 16:41 banner-video-final.mp4
+-rw------- 1 runner runner 2315309 Aug 23 16:41 banner-video-latest.mp4
+-rw------- 1 runner runner 1533596 Aug 23 16:41 banner-video.mp4
+-rw------- 1 runner runner 1172331 Aug 23 16:41 banner-video-new.mp4
+-rw-r--r-- 1 runner runner  316692 Aug 23 16:41 calculator-image-backup.png
+-rw-r--r-- 1 runner runner   21729 Aug 23 16:41 calculator-image.png
+-rw-r--r-- 1 runner runner    5031 Aug 23 16:41 critical-inline.html
+-rw-r--r-- 1 runner runner    3573 Aug 23 16:41 critical-inline.min.html
+drwxr-xr-x 1 runner runner     450 Aug 23 16:41 css
+-rw-r--r-- 1 runner runner    4951 Aug 23 16:41 custom.css
+-rw------- 1 runner runner    2007 Aug 23 16:41 favicon.ico
+drwxr-xr-x 1 runner runner    1098 Aug 23 16:41 fonts
+-rw-r--r-- 1 runner runner   22141 Aug 23 16:41 hatch-button-backup-backup.png
+-rw-r--r-- 1 runner runner    3035 Aug 23 16:41 hatch-button-backup.png
+-rw-r--r-- 1 runner runner    3035 Aug 23 16:41 hatch-button.png
+drwxr-xr-x 1 runner runner    1622 Aug 23 16:41 images
+-rw-r--r-- 1 runner runner   24974 Aug 23 16:41 index.html
+drwxr-xr-x 1 runner runner      46 Aug 23 16:41 js
+-rw------- 1 runner runner     212 Aug 23 16:41 main.css
+-rw-r--r-- 1 runner runner     706 Aug 23 16:41 manifest.json
+-rw-r--r-- 1 runner runner    2134 Aug 23 16:41 non-critical-consolidated.css
+-rw-r--r-- 1 runner runner     887 Aug 23 16:41 optimized-fontawesome.css
+-rw-r--r-- 1 runner runner   23125 Aug 23 16:41 pickup-button-backup-backup.png
+-rw-r--r-- 1 runner runner    3181 Aug 23 16:41 pickup-button-backup.png
+-rw-r--r-- 1 runner runner    3181 Aug 23 16:41 pickup-button.png
+-rw-r--r-- 1 runner runner  345673 Aug 23 16:41 processed_vehicles.json
+-rw-r--r-- 1 runner runner     381 Aug 23 16:41 robots.txt
+-rw-r--r-- 1 runner runner   23349 Aug 23 16:41 sedan-button-backup.png
+-rw-r--r-- 1 runner runner   23349 Aug 23 16:41 sedan-button-new-backup-backup.png
+-rw-r--r-- 1 runner runner    5296 Aug 23 16:41 sedan-button-new-backup.png
+-rw-r--r-- 1 runner runner    5296 Aug 23 16:41 sedan-button-new.png
+-rw-r--r-- 1 runner runner    5296 Aug 23 16:41 sedan-button.png
+-rw-r--r-- 1 runner runner    1675 Aug 23 16:41 sitemap.xml
+-rw-r--r-- 1 runner runner   23067 Aug 23 16:41 suv-button-backup-backup.png
+-rw-r--r-- 1 runner runner    3050 Aug 23 16:41 suv-button-backup.png
+-rw-r--r-- 1 runner runner    3050 Aug 23 16:41 suv-button.png
+-rw-r--r-- 1 runner runner    5793 Aug 23 16:41 sw.js
+
+=== CRIAR SERVIDOR PROXY SIMPLES ===
+=== INSTALAR DEPENDÊNCIA DO PROXY ===
+
+added 13 packages, and audited 424 packages in 3s
+
+69 packages are looking for funding
+  run `npm fund` for details
+
+4 vulnerabilities (1 low, 2 moderate, 1 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+~/workspace$ 

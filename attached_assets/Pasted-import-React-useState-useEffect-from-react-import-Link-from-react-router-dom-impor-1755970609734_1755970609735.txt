@@ -1,0 +1,141 @@
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useFilters } from "../../contexts/FilterContext";
+import { VehicleImage } from "../../components/common/OptimizedImage";
+import BrandLogo from "../../components/BrandLogo";
+import StaticSEO from "../../components/seo/StaticSEO";
+import Header1 from "../../components/headers/Header1";
+import Footer1 from "../../components/footers/Footer1";
+import FixedBottomMenu from "../../components/common/FixedBottomMenu";
+import "../../styles/brand-logo.css";
+import "../../styles/overrides.css";
+
+export default function EstoqueSite() {
+  const { updateFilters } = useFilters();
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const { db } = await import("../../firebase/config");
+        const { collection, getDocs } = await import("firebase/firestore");
+        const vehiclesRef = collection(db, "veiculos");
+        const querySnapshot = await getDocs(vehiclesRef);
+        const vehiclesList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setVehicles(vehiclesList);
+      } catch (err) {
+        console.error("Erro ao carregar veículos:", err);
+        setError("Erro ao carregar veículos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVehicles();
+  }, [updateFilters]);
+
+  const formatPrice = (price) =>
+    !price || price === 0
+      ? "Consulte"
+      : new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(price);
+
+  const formatKm = (km) =>
+    !km || km === 0
+      ? "0 km"
+      : new Intl.NumberFormat("pt-BR").format(km) + " km";
+
+  return (
+    <>
+      <StaticSEO page="estoque" />
+
+      {/* Header igual ao Financiamento */}
+      <Header1
+        headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1"
+        white={true}
+      />
+
+      {/* Hero Section igual ao Financiamento */}
+      <section className="page-hero layout-radius">
+        <div className="boxcar-container">
+          <div className="boxcar-title-three">
+            <nav id="bc-estoque" aria-label="breadcrumb" className="breadcrumb">
+              <ol>
+                <li>
+                  <Link to="/">Início</Link>
+                </li>
+                <li className="bc-sep" aria-hidden="true">
+                  /
+                </li>
+                <li aria-current="page">Estoque</li>
+              </ol>
+            </nav>
+            <h2 className="title">Estoque de Veículos</h2>
+          </div>
+        </div>
+      </section>
+
+      {/* Conteúdo do Estoque */}
+      <main className="estoque-content boxcar-container py-8">
+        {loading && <p>Carregando veículos...</p>}
+        {error && <p className="text-red-600">{error}</p>}
+
+        {!loading && !error && vehicles.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {vehicles.map((vehicle) => (
+              <div
+                key={vehicle.id}
+                className="bg-white rounded-xl shadow hover:shadow-lg transition-all overflow-hidden"
+              >
+                <div className="relative h-48 bg-gray-200">
+                  <VehicleImage
+                    vehicle={{
+                      ...vehicle,
+                      photos:
+                        vehicle.photos ||
+                        vehicle.imagens ||
+                        [vehicle.imagem_capa].filter(Boolean),
+                    }}
+                    context="listing"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BrandLogo brand={vehicle.marca} size={24} />
+                    <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
+                      {vehicle.marca} {vehicle.modelo}
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 text-sm line-clamp-1">
+                    {vehicle.versao}
+                  </p>
+                  <div className="flex justify-between text-sm text-gray-500 mt-2">
+                    <span>{vehicle.ano_modelo}</span>
+                    <span>{formatKm(vehicle.km)}</span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 mt-3">
+                    {formatPrice(vehicle.preco)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+
+      <Footer1 parentClass="boxcar-footer footer-style-one v1 cus-st-1" />
+      <FixedBottomMenu />
+    </>
+  );
+}

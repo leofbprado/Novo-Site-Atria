@@ -1,0 +1,73 @@
+~/workspace$ # 3. Comparar estruturas das páginas
+echo "=== ESTRUTURA DA PÁGINA SIMULAR FINANCIAMENTO ==="
+cat src/pages/otherPages/loan-calculator/index.jsx | head -80
+
+echo -e "\n=== ESTRUTURA DO COMPONENTE AboutNew (que usa page-hero) ==="
+cat src/components/otherPages/AboutNew.jsx | grep -A 20 "page-hero"
+
+echo -e "\n=== VER CSS DO PAGE-HERO ==="
+grep -r "\.page-hero" src/styles --include="*.css" -A 5 | head -30
+=== ESTRUTURA DA PÁGINA SIMULAR FINANCIAMENTO ===
+import Footer1 from "@/components/footers/Footer1";
+import Header1 from "@/components/headers/Header1";
+import LoanCalculator from "@/components/otherPages/LoanCalculator";
+import FixedBottomMenu from "@/components/common/FixedBottomMenu";
+
+import React from "react";
+
+import MetaComponent from "@/components/common/Metacomonent";
+const metadata = {
+  title: "Simular Financiamento || Átria Veículos",
+  description: "Simulador de financiamento - Átria Veículos",
+};
+
+export default function LoanCalculatorPage() {
+  return (
+    <>
+      <MetaComponent meta={metadata} />
+      <Header1 headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1" white={true} />
+      <LoanCalculator />
+      <Footer1 parentClass="boxcar-footer footer-style-one v1 cus-st-1" />
+      <FixedBottomMenu />
+    </>
+  );
+}
+
+=== ESTRUTURA DO COMPONENTE AboutNew (que usa page-hero) ===
+      <section className="page-hero page-hero-section" aria-label="Sobre a Átria Veículos">
+        <div className="container">
+          <nav className="breadcrumb" id="bc-sobre" aria-label="breadcrumb">
+            <ol>
+              <li><a href="/">Início</a></li>
+              <li className="active">Sobre a Átria</li>
+            </ol>
+          </nav>
+          <h1>Sobre a Átria Veículos</h1>
+        </div>
+      </section>
+      
+      <section className="about-section-main pb-0">
+        <div className="boxcar-container">
+          <div className="boxcar-title wow fadeInUp" style={{ textAlign: 'left', paddingTop: '20px' }}>
+            <p className="lead-text" style={{ textAlign: 'left', margin: '0' }}>
+              Desde 2014, a Átria Veículos transforma sonhos em realidade sobre rodas
+            </p>
+          </div>
+
+          {/* História e Visão */}
+
+=== VER CSS DO PAGE-HERO ===
+src/styles/overrides.css:.page-hero,
+src/styles/overrides.css-.hero-card,
+src/styles/overrides.css-#about-hero,
+src/styles/overrides.css-#finance-hero,
+src/styles/overrides.css-#bc-estoque:where(:not(html)) ~ h1,      /* fallback p/ páginas que não usam -hero */
+src/styles/overrides.css-#bc-veiculo:where(:not(html)) ~ h1{
+--
+src/styles/overrides.css:  .page-hero,
+src/styles/overrides.css-  .hero-card,
+src/styles/overrides.css-  #about-hero{
+src/styles/overrides.css-    border-top-left-radius: var(--curve-mobile) !important;
+src/styles/overrides.css-    border-top-right-radius: var(--curve-mobile) !important;
+src/styles/overrides.css-  }
+~/workspace$ 
