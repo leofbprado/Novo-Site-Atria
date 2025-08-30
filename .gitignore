@@ -11,3 +11,5 @@ build/
 *.log
 /*.tar.gz
 /*.zip
+.replit-checkpoints/
+npm-debug.log*

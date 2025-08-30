@@ -1,267 +1,242 @@
 import React, { StrictMode } from "react";
-import ReactDOM, { createRoot } from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { firebaseLazy } from '@/utils/firebaseLazy';
+import { firebaseLazy } from "@/utils/firebaseLazy";
 
-// ✅ FIREBASE CONDITIONAL LOADING
+// CSS crítico primeiro
+import "./styles/accessibility-fixes.css";
+import "@/styles/overrides.css";
+
+// Disponibiliza React global (se algum script externo precisar)
+window.React = React;
+
+/** =========================
+ *  Util: carregar CSS assíncrono
+ *  ========================= */
+const loadCSS = (href, media = "all") => {
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "style";
+  link.href = href;
+  link.onload = function () {
+    this.onload = null;
+    this.rel = "stylesheet";
+    this.media = media;
+  };
+  // Fallback: se preload falhar, injeta stylesheet direto
+  link.onerror = function () {
+    const fallback = document.createElement("link");
+    fallback.rel = "stylesheet";
+    fallback.href = href;
+    fallback.media = media;
+    document.head.appendChild(fallback);
+  };
+  document.head.appendChild(link);
+  return link;
+};
+
+/** =========================
+ *  Firebase: inicialização condicional
+ *  ========================= */
 let firebaseInitialized = false;
-
 const initFirebase = (eager = false) => {
   if (firebaseInitialized) return;
   firebaseInitialized = true;
   firebaseLazy.init(eager ? { eager: true } : {});
 };
 
-// Check current route
+// Rota atual
 const currentPath = window.location.pathname;
 
-if (currentPath.startsWith('/estoque')) {
-  // Eager loading for inventory pages
+if (currentPath.startsWith("/estoque")) {
+  // Inventory: carrega cedo
   initFirebase(true);
 } else {
-  // Lazy loading for home page with user interaction triggers
+  // Home/outros: lazy com gatilhos
   const triggers = [];
-  
-  // Trigger 1: requestIdleCallback (fallback: window.load)
-  if ('requestIdleCallback' in window) {
+
+  // Defino cleanup antes dos handlers
+  const cleanup = () => {
+    triggers.forEach(([event, handler, capture]) => {
+      window.removeEventListener(event, handler, capture);
+    });
+  };
+
+  // 1) requestIdleCallback (fallback: load)
+  if ("requestIdleCallback" in window) {
     requestIdleCallback(() => initFirebase(), { timeout: 2000 });
   } else {
-    triggers.push(['load', () => initFirebase()]);
+    const onLoad = () => {
+      initFirebase();
+      window.removeEventListener("load", onLoad);
+    };
+    window.addEventListener("load", onLoad);
   }
-  
-  // Trigger 2: first focus or keydown on search field
+
+  // 2) foco/keydown no campo de busca
   const searchTrigger = (event) => {
     const searchInput = document.querySelector('input[name="q"], .hero input[type="search"]');
-    if (searchInput && (event.target === searchInput || searchInput.contains(event.target))) {
+    if (searchInput && (event.target === searchInput || searchInput.contains?.(event.target))) {
       initFirebase();
       cleanup();
     }
   };
-  triggers.push(['focus', searchTrigger, true]);
-  triggers.push(['keydown', searchTrigger, true]);
-  
-  // Trigger 3: first scroll with scrollY > 150
+  triggers.push(["focus", searchTrigger, true]);
+  triggers.push(["keydown", searchTrigger, true]);
+
+  // 3) primeiro scroll > 150px
   const scrollTrigger = () => {
     if (window.scrollY > 150) {
       initFirebase();
       cleanup();
     }
   };
-  triggers.push(['scroll', scrollTrigger]);
-  
-  // Cleanup function to remove all listeners
-  const cleanup = () => {
-    triggers.forEach(([event, handler, capture]) => {
-      window.removeEventListener(event, handler, capture);
-    });
-  };
-  
-  // Add all listeners
+  triggers.push(["scroll", scrollTrigger]);
+
+  // Registrar listeners
   triggers.forEach(([event, handler, capture]) => {
     window.addEventListener(event, handler, capture);
   });
 }
 
-// ⚡ CRITICAL: Only load essential CSS immediately
-import './styles/accessibility-fixes.css';
+/** =========================
+ *  Defer de recursos não críticos
+ *  ========================= */
+const loadConsoleFilter = () => import("./utils/consoleFilter.js");
 
-// ✅ CONSOLE FILTER: Defer non-critical utilities
-const loadConsoleFilter = () => import('./utils/consoleFilter.js');
+const loadDeferredCSS = () => {
+  // carregamento pós-first-paint
+  setTimeout(() => {
+    // CSS internos via import() para code-splitting
+    import("./index.css").catch((err) => console.warn("⚠️ Erro ao carregar CSS principal:", err));
+    import("./styles/calllead.css").catch((err) => console.warn("⚠️ Erro ao carregar Call-to-Call CSS:", err));
+    import("./styles/safari-fixes.css").catch((err) => console.warn("⚠️ Erro ao carregar Safari fixes:", err));
 
+    // CSS externos
+    loadCSS("https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.css");
 
+    console.log("✅ CSS não-crítico carregado de forma assíncrona");
+  }, 50);
+};
 
-// ✅ ENSURE REACT IS AVAILABLE GLOBALLY (fix for useLayoutEffect error)
-window.React = React;
-window.ReactDOM = ReactDOM;
-
-// ✅ FIX REACT ERROR #130: useLayoutEffect SSR compatibility
-if (typeof window === "undefined") {
-  React.useLayoutEffect = React.useEffect;
-}
-
-// ✅ GLOBAL ERROR HANDLER para React Error #130
-window.addEventListener('error', (event) => {
-  if (event.error && event.error.message && event.error.message.includes('130')) {
-    console.warn('🔧 React Error #130 detectado globalmente e suprimido');
-    event.preventDefault();
-    event.stopPropagation();
-    return false;
-  }
-});
-
-// ✅ UNHANDLED REJECTION HANDLER
-window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason && event.reason.message && event.reason.message.includes('130')) {
-    console.warn('🔧 React Error #130 em Promise rejeitada - tratado');
-    event.preventDefault();
-    return false;
-  }
-});
-
-// ✅ SERVICE WORKER: Registrar para cache e performance
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('✅ Service Worker registrado:', registration.scope);
-      })
-      .catch(error => {
-        console.warn('⚠️ Erro ao registrar Service Worker:', error);
-      });
-  });
-}
-
-
-
-// ⚡ RESOURCE DEFERRER: Load non-critical resources after page load
-import('./utils/resourceDeferrer').then(() => {
-  console.log('✅ Resource deferrer loaded');
-}).catch(() => {
-  console.warn('⚠️ Resource deferrer failed to load');
-});
-
-// ⚡ DEFER jQuery loading - only load when needed for slick-carousel
+// jQuery sob demanda (ex.: slick)
 const loadJQuery = async () => {
   if (!window.jQuery) {
-    const { default: $ } = await import('jquery');
+    const { default: $ } = await import("jquery");
     window.jQuery = window.$ = $;
-    console.log('✅ jQuery carregado sob demanda');
+    console.log("✅ jQuery carregado sob demanda");
   }
   return window.jQuery;
 };
 
-// ✅ OTIMIZAÇÃO CRÍTICA: Carregamento diferido dinâmico do CSS
-const loadDeferredCSS = () => {
-  // Função utilitária para carregar CSS de forma assíncrona
-  const loadCSS = (href, media = 'all') => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'style';
-    link.href = href;
-    link.onload = function() {
-      this.onload = null;
-      this.rel = 'stylesheet';
-      this.media = media;
-    };
-    
-    // Fallback para navegadores sem suporte a preload
-    link.onerror = function() {
-      const fallback = document.createElement('link');
-      fallback.rel = 'stylesheet';
-      fallback.href = href;
-      fallback.media = media;
-      document.head.appendChild(fallback);
-    };
-    
-    document.head.appendChild(link);
-    
-    // Noscript fallback
-    const noscript = document.createElement('noscript');
-    const noScriptLink = document.createElement('link');
-    noScriptLink.rel = 'stylesheet';
-    noScriptLink.href = href;
-    noscript.appendChild(noScriptLink);
-    document.head.appendChild(noscript);
-    
-    return link;
-  };
-
-  // Carregar CSS principal da aplicação após First Paint
-  setTimeout(() => {
-    // Importar CSS principal dinamicamente
-    import('./index.css').then(() => {
-      console.log('✅ CSS principal da aplicação carregado');
-    }).catch(err => {
-      console.warn('⚠️ Erro ao carregar CSS principal:', err);
-    });
-    
-    // Importar CSS do call-to-call lead
-    import('./styles/calllead.css').then(() => {
-      console.log('✅ Call-to-Call lead CSS carregado');
-    }).catch(err => {
-      console.warn('⚠️ Erro ao carregar Call-to-Call CSS:', err);
-    });
-    
-    // Importar Safari fixes CSS
-    import('./styles/safari-fixes.css').then(() => {
-      console.log('✅ Safari fixes CSS carregado');
-    }).catch(err => {
-      console.warn('⚠️ Erro ao carregar Safari fixes:', err);
-    });
-    
-    // CSS externos não-críticos
-    loadCSS('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.css');
-    
-    console.log('✅ CSS não-crítico carregado de forma assíncrona');
-  }, 50); // Delay mínimo para garantir First Paint
-};
-
-// ⚡ PERFORMANCE OPTIMIZATION: Stagger non-critical loads
 const initializeApp = async () => {
-  // Load console filter after first paint
+  // Console filter depois do first paint
   setTimeout(() => {
-    loadConsoleFilter().then(() => {
-      console.log('✅ Console filter carregado');
-    }).catch(err => console.warn('⚠️ Erro ao carregar console filter:', err));
+    loadConsoleFilter().catch((err) => console.warn("⚠️ Erro ao carregar console filter:", err));
   }, 100);
-  
-  // Load deferred CSS
+
   loadDeferredCSS();
-  
-  // ✅ SLICK CSS LOADER SEGURO
-  const loadSlickCSS = () => {
-    loadCSS('/css/slick.css');
-    loadCSS('/css/slick-theme.css');
-    console.log('✅ Slick CSS carregado');
-  };
-  
-  // ✅ JQUERY + SLICK LOADER COM GUARDAS
+
+  // jQuery + slick CSS (usa util global loadCSS)
   setTimeout(() => {
     loadJQuery()
       .then(() => {
-        loadSlickCSS();
-        console.log('✅ jQuery + Slick CSS prontos');
+        loadCSS("/css/slick.css");
+        loadCSS("/css/slick-theme.css");
+        console.log("✅ jQuery + Slick CSS prontos");
       })
-      .catch(err => console.warn('⚠️ Erro ao preload jQuery:', err));
+      .catch((err) => console.warn("⚠️ Erro ao preload jQuery:", err));
   }, 2000);
-  
-  // Initialize Firebase lazily
+
+  // Firebase após LCP / idle
   const initFirebaseAfterLCP = () => {
-    if (typeof window !== 'undefined' && window.location?.pathname?.startsWith('/estoque')) {
+    if (window.location?.pathname?.startsWith("/estoque")) {
       firebaseLazy.init({ eager: true });
     } else {
       setTimeout(() => firebaseLazy.init({ eager: false }), 3000);
     }
   };
   window.requestIdleCallback ? requestIdleCallback(initFirebaseAfterLCP) : setTimeout(initFirebaseAfterLCP, 2000);
+
+  // Defer de recursos utilitários
+  import("./utils/resourceDeferrer")
+    .then(() => console.log("✅ Resource deferrer loaded"))
+    .catch(() => console.warn("⚠️ Resource deferrer failed to load"));
 };
 
-// Execute after DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
+// DOM pronto → inicializações não críticas
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp, { once: true });
 } else {
   requestAnimationFrame(initializeApp);
 }
 
-// Export utilities for other components
-window.loadJQuery = loadJQuery;
+/** =========================
+ *  Error Boundary para evitar white screen
+ *  ========================= */
+class RootErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error("💥 Root error:", error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
+          <h2>Ops! Algo deu errado ao carregar.</h2>
+          <p style={{ opacity: 0.7, fontSize: 14 }}>
+            O erro foi capturado para debug. A UI não deve ficar em branco.
+          </p>
+          <pre style={{ whiteSpace: "pre-wrap", background: "#f6f8fa", padding: 12, borderRadius: 8 }}>
+            {String(this.state.error?.message || this.state.error)}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
-      <HelmetProvider>
-        <App />
-      </HelmetProvider>
-    </BrowserRouter>
-  </StrictMode>
-);
+/** =========================
+ *  Montagem do React
+ *  ========================= */
+const rootEl = document.getElementById("root");
+if (!rootEl) {
+  console.error("❌ Elemento #root não encontrado em index.html");
+} else {
+  createRoot(rootEl).render(
+    <StrictMode>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <HelmetProvider>
+          <RootErrorBoundary>
+            <App />
+          </RootErrorBoundary>
+        </HelmetProvider>
+      </BrowserRouter>
+    </StrictMode>
+  );
+}
 
-import "@/styles/overrides.css";
+// SW apenas em produção
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => console.log("✅ Service Worker registrado:", reg.scope))
+      .catch((err) => console.warn("⚠️ Erro ao registrar Service Worker:", err));
+  });
+}

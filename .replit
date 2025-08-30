@@ -1,5 +1,5 @@
 modules = ["nodejs-20", "web"]
-run = "npm run dev -- --host --port 5000 --strictPort"
+run = "bash -lc 'npm run dev'"
 
 [nix]
 channel = "stable-25_05"
@@ -12,5 +12,51 @@ run   = ["npm", "run", "start"]
 publicDir = "dist"
 
 [[ports]]
-localPort = 5000
-externalPort = 5000
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 3002
+externalPort = 3002
+
+[[ports]]
+localPort = 3003
+externalPort = 3003
+
+[[ports]]
+localPort = 3004
+externalPort = 3000
+
+[workflows]
+runButton = "run"
+
+[[workflows.workflow]]
+name = "Dev (Vite)"
+mode = "sequential"
+author = 42011154
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash -lc 'fuser -k 3000/tcp 3001/tcp 3002/tcp 3003/tcp || true; PORT=3000 npm run dev'"
+
+[[workflows.workflow]]
+name = "Run"
+mode = "sequential"
+author = 42011154
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev -- --host 0.0.0.0 --port $PORT"
+
+[[workflows.workflow]]
+name = "run"
+mode = "sequential"
+author = 42011154
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run preview -- --host 0.0.0.0 --port 3000"

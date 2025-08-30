@@ -98,6 +98,9 @@ const CrederePluginSolution = lazy(() =>
   import("./pages/others/CrederePluginSolution")
 );
 
+// 🔎 Diagnóstico
+const FirestoreHealth = lazy(() => import("./pages/_health"));
+
 function App() {
   const { pathname } = useLocation();
 
@@ -196,6 +199,9 @@ function App() {
                   <Route path="/credere-setup" element={<CredereSetupHelper />} />
                   <Route path="/credere-solucao" element={<CredereFinalSolution />} />
                   <Route path="/credere-plugin" element={<CrederePluginSolution />} />
+
+                  {/* 🔎 DIAGNÓSTICO */}
+                  <Route path="/_health" element={<FirestoreHealth />} />
 
                   {/* NOT FOUND */}
                   <Route path="/404" element={<NotFoundPage />} />
