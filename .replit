@@ -32,7 +32,7 @@ localPort = 3004
 externalPort = 3000
 
 [workflows]
-runButton = "run"
+runButton = "Run (Preview)"
 
 [[workflows.workflow]]
 name = "Dev (Vite)"
@@ -41,22 +41,40 @@ author = 42011154
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bash -lc 'fuser -k 3000/tcp 3001/tcp 3002/tcp 3003/tcp || true; PORT=3000 npm run dev'"
+args = "bash -lc '   pkill -f vite || true   nohup npm run dev -- --host 0.0.0.0 --port 3000 >/tmp/dev.log 2>&1 &   sleep 2   tail -n +1 -v /tmp/dev.log | sed -n \"1,120p\" '"
 
 [[workflows.workflow]]
-name = "Run"
+name = "Run (Preview)"
 mode = "sequential"
 author = 42011154
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev -- --host 0.0.0.0 --port $PORT"
+args = "bash -lc '   pkill -f \"vite preview\" || true   npm run build   nohup npm run preview -- --host 0.0.0.0 --port 3000 >/tmp/preview.log 2>&1 &   sleep 2   tail -n +1 -v /tmp/preview.log | sed -n \"1,120p\" '"
 
 [[workflows.workflow]]
-name = "run"
+name = "Rollback Latest"
 mode = "sequential"
 author = 42011154
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run preview -- --host 0.0.0.0 --port 3000"
+args = "bash -lc './scripts/rollback-latest.sh'"
+
+[[workflows.workflow]]
+name = "List Checkpoints"
+mode = "sequential"
+author = 42011154
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash -lc './scripts/list-checkpoints.sh'"
+
+[[workflows.workflow]]
+name = "Checkpoint Now"
+mode = "sequential"
+author = 42011154
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash -lc './scripts/checkpoint.sh \"checkpoint via botão\"'"
