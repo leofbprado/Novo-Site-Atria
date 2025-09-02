@@ -164,7 +164,6 @@
 }
 .page-estoque .breadcrumb-one nav.breadcrumbs a:hover{ text-decoration:underline; }
 
-/* Título com a mesma tipografia do “Últimas do Blog” (40px, 700, #1a2332) */
 .page-estoque .breadcrumb-one h1{
   margin:0 0 12px 0 !important;
   color:#1a2332 !important;
@@ -184,10 +183,11 @@
 .page-estoque .breadcrumb-one nav.breadcrumbs ol li + li::before{
   content:"/"; color:#cbd5e1; margin:0 8px;
 }
-.page-estoque .breadcrumb-one nav.breadcrumbs a{ color:#405FF2; text-decoration:none; font-weight:500; }
+.page-estoque .breadcrumb-one nav.breadcrumbs a{
+  color:#405FF2; text-decoration:none; font-weight:500;
+}
 .page-estoque .breadcrumb-one nav.breadcrumbs a:hover{ text-decoration:underline; }
 
-/* H1 harmonizado */
 .page-estoque .breadcrumb-one h1{
   margin:0 0 12px 0 !important;
   color:#1a2332 !important; font-size:40px !important; font-weight:700 !important;
@@ -200,7 +200,7 @@
 .page-estoque .inventory-grid{ margin-top:12px; }
 .page-estoque .inventory-content .boxcar-container{ padding-top:0 !important; }
 
-/* ===== ESTOQUE — Normalizar breadcrumb via aria-label ===== */
+/* ===== ESTOQUE — Normalizar breadcrumb ===== */
 .page-estoque nav[aria-label="breadcrumb"] { display: none !important; }
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] { display: block !important; }
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] ol {
@@ -212,7 +212,7 @@
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a { color: #405FF2; text-decoration: none; font-weight: 500; }
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a:hover { text-decoration: underline; }
 
-/* ===== GLOBAL: Breadcrumb linear ===== */
+/* ===== GLOBAL: Breadcrumb linear (não afeta o Estoque que usa .breadcrumbs) ===== */
 nav.breadcrumb{ display:block; margin:0; padding:0; }
 nav.breadcrumb ol{
   display:flex; align-items:center; gap:8px;
@@ -223,20 +223,45 @@ nav.breadcrumb ol li + li::before{ content:"/"; color:#cbd5e1; margin:0 8px; }
 nav.breadcrumb a{ color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px; }
 nav.breadcrumb a:hover{ text-decoration:underline; }
 
-/* Remover barras duplicadas */
+/* ===== GLOBAL: remover barras duplicadas no breadcrumb ===== */
 nav.breadcrumb .bc-sep { display: none !important; }
 
-/* ===== BREADCRUMB GLOBAL (normalização) ===== */
+/* ===== BREADCRUMB GLOBAL (páginas com nav.breadcrumb) ===== */
 nav.breadcrumb { display:block; margin:0; padding:0; }
-nav.breadcrumb ol{ display:flex; align-items:center; list-style:none; margin:0; padding:0;
-  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b; }
+nav.breadcrumb ol{
+  display:flex; align-items:center;
+  list-style:none; margin:0; padding:0;
+  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
+}
 nav.breadcrumb ol li + li::before { content: none !important; }
 nav.breadcrumb .bc-sep { display:none !important; }
 nav.breadcrumb ol li:not(.bc-sep):not(:last-child)::after{ content:"/"; color:#cbd5e1; margin:0 8px; }
 nav.breadcrumb a{ color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px; }
 nav.breadcrumb a:hover{ text-decoration:underline; }
 
-/* ===== INTERNAS (exceto Estoque) — .boxcar-title-three ===== */
+/* ===== GLOBAL (páginas internas com .breadcrumb) — normalizar separadores ===== */
+.breadcrumb li + li::before,
+nav.breadcrumb ol li + li::before,
+nav.breadcrumb ol li::before,
+nav.breadcrumb ol li::after { content: none !important; }
+.breadcrumb .bc-sep,
+nav.breadcrumb .bc-sep,
+.breadcrumb .divider { display: none !important; }
+nav.breadcrumb ol li:not(:last-child)::after {
+  content: "/";
+  color: #cbd5e1;
+  margin: 0 8px;
+}
+nav.breadcrumb { display:block; margin:0; padding:0; }
+nav.breadcrumb ol {
+  display:flex; align-items:center;
+  list-style:none; margin:0; padding:0;
+  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
+}
+nav.breadcrumb a { color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px; }
+nav.breadcrumb a:hover { text-decoration:underline; }
+
+/* ===== INTERNAS (exceto Estoque) — padronizar bloco .boxcar-title-three ===== */
 .boxcar-header.header-style-v1.style-two.inner-header + * > .boxcar-title-three:first-child,
 .boxcar-header.header-style-v1.style-two.inner-header + main > .boxcar-title-three:first-child{
   margin-top: 0;
@@ -245,51 +270,123 @@ nav.breadcrumb a:hover{ text-decoration:underline; }
 }
 .boxcar-title-three nav.breadcrumb{ display: block; margin: 0 0 6px 0; padding: 0; }
 .boxcar-title-three nav.breadcrumb ol{
-  display:flex; align-items:center; list-style:none; margin:0; padding:0;
+  display:flex; align-items:center;
+  list-style:none; margin:0; padding:0;
   white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
 }
 .boxcar-title-three nav.breadcrumb ol li + li::before,
 .boxcar-title-three nav.breadcrumb ol li::after,
 .boxcar-title-three nav.breadcrumb .bc-sep{ content:none !important; display:none !important; }
-.boxcar-title-three nav.breadcrumb ol li:not(:last-child)::after{ content:"/"; color:#cbd5e1; margin:0 8px; }
+.boxcar-title-three nav.breadcrumb ol li:not(:last-child)::after{
+  content:"/"; color:#cbd5e1; margin:0 8px;
+}
 .boxcar-title-three nav.breadcrumb a{ color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px; }
 .boxcar-title-three nav.breadcrumb a:hover{ text-decoration:underline; }
 .boxcar-title-three h1,
 .boxcar-title-three h2.title,
 .boxcar-title-three .title{
-  margin:0 0 12px 0 !important; color:#1a2332 !important;
-  font-size:40px !important; font-weight:700 !important; line-height:1.15 !important; letter-spacing:-0.01em;
+  margin:0 0 12px 0 !important;
+  color:#1a2332 !important;
+  font-size:40px !important;
+  font-weight:700 !important;
+  line-height:1.15 !important;
+  letter-spacing:-0.01em;
 }
 
-/* ===== SOBRE A ÁTRIA ===== */
+/* ===== SOBRE A ÁTRIA — título e subtítulo no padrão do sistema ===== */
 .page-sobre .boxcar-title-three h1,
 .page-sobre .boxcar-title-three .title{
-  font-family: inherit; font-weight: 700; font-size: 40px; line-height: 1.15;
-  letter-spacing: -0.01em; color: #1a2332; margin: 0 0 10px 0 !important;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: #1a2332;
+  margin: 0 0 10px 0 !important;
 }
 .page-sobre .about-section-main .boxcar-title .lead-text{
-  font-family: inherit; font-size: 18px; line-height: 1.6; font-weight: 500; color: #64748b;
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 500;
+  color: #64748b;
   margin: 0 0 24px 0 !important;
 }
 .page-sobre .boxcar-title-three nav.breadcrumb{ margin-bottom: 6px; }
 .page-sobre .inventory-section.pb-0.layout-radius{ padding-bottom: 0; }
 
-/* ===== GLOBAL breadcrumb – limpeza extra ===== */
+/* ===== GLOBAL (nav.breadcrumb) — normalizar separadores e remover barras vazias ===== */
 nav.breadcrumb ol li::before,
 nav.breadcrumb ol li::after,
 nav.breadcrumb .bc-sep { content: none !important; display: none !important; }
 nav.breadcrumb ol li:empty { display: none !important; }
-nav.breadcrumb ol li:has(> a:empty),
+nav.breadcrumb ol li:has(> a:empty), 
 nav.breadcrumb ol li:has(> span:empty) { display: none !important; }
 nav.breadcrumb ol li + li { position: relative; }
-nav.breadcrumb ol li + li::before { content: "/"; color: #cbd5e1; margin: 0 8px 0 8px; }
+nav.breadcrumb ol li + li::before {
+  content: "/";
+  color: #cbd5e1;
+  margin: 0 8px 0 8px;
+}
 nav.breadcrumb { display: block; margin: 0; padding: 0; }
-nav.breadcrumb ol { display: flex; align-items: center; list-style: none; margin: 0; padding: 0;
-  white-space: nowrap; font-size: 14px; line-height: 1.4; color: #64748b; }
+nav.breadcrumb ol {
+  display: flex; align-items: center;
+  list-style: none; margin: 0; padding: 0;
+  white-space: nowrap; font-size: 14px; line-height: 1.4; color: #64748b;
+}
 nav.breadcrumb a { color: #405FF2; text-decoration: none; font-weight: 500; text-underline-offset: 2px; }
 nav.breadcrumb a:hover { text-decoration: underline; }
 
-/* ===== HOTFIX ESTOQUE: título claro no hero azul (mantido) ===== */
+/* ====== ESTOQUE — harmonização final de topo ====== */
+.page-estoque .breadcrumb-one h1{
+  font-size:40px !important;
+  font-weight:700 !important;
+  line-height:1.15 !important;
+  letter-spacing:-0.01em;
+  color:#1a2332 !important;
+  margin:0 0 12px 0 !important;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"]{ display:block; margin:0 0 6px 0; padding:0; }
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] ol{
+  display:flex; align-items:center; gap:8px;
+  list-style:none; margin:0; padding:0;
+  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] .bc-sep{display:none !important;}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] ol li + li::before{content:"/"; color:#cbd5e1; margin:0 8px;}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] ol li:empty{display:none !important;}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a{ color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px; }
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a:hover{ text-decoration:underline; }
+.page-estoque .breadcrumb-one{ padding-top:12px; padding-bottom:6px; }
+.page-estoque .inventory-search{ margin-top:10px; }
+.page-estoque .inventory-grid{ margin-top:12px; }
+.page-estoque .inventory-content .boxcar-container{ padding-top:0 !important; }
+.page-estoque .inventory-content .text-box{ margin-top:0 !important; }
+.page-estoque .inventory-sidebar{ position:sticky; top:96px; }
+.page-estoque .filters-panel.desktop{ width:100% !important; max-width:320px !important; top:96px !important; }
+
+/* ===== AJUSTE ESTOQUE: forçar topo sem espaço extra ===== */
+.page-estoque #estoque-main .boxcar-container { padding-top: 0 !important; margin-top: 0 !important; }
+.page-estoque #estoque-main .text-box { margin-top: 0 !important; padding-top: 0 !important; }
+.page-estoque .breadcrumb-one { margin-top: 0 !important; padding-top: 12px !important; padding-bottom: 6px !important; }
+.page-estoque .breadcrumb-one h1 { font-size: 40px !important; font-weight: 700 !important; margin: 0 0 12px 0 !important; }
+
+/* ===== ESTOQUE — limpar breadcrumb duplicado e alinhar espaçamento ===== */
+.page-estoque #estoque-main nav.breadcrumb { display: none !important; }
+.page-estoque .breadcrumb-one nav.breadcrumbs { display: block !important; }
+.page-estoque .breadcrumb-one { margin-top: 0 !important; padding-top: 16px !important; padding-bottom: 6px !important; }
+.page-estoque .breadcrumb-one h1 { margin: 0 0 12px 0 !important; font-size: 40px !important; font-weight: 700 !important; line-height: 1.15 !important; color: #1a2332 !important; }
+.page-estoque .inventory-search { margin-top: 10px !important; }
+.page-estoque .inventory-grid { margin-top: 16px !important; }
+
+/* ===== ESTOQUE — Correção breadcrumb duplicado e respiro ===== */
+.page-estoque #estoque-main nav.breadcrumb { display: none !important; }
+.page-estoque .breadcrumb-one { margin-top: 0 !important; padding-top: 12px !important; padding-bottom: 8px !important; }
+.page-estoque .breadcrumb-one h1 { margin: 0 0 12px 0 !important; font-size: 40px !important; font-weight: 700 !important; line-height: 1.15 !important; }
+.page-estoque .inventory-search { margin-top: 8px !important; }
+.page-estoque .inventory-grid { margin-top: 12px !important; }
+
+/* ===== ESTOQUE — HOTFIX HEADER & GAP ===== */
 .page-estoque .breadcrumb-one{
   background: linear-gradient(135deg,#0F172A,#1E293B) !important;
   color:#fff !important;
@@ -299,116 +396,92 @@ nav.breadcrumb a:hover { text-decoration: underline; }
 }
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"],
 .page-estoque .breadcrumb-one nav.breadcrumbs{
-  display:block !important; color:rgba(255,255,255,.85) !important; padding:0 !important;
+  display:block !important;
+  color:rgba(255,255,255,.85) !important;
+  padding:0 !important;
 }
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a,
-.page-estoque .breadcrumb-one nav.breadcrumbs a{ color:#AFC3FF !important; text-decoration:none; }
+.page-estoque .breadcrumb-one nav.breadcrumbs a{
+  color:#AFC3FF !important;
+  text-decoration:none;
+}
 .page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a:hover,
 .page-estoque .breadcrumb-one nav.breadcrumbs a:hover{ text-decoration:underline; }
 .page-estoque .breadcrumb-one h1,
 .page-estoque .breadcrumb-one .page-title,
 .page-estoque .breadcrumb-one .title{
-  color:#fff !important; margin:0 0 10px 0 !important; font-weight:800 !important;
+  color:#fff !important;
+  margin:0 0 10px 0 !important;
+  font-weight:800 !important;
 }
 .page-estoque .breadcrumb-one.bg-light{ background:none !important; }
 
-/* ===== SOLTAR TÍTULO (line-height) ===== */
 .page-estoque .boxcar-title-three h1,
 .page-estoque .boxcar-title-three .title{
-  line-height: 1.28 !important; margin-bottom: 16px !important; letter-spacing: -0.01em !important;
+  line-height: 1.28 !important;
+  margin-bottom: 16px !important;
+  letter-spacing: -0.01em !important;
 }
 .page-estoque .inventory-search{ margin-top: 14px !important; }
 
-/* =================================================================
-   >>> AJUSTES DE LISTAGEM (MOBILE) – CENTRALIZAÇÃO DOS CARDS <<<
-   ================================================================= */
-@media (max-width: 767px) {
-
-  /* Linha/row dos cards centralizada, com largura fluida */
-  .page-estoque .row,
-  .row.wow.fadeInUp {
-    width: 100%;
-    max-width: 640px;          /* garante que não “estoure” lateral no mobile */
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 12px;        /* evita corte na borda esquerda */
-    padding-right: 12px;       /* evita corte na borda direita */
-    box-sizing: border-box;
-    gap: 14px !important;      /* respiro entre cards */
+/* ================================================================
+   ESTOQUE — MOBILE: centralizar cards e impedir “corte” lateral
+   ================================================================ */
+@media (max-width: 767.98px) {
+  /* Evita overflow horizontal da listagem */
+  .page-estoque,
+  .page-estoque main,
+  .page-estoque .inventory-page,
+  .page-estoque .inventory-content,
+  .page-estoque .boxcar-container {
+    overflow-x: hidden !important;
   }
 
-  /* Cada card ocupa 100% e centraliza */
-  .car-block-four.col-xl-3.col-lg-4.col-md-6.col-sm-6,
-  .car-block-four {
+  /* Gutter consistente dentro da listagem */
+  .page-estoque .boxcar-container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Remove margens negativas típicas de .row e centraliza conteúdo */
+  .page-estoque .inventory-content .row {
+    display: grid !important;
+    grid-template-columns: 1fr !important; /* 1 card por linha */
+    gap: 16px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Zera paddings das colunas para não “empurrar” o card para fora */
+  .page-estoque .inventory-content .row > [class*="col"] {
     width: 100% !important;
-    max-width: 100% !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
-    float: none !important;
   }
 
-  /* Visual do card */
-  .car-block-four .inner-box {
-    width: 100%;
-    margin: 0 auto;
+  /* Card ocupa a largura útil do viewport, com gutters */
+  .page-estoque .car-block-four .inner-box {
+    width: calc(100vw - 32px) !important; /* 16px de cada lado */
+    max-width: 720px;
+    margin: 0 auto !important;
     border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(2, 6, 23, .06);
   }
 
-  /* Imagens 100% e cantos arredondados */
-  .car-block-four .inner-box .image-box figure.image,
-  .car-block-four .inner-box .image-box img {
+  /* Imagem sempre 100% do card, sem vazar */
+  .page-estoque .car-block-four .image-box,
+  .page-estoque .car-block-four figure.image,
+  .page-estoque .car-block-four figure.image img {
     width: 100% !important;
+    max-width: 100% !important;
     height: auto !important;
     display: block !important;
-    border-radius: 12px !important;
-    object-fit: cover !important;
   }
 
-  /* Conteúdo do card com padding consistente */
-  .car-block-four .content-box {
-    padding: 12px 14px 14px !important;
-  }
-
-  /* Título do card: sem “estouro” lateral */
-  .car-block-four .content-box .title {
-    margin-bottom: 6px !important;
-    line-height: 1.25 !important;
-    word-break: break-word;
-  }
-
-  /* Linha de ícones (Combustível / KM / Câmbio) – tipografia menor para não quebrar */
-  .car-block-four .content-box ul {
-    margin-top: 8px !important;
-  }
-  .car-block-four .content-box ul li {
+  /* Tipografia dos specs (Flex / km / câmbio) um pouco menor no mobile */
+  .page-estoque .car-block-four .content-box ul li {
     font-size: 13px !important;
-    line-height: 1.2 !important;
+    line-height: 1.35 !important;
     white-space: nowrap;
   }
-
-  /* Preço destacado */
-  .car-block-four .content-box .text {
-    margin-top: 6px !important;
-  }
-
-  /* Rodapé: ano à esquerda e “Ver detalhes” alinhado sem sobrepor */
-  .car-block-four .btn-box {
-    align-items: center !important;
-    gap: 8px !important;
-  }
-  .car-block-four .btn-box > span {
-    font-size: 14px !ant;
-  }
-}
-
-/* =================================================================
-   >>> ESPAÇAMENTO ENTRE TÍTULO, BUSCA E LISTAGEM (MOBILE) <<<
-   Mantém a página “cheia” sem buracos grandes
-   ================================================================= */
-@media (max-width: 767px) {
-  .page-estoque .breadcrumb-one { padding-bottom: 6px !important; }
-  .page-estoque .inventory-search { margin-top: 8px !important; margin-bottom: 6px !important; }
-  .page-estoque .inventory-content .text-box { padding: 10px 0 8px !important; }
 }
