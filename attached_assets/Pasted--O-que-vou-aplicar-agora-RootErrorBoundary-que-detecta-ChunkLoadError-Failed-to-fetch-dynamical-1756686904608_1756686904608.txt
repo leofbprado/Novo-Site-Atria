@@ -1,0 +1,175 @@
+✅ O que vou aplicar agora
+
+RootErrorBoundary que detecta ChunkLoadError / “Failed to fetch dynamically imported module” e recarrega com segurança (com trava pra não entrar em loop).
+
+npm run clean-preview para matar Vite, liberar portas 3000/5000 e apagar caches .vite/dist.
+
+src/main.jsx mínimo com BrowserRouter envolto pelo ErrorBoundary.
+
+1) Crie src/components/RootErrorBoundary.jsx
+// src/components/RootErrorBoundary.jsx
+import React from "react";
+
+/**
+ * Protege contra tela branca: captura erros de chunk/dynamic import
+ * e força reload (uma única vez) limpando caches quando possível.
+ */
+class RootErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+    this._unhandledRejectionHandler = null;
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidMount() {
+    // Se a página carregou saudável após um reload forçado, limpe a flag
+    if (sessionStorage.getItem("reloadedForChunkError") === "1") {
+      sessionStorage.removeItem("reloadedForChunkError");
+    }
+    this._unhandledRejectionHandler = (event) => {
+      const reason = event && event.reason;
+      if (reason && this._isChunkError(reason)) this._reloadForChunk();
+    };
+    window.addEventListener("unhandledrejection", this._unhandledRejectionHandler);
+  }
+
+  componentWillUnmount() {
+    if (this._unhandledRejectionHandler) {
+      window.removeEventListener("unhandledrejection", this._unhandledRejectionHandler);
+    }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("[RootErrorBoundary]", error, errorInfo);
+    if (this._isChunkError(error)) this._reloadForChunk();
+  }
+
+  _isChunkError(err) {
+    if (!err) return false;
+    const msg = String(err.message || err);
+    const name = String(err.name || "");
+    return (
+      name === "ChunkLoadError" ||
+      /loading chunk \d+ failed/i.test(msg) ||
+      /dynamically imported module/i.test(msg) ||
+      /Failed to fetch dynamically imported module/i.test(msg)
+    );
+  }
+
+  async _reloadForChunk() {
+    if (sessionStorage.getItem("reloadedForChunkError") !== "1") {
+      sessionStorage.setItem("reloadedForChunkError", "1");
+      try {
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+      } catch (_) {}
+      window.location.reload();
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 24, textAlign: "center", fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" }}>
+          <h1 style={{ marginBottom: 8 }}>Algo deu errado.</h1>
+          <p style={{ marginBottom: 16 }}>
+            Vamos recarregar a aplicação para corrigir um erro de carregamento de módulo.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ padding: "10px 16px", borderRadius: 8, border: "1px solid #ccc", cursor: "pointer" }}
+          >
+            Recarregar agora
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default RootErrorBoundary;
+
+2) Edite src/main.jsx (passo 1 do A + Boundary)
+// src/main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import RootErrorBoundary from './components/RootErrorBoundary.jsx'
+import './index.css'
+import './styles.css'
+
+const Home = () => (
+  <div style={{ padding: 20, textAlign: 'center' }}>
+    <h1>Átria Veículos</h1>
+    <p>Home básica funcionando.</p>
+  </div>
+)
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <RootErrorBoundary>
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    </RootErrorBoundary>
+  </React.StrictMode>
+)
+
+3) Adicione o “botão do pânico” npm run clean-preview
+
+Arquivo: scripts/clean-preview.sh
+
+# scripts/clean-preview.sh
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "🔪 Matando dev servers e liberando portas (3000/5000)..."
+fuser -k 3000/tcp 2>/dev/null || true
+fuser -k 5000/tcp 2>/dev/null || true
+pkill -f "vite|node.*vite|serve -s|react-scripts start" 2>/dev/null || true
+
+echo "🧹 Limpando caches (.vite) e dist..."
+rm -rf node_modules/.vite dist
+
+echo "✅ Limpeza concluída. Agora: npm run dev"
+
+
+Permissão de execução (se necessário, uma vez):
+
+chmod +x scripts/clean-preview.sh
+
+
+Atualize package.json → scripts
+
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "clean-preview": "bash scripts/clean-preview.sh"
+  }
+}
+
+Como validar agora (rápido)
+
+Salve os arquivos acima.
+
+Rode: npm run clean-preview
+
+Rode: npm run dev
+
+Abra o Preview externo. Se ok → Checkpoint Now.
+
+Próximos 2 passos (quando quiser)
+
+Reintroduzir seções uma a uma (Header → Footer → Brands → etc.). Se quebrar: ErrorBoundary segura a UX; faça Rollback, corrija o import/case/export e siga.
+
+Opcional: manter o RootErrorBoundary em produção — ele também te protege de chunks desatualizados após deploy.
+
+Se quiser, sigo com o passo 2 do A (reinserir Header + Routes mínimos) já no próximo bloco.

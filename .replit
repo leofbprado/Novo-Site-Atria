@@ -31,8 +31,15 @@ externalPort = 3003
 localPort = 3004
 externalPort = 3000
 
+[[ports]]
+localPort = 3005
+externalPort = 4200
+
+[[ports]]
+localPort = 3006
+externalPort = 5000
+
 [workflows]
-runButton = "Run (Preview)"
 
 [[workflows.workflow]]
 name = "Dev (Vite)"

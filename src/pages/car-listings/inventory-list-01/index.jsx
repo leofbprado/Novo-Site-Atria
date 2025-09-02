@@ -13,8 +13,18 @@ export default function InventoryListPage1() {
 
   return (
     <div className="inventory-page">
-      {/* Barra de busca */}
-      <section className="inventory-search py-6 border-b">
+      {/* Barra de busca — NÃO encostar no título, evitar sobreposição */}
+      <section
+        className="inventory-search"
+        style={{
+          marginTop: 10,          // respiro igual às internas (evita ficar “engolida”)
+          paddingTop: 8,
+          paddingBottom: 8,
+          position: "relative",
+          zIndex: 2               // garante que fique acima de bordas curvas
+        }}
+        aria-label="Busca de veículos"
+      >
         <div className="container">
           <form
             onSubmit={handleSubmit}
@@ -26,6 +36,7 @@ export default function InventoryListPage1() {
               defaultValue={searchTerm}
               placeholder="Buscar veículos por marca, modelo ou ano..."
               aria-label="Buscar veículos por marca, modelo ou ano"
+              autoComplete="off"
               style={{
                 flex: 1,
                 height: 56,
@@ -55,8 +66,8 @@ export default function InventoryListPage1() {
         </div>
       </section>
 
-      {/* GRID: sidebar + listagem */}
-      <div className="inventory-grid container py-8">
+      {/* GRID: sidebar + listagem (gap curto abaixo da busca) */}
+      <div className="inventory-grid container" style={{ marginTop: 12 }}>
         <aside className="inventory-sidebar">
           <FilterSidebar />
         </aside>

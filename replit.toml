@@ -1,14 +1,5 @@
-[deployment]
-run = ["node", "start.js"]
-deploymentTarget = "autoscale"
-publicDir = "dist"
-ignorePaths = ["**/node_modules/**", "**/.git/**", "documentation/**", "node_modules/.cache/**"]
+modules = ["nodejs-20", "web"]
 
-[[ports]]
-localPort = 8000
-externalPort = 80
-exposeLocalhost = true
-
-[build]
-main = "start.js"
-run = "npm run build"
+# Run: mata instâncias antigas, builda e inicia o Vite PREVIEW em FOREGROUND
+# e sempre na porta que o Replit exige ($PORT). Sem nohup, sem "&".
+run = "bash -lc 'pkill -f \"vite preview|vite|node.*vite|npm.*vite\" || true; PORT=${PORT:-3000}; echo Using PORT=$PORT; npm run build && exec npm run preview -- --host 0.0.0.0 --strictPort --port $PORT'"

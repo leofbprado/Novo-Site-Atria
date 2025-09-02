@@ -1,0 +1,127 @@
+Cannot read properties of undefined (reading 'add')
+quase sempre vem de um .add(...) chamado em algo que não existe. Em projetos React como o seu, os três culpados mais comuns são:
+
+Firestore v9 usado no padrão v8
+(ex.: collection(db,'visitas').add({...}) — no v9 isso quebra, o correto é addDoc(collection(db,'visitas'), {...})).
+
+.classList.add(...) em um elemento que não foi encontrado
+(ex.: document.querySelector('#algo') retornou null e depois fizeram el.classList.add(...)).
+
+.add(...) de um Set/Map de algum contexto não inicializado
+(ex.: wishlist.add(id) quando wishlist ainda é undefined).
+
+A rota que você abriu é a de detalhe do veículo (/carros/hyundai/hb20/2018-AMM26), então é quase certo que o erro está em um componente dessa página (ex.: VehicleDetails, Gallery/Lightbox, Share/Wishlist/Compare, tracking/analytics de “view item”, etc.).
+
+Abaixo deixo um passo‑a‑passo direto para achar e corrigir sem adivinhação.
+
+1) Ache onde existe .add( no seu código
+Rode os comandos no shell exatamente como estão:
+
+sh
+Copiar código
+# (A) Procure uso errado de Firestore v9 com ".add("
+grep -Rni "collection(.*)\.add\s*\(" src | sed -n '1,120p'
+
+# (B) Procure .classList.add em elementos possivelmente nulos
+grep -Rni "\.classList\.add\s*\(" src | sed -n '1,120p'
+
+# (C) Procure qualquer outro ".add(" (ignorando addEventListener)
+grep -Rni "\.add\s*\(" src | grep -v "addEventListener" | sed -n '1,200p'
+Os caminhos/linhas que aparecerem aí nos dizem exatamente onde corrigir.
+
+2) Como corrigir cada caso
+✅ Firestore v9 (modular) — troque .add(...) por addDoc(...)
+Se você encontrar algo assim:
+
+js
+Copiar código
+import { collection } from 'firebase/firestore';
+import { db } from '@/firebase/config';
+
+collection(db, 'visualizacoes').add({
+  vehicleId,
+  createdAt: new Date(),
+});
+Corrija para:
+
+js
+Copiar código
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/firebase/config';
+
+await addDoc(collection(db, 'visualizacoes'), {
+  vehicleId,
+  createdAt: serverTimestamp(),
+});
+Dica: não misture API compat (v8) com modular (v9). Se em algum arquivo estiver db.collection('x').add(...), migre para addDoc(collection(db,'x'), ...).
+
+✅ DOM — cheque a existência antes do .classList.add
+Se vir algo assim:
+
+js
+Copiar código
+const el = document.querySelector('#some-id');
+el.classList.add('open'); // <-- quebra quando el === null
+Troque por:
+
+js
+Copiar código
+const el = document.querySelector('#some-id');
+if (el?.classList) el.classList.add('open');
+ou, em React, preferir ref + useEffect com checagem.
+
+✅ Set/Map — garanta que existe (estado inicial)
+Se a página de veículo usa “wishlist”, “compare”, etc., e você ver:
+
+js
+Copiar código
+const { wishlist } = useWishlist();
+wishlist.add(vehicleId); // <-- quebra se wishlist for undefined
+Garanta inicialização e uso seguro, por exemplo no contexto:
+
+js
+Copiar código
+const [wishlist, setWishlist] = useState(() => new Set());
+
+const addToWishlist = (id) =>
+  setWishlist(prev => new Set(prev).add(id)); // sempre um Set válido
+E onde consumir:
+
+js
+Copiar código
+if (wishlist) wishlist.add(id); // ou use o método do contexto, melhor ainda
+3) Se quiser confirmar rápido pelo stack
+Abra o DevTools (F12) > Console e veja a primeira linha do stack logo abaixo do erro; ela aponta o arquivo/linha exatos. Se preferir, rode também:
+
+sh
+Copiar código
+# Mostra o arquivo/linha do primeiro erro que o Vite detectou
+npm run dev
+# e olhe o terminal – o Vite costuma imprimir o caminho do arquivo
+4) O que é mais provável no seu caso
+Pelo histórico recente, o mais comum em páginas de detalhe é um tracking de “view”/“visita” no Firestore usando o padrão antigo:
+
+js
+Copiar código
+collection(db, 'page_views').add({...})   // ❌
+Corrija para:
+
+js
+Copiar código
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+await addDoc(collection(db, 'page_views'), {
+  path: location.pathname,
+  vehicleId,
+  ts: serverTimestamp(),
+});
+Faça essa troca em todos os pontos que o grep do passo (1A) mostrar.
+
+5) Me envie o arquivo que acusar no grep/stack (se preferir que eu entregue pronto)
+Se quiser que eu te devolva o arquivo inteiro já corrigido, me manda aqui o(s) arquivo(s) que aparecerem nos comandos acima (por exemplo: src/pages/vehicle-details/index.jsx ou src/components/vehicleDetails/VehicleDetails.jsx, etc.). Eu edito e te devolvo completo, no padrão que você pediu.
+
+
+
+
+
+

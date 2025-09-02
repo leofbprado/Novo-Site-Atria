@@ -1,73 +1,234 @@
-~/workspace$ # 3. Comparar estruturas das páginas
-echo "=== ESTRUTURA DA PÁGINA SIMULAR FINANCIAMENTO ==="
-cat src/pages/otherPages/loan-calculator/index.jsx | head -80
+/* =================================================================
+   OVERRIDES CSS - Ajustes globais e específicos de páginas
+   ================================================================= */
 
-echo -e "\n=== ESTRUTURA DO COMPONENTE AboutNew (que usa page-hero) ==="
-cat src/components/otherPages/AboutNew.jsx | grep -A 20 "page-hero"
-
-echo -e "\n=== VER CSS DO PAGE-HERO ==="
-grep -r "\.page-hero" src/styles --include="*.css" -A 5 | head -30
-=== ESTRUTURA DA PÁGINA SIMULAR FINANCIAMENTO ===
-import Footer1 from "@/components/footers/Footer1";
-import Header1 from "@/components/headers/Header1";
-import LoanCalculator from "@/components/otherPages/LoanCalculator";
-import FixedBottomMenu from "@/components/common/FixedBottomMenu";
-
-import React from "react";
-
-import MetaComponent from "@/components/common/Metacomonent";
-const metadata = {
-  title: "Simular Financiamento || Átria Veículos",
-  description: "Simulador de financiamento - Átria Veículos",
-};
-
-export default function LoanCalculatorPage() {
-  return (
-    <>
-      <MetaComponent meta={metadata} />
-      <Header1 headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1" white={true} />
-      <LoanCalculator />
-      <Footer1 parentClass="boxcar-footer footer-style-one v1 cus-st-1" />
-      <FixedBottomMenu />
-    </>
-  );
+/* ---------------------------------------------------------------
+   1) LOGO no header (tamanho consistente)
+-----------------------------------------------------------------*/
+.boxcar-header .header-logo img {
+  max-height: 50px !important;
+  width: auto !important;
+  height: 50px !important;
+  object-fit: contain !important;
 }
 
-=== ESTRUTURA DO COMPONENTE AboutNew (que usa page-hero) ===
-      <section className="page-hero page-hero-section" aria-label="Sobre a Átria Veículos">
-        <div className="container">
-          <nav className="breadcrumb" id="bc-sobre" aria-label="breadcrumb">
-            <ol>
-              <li><a href="/">Início</a></li>
-              <li className="active">Sobre a Átria</li>
-            </ol>
-          </nav>
-          <h1>Sobre a Átria Veículos</h1>
-        </div>
-      </section>
-      
-      <section className="about-section-main pb-0">
-        <div className="boxcar-container">
-          <div className="boxcar-title wow fadeInUp" style={{ textAlign: 'left', paddingTop: '20px' }}>
-            <p className="lead-text" style={{ textAlign: 'left', margin: '0' }}>
-              Desde 2014, a Átria Veículos transforma sonhos em realidade sobre rodas
-            </p>
-          </div>
+/* ---------------------------------------------------------------
+   2) Cabeçalho interno com curvas (todas as internas)
+-----------------------------------------------------------------*/
+.boxcar-header.header-style-v1.style-two.inner-header {
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  overflow: hidden;
+}
 
-          {/* História e Visão */}
+/* ---------------------------------------------------------------
+   3) Hero genérico (quando houver imagem/fundo)
+-----------------------------------------------------------------*/
+.page-hero {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
-=== VER CSS DO PAGE-HERO ===
-src/styles/overrides.css:.page-hero,
-src/styles/overrides.css-.hero-card,
-src/styles/overrides.css-#about-hero,
-src/styles/overrides.css-#finance-hero,
-src/styles/overrides.css-#bc-estoque:where(:not(html)) ~ h1,      /* fallback p/ páginas que não usam -hero */
-src/styles/overrides.css-#bc-veiculo:where(:not(html)) ~ h1{
---
-src/styles/overrides.css:  .page-hero,
-src/styles/overrides.css-  .hero-card,
-src/styles/overrides.css-  #about-hero{
-src/styles/overrides.css-    border-top-left-radius: var(--curve-mobile) !important;
-src/styles/overrides.css-    border-top-right-radius: var(--curve-mobile) !important;
-src/styles/overrides.css-  }
-~/workspace$ 
+/* =================================================================
+   ESTOQUE
+   - harmonização do topo
+   - volta dos respiros “corretos”
+   - grid alinhado e SEM corte no mobile
+=================================================================*/
+
+/* --- Base & segurança --- */
+.page-estoque {
+  overflow-x: hidden; /* evita qualquer sangramento lateral no iPhone */
+}
+
+/* Hero/título: mantém o padrão visual escuro do header + título claro */
+.page-estoque .breadcrumb-one {
+  background: linear-gradient(135deg, #0F172A, #1E293B) !important;
+  color: #fff !important;
+
+  /* respiros “certos” para o topo do Estoque */
+  margin-top: 0 !important;
+  padding-top: 12px !important;
+  padding-bottom: 6px !important;
+}
+
+.page-estoque .breadcrumb-one h1,
+.page-estoque .breadcrumb-one .page-title,
+.page-estoque .breadcrumb-one .title {
+  color: #fff !important;
+  font-weight: 800 !important;
+  margin: 0 0 10px 0 !important;
+  letter-spacing: -0.01em;
+  line-height: 1.20;
+  font-size: 40px !important;
+}
+
+/* breadcrumb dentro do hero */
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"],
+.page-estoque .breadcrumb-one nav.breadcrumbs {
+  display: block !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  padding: 0 !important;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a,
+.page-estoque .breadcrumb-one nav.breadcrumbs a {
+  color: #AFC3FF !important;
+  text-decoration: none;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a:hover,
+.page-estoque .breadcrumb-one nav.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+/* --- Barra de busca logo abaixo do título --- */
+.page-estoque .inventory-search {
+  margin-top: 8px !important;        /* (reduzido – estava maior) */
+}
+.page-estoque .inventory-search .container {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* --- “Mostrando X veículos / Ordenar por” --- */
+.page-estoque .text-box {
+  padding: 12px 0 !important;        /* respiro menor e consistente */
+  margin-bottom: 16px !important;
+  border-bottom: 1px solid #e9ecef;
+}
+.page-estoque .inventory-content .boxcar-container {
+  padding-top: 0 !important;         /* garante que a listagem não reintroduza gap */
+}
+
+/* ---------------------------------------------------------------
+   Sidebar + grid (desktop)
+-----------------------------------------------------------------*/
+.page-estoque .inventory-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-top: 12px;
+}
+.page-estoque .inventory-sidebar {
+  position: sticky;
+  top: 96px; /* header interno + respiro */
+}
+.page-estoque .filters-panel.desktop {
+  width: 100% !important;
+  max-width: 320px !important;
+  top: 96px !important;
+}
+
+/* ---------------------------------------------------------------
+   GRID: correções específicas para MOBILE
+   - 1 card por linha
+   - nada cortado do lado direito
+   - remove margens negativas do .row
+-----------------------------------------------------------------*/
+@media (max-width: 575.98px) {
+  /* Empilha: filtros acima e cards abaixo */
+  .page-estoque .inventory-grid {
+    display: block;
+    grid-template-columns: none;
+    gap: 0;
+    margin-top: 12px;
+  }
+  .page-estoque .inventory-sidebar {
+    position: static;
+    top: auto;
+    margin-bottom: 12px;
+  }
+
+  /* Remover margens negativas/col paddings que causam corte */
+  .page-estoque .boxcar-container .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .page-estoque .boxcar-container .row > [class*="col-"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* 1 card por linha (100% da largura) */
+  .page-estoque .car-block-four[class*="col-"] {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Garante que o card aproveite toda a largura útil sem “vazar” */
+  .page-estoque .car-block-four .inner-box {
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  /* Imagem sem overflow lateral */
+  .page-estoque .car-block-four .image-box figure.image,
+  .page-estoque .car-block-four .image-box img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Breadcrumbs genéricos (para páginas que usam nav.breadcrumb)
+-----------------------------------------------------------------*/
+nav.breadcrumb {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+nav.breadcrumb ol {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #64748b;
+}
+nav.breadcrumb .bc-sep { display: none !important; }
+nav.breadcrumb ol li + li::before { content: none !important; }
+nav.breadcrumb ol li:not(:last-child)::after {
+  content: "/";
+  color: #cbd5e1;
+  margin: 0 8px;
+}
+nav.breadcrumb a {
+  color: #405FF2;
+  text-decoration: none;
+  font-weight: 500;
+  text-underline-offset: 2px;
+}
+nav.breadcrumb a:hover { text-decoration: underline; }
+
+/* ---------------------------------------------------------------
+   Sobre a Átria – título/subtítulo padrão (coerência tipográfica)
+-----------------------------------------------------------------*/
+.page-sobre .boxcar-title-three h1,
+.page-sobre .boxcar-title-three .title {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: #1a2332;
+  margin: 0 0 10px 0 !important;
+}
+.page-sobre .about-section-main .boxcar-title .lead-text {
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0 0 24px 0 !important;
+}
+.page-sobre .boxcar-title-three nav.breadcrumb {
+  margin-bottom: 6px;
+}
+.page-sobre .inventory-section.pb-0.layout-radius {
+  padding-bottom: 0;
+}
