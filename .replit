@@ -1,87 +1,18 @@
-modules = ["nodejs-20", "web"]
-run = "bash -lc 'npm run dev'"
+modules = ["nodejs-20", "web", "postgresql-16"]
+run = "npm run dev"
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
-channel = "stable-25_05"
-packages = ["psmisc"]
+channel = "stable-24_05"
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "cloudrun"
 build = ["npm", "run", "build"]
-run   = ["npm", "run", "start"]
-publicDir = "dist"
+run = ["npm", "run", "start"]
 
 [[ports]]
-localPort = 3000
+localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 3001
-externalPort = 3001
-
-[[ports]]
-localPort = 3002
-externalPort = 3002
-
-[[ports]]
-localPort = 3003
-externalPort = 3003
-
-[[ports]]
-localPort = 3004
-externalPort = 3000
-
-[[ports]]
-localPort = 3005
-externalPort = 4200
-
-[[ports]]
-localPort = 3006
-externalPort = 5000
-
-[workflows]
-
-[[workflows.workflow]]
-name = "Dev (Vite)"
-mode = "sequential"
-author = 42011154
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "bash -lc '   pkill -f vite || true   nohup npm run dev -- --host 0.0.0.0 --port 3000 >/tmp/dev.log 2>&1 &   sleep 2   tail -n +1 -v /tmp/dev.log | sed -n \"1,120p\" '"
-
-[[workflows.workflow]]
-name = "Run (Preview)"
-mode = "sequential"
-author = 42011154
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "bash -lc '   pkill -f \"vite preview\" || true   npm run build   nohup npm run preview -- --host 0.0.0.0 --port 3000 >/tmp/preview.log 2>&1 &   sleep 2   tail -n +1 -v /tmp/preview.log | sed -n \"1,120p\" '"
-
-[[workflows.workflow]]
-name = "Rollback Latest"
-mode = "sequential"
-author = 42011154
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "bash -lc './scripts/rollback-latest.sh'"
-
-[[workflows.workflow]]
-name = "List Checkpoints"
-mode = "sequential"
-author = 42011154
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "bash -lc './scripts/list-checkpoints.sh'"
-
-[[workflows.workflow]]
-name = "Checkpoint Now"
-mode = "sequential"
-author = 42011154
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "bash -lc './scripts/checkpoint.sh \"checkpoint via botão\"'"
+[env]
+PORT = "5000"

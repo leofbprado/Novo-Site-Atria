@@ -34,7 +34,6 @@ O plugin Credere não está abrindo no site da Átria Veículos.
 ### **1. Content Security Policy (CSP) Bloqueio**
 O CSP no `index.html` pode estar bloqueando scripts do Credere:
 ```html
-<meta http-equiv="Content-Security-Policy" 
       content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:;">
 ```
 **Verificar:** Console do navegador para erros CSP

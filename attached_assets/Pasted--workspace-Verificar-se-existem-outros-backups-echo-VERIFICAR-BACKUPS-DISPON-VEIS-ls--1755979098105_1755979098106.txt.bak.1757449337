@@ -1,0 +1,51 @@
+/workspace$ # Verificar se existem outros backups
+echo "=== VERIFICAR BACKUPS DISPONÍVEIS ==="
+ls -la src/pages/estoque/EstoqueSite.jsx*
+
+echo -e "\n=== VERIFICAR SE EXISTE BACKUP ANTIGO ==="
+ls -la src/pages/estoque/ | grep -i backup
+
+echo -e "\n=== VERIFICAR STATUS DO ARQUIVO ATUAL ==="
+head -10 src/pages/estoque/EstoqueSite.jsx
+
+echo -e "\n=== VERIFICAR SE O REACT APP ESTÁ FUNCIONANDO ==="
+curl -s http://localhost:5000/estoque | head -20 || echo "Erro ao acessar a página"
+=== VERIFICAR BACKUPS DISPONÍVEIS ===
+-rw-r--r-- 1 runner runner  4989 Aug 23 17:38 src/pages/estoque/EstoqueSite.jsx
+-rw-r--r-- 1 runner runner 25842 Aug 23 17:24 src/pages/estoque/EstoqueSite.jsx.bak
+
+=== VERIFICAR SE EXISTE BACKUP ANTIGO ===
+
+=== VERIFICAR STATUS DO ARQUIVO ATUAL ===
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useFilters } from "../../contexts/FilterContext";
+import { VehicleImage } from "../../components/common/OptimizedImage";
+import BrandLogo from "../../components/BrandLogo";
+import StaticSEO from "../../components/seo/StaticSEO";
+import Header1 from "../../components/headers/Header1";
+import Footer1 from "../../components/footers/Footer1";
+import FixedBottomMenu from "../../components/common/FixedBottomMenu";
+import "../../styles/brand-logo.css";
+
+=== VERIFICAR SE O REACT APP ESTÁ FUNCIONANDO ===
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script type="module" src="/@vite/client"></script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PDHTBSMH');</script>
+    <!-- End Google Tag Manager -->
+    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Permissions Policy para eliminar warnings -->
+    <meta http-equiv="Permissions-Policy" content="accelerometer=(), autoplay=*, camera=(), geolocation=(), microphone=(), payment=()" />
+    <!-- Content Security Policy - Permite Font Awesome e outras fontes críticas -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self' https: data: blob:; 

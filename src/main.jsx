@@ -14,6 +14,34 @@ import "@/styles/overrides.css";
 window.React = React;
 
 /** =========================
+ *  Utils
+ *  ========================= */
+const injectScript = (src) =>
+  new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = (e) => reject(e);
+    document.head.appendChild(s);
+  });
+
+// Remove qualquer preloader/overlay remanescente (failsafe)
+const hidePreloaders = () => {
+  try {
+    document
+      .querySelectorAll(
+        ".preloader, .loading-overlay, .page-loading, #preloader, .js-preloader"
+      )
+      .forEach((el) => {
+        el.style.opacity = "0";
+        el.style.pointerEvents = "none";
+        el.style.display = "none";
+      });
+  } catch {}
+};
+
+/** =========================
  *  Util: carregar CSS assíncrono
  *  ========================= */
 const loadCSS = (href, media = "all") => {
@@ -78,8 +106,13 @@ if (currentPath.startsWith("/estoque")) {
 
   // 2) foco/keydown no campo de busca
   const searchTrigger = (event) => {
-    const searchInput = document.querySelector('input[name="q"], .hero input[type="search"]');
-    if (searchInput && (event.target === searchInput || searchInput.contains?.(event.target))) {
+    const searchInput = document.querySelector(
+      'input[name="q"], .hero input[type="search"]'
+    );
+    if (
+      searchInput &&
+      (event.target === searchInput || searchInput.contains?.(event.target))
+    ) {
       initFirebase();
       cleanup();
     }
@@ -111,9 +144,15 @@ const loadDeferredCSS = () => {
   // carregamento pós-first-paint
   setTimeout(() => {
     // CSS internos via import() para code-splitting
-    import("./index.css").catch((err) => console.warn("⚠️ Erro ao carregar CSS principal:", err));
-    import("./styles/calllead.css").catch((err) => console.warn("⚠️ Erro ao carregar Call-to-Call CSS:", err));
-    import("./styles/safari-fixes.css").catch((err) => console.warn("⚠️ Erro ao carregar Safari fixes:", err));
+    import("./index.css").catch((err) =>
+      console.warn("⚠️ Erro ao carregar CSS principal:", err)
+    );
+    import("./styles/calllead.css").catch((err) =>
+      console.warn("⚠️ Erro ao carregar Call-to-Call CSS:", err)
+    );
+    import("./styles/safari-fixes.css").catch((err) =>
+      console.warn("⚠️ Erro ao carregar Safari fixes:", err)
+    );
 
     // CSS externos
     loadCSS("https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.css");
@@ -122,33 +161,57 @@ const loadDeferredCSS = () => {
   }, 50);
 };
 
-// jQuery sob demanda (ex.: slick)
+// jQuery sob demanda (com fallback para CDN) — totalmente opcional
 const loadJQuery = async () => {
-  if (!window.jQuery) {
-    const { default: $ } = await import("jquery");
-    window.jQuery = window.$ = $;
-    console.log("✅ jQuery carregado sob demanda");
+  try {
+    if (!window.jQuery) {
+      const { default: $ } = await import("jquery");
+      window.jQuery = window.$ = $;
+      console.log("✅ jQuery carregado sob demanda");
+    }
+    return window.jQuery;
+  } catch (err) {
+    console.warn(
+      "⚠️ Erro ao importar jQuery como módulo, tentando CDN:",
+      err
+    );
+    try {
+      await injectScript(
+        "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+      );
+      if (window.jQuery) {
+        console.log("✅ jQuery carregado via CDN");
+        return window.jQuery;
+      }
+      throw new Error("CDN carregou, mas window.jQuery não disponível");
+    } catch (err2) {
+      console.warn(
+        "⚠️ Falha ao carregar jQuery (CDN também falhou). Recursos dependentes de jQuery serão ignorados.",
+        err2
+      );
+      return null; // não bloqueia a entrada do app
+    }
   }
-  return window.jQuery;
 };
 
 const initializeApp = async () => {
   // Console filter depois do first paint
   setTimeout(() => {
-    loadConsoleFilter().catch((err) => console.warn("⚠️ Erro ao carregar console filter:", err));
+    loadConsoleFilter().catch((err) =>
+      console.warn("⚠️ Erro ao carregar console filter:", err)
+    );
   }, 100);
 
   loadDeferredCSS();
 
-  // jQuery + slick CSS (usa util global loadCSS)
-  setTimeout(() => {
-    loadJQuery()
-      .then(() => {
-        loadCSS("/css/slick.css");
-        loadCSS("/css/slick-theme.css");
-        console.log("✅ jQuery + Slick CSS prontos");
-      })
-      .catch((err) => console.warn("⚠️ Erro ao preload jQuery:", err));
+  // jQuery + slick CSS (usa util global loadCSS) — somente se jQuery deu certo
+  setTimeout(async () => {
+    const jq = await loadJQuery();
+    if (jq) {
+      loadCSS("/css/slick.css");
+      loadCSS("/css/slick-theme.css");
+      console.log("✅ jQuery + Slick CSS prontos");
+    }
   }, 2000);
 
   // Firebase após LCP / idle
@@ -159,12 +222,19 @@ const initializeApp = async () => {
       setTimeout(() => firebaseLazy.init({ eager: false }), 3000);
     }
   };
-  window.requestIdleCallback ? requestIdleCallback(initFirebaseAfterLCP) : setTimeout(initFirebaseAfterLCP, 2000);
+  window.requestIdleCallback
+    ? requestIdleCallback(initFirebaseAfterLCP)
+    : setTimeout(initFirebaseAfterLCP, 2000);
 
   // Defer de recursos utilitários
   import("./utils/resourceDeferrer")
     .then(() => console.log("✅ Resource deferrer loaded"))
     .catch(() => console.warn("⚠️ Resource deferrer failed to load"));
+
+  // Failsafe para liberar a UI caso algum script externo trave
+  hidePreloaders();
+  setTimeout(hidePreloaders, 1200);
+  window.addEventListener("load", hidePreloaders, { once: true });
 };
 
 // DOM pronto → inicializações não críticas
@@ -173,6 +243,17 @@ if (document.readyState === "loading") {
 } else {
   requestAnimationFrame(initializeApp);
 }
+
+/** =========================
+ *  Helpers de debug (não alteram o visual)
+ *  ========================= */
+window.openFilters = () =>
+  window.dispatchEvent(new CustomEvent("openFilterSidebar"));
+window.closeFilters = () =>
+  window.dispatchEvent(new CustomEvent("closeFilterSidebar"));
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") window.closeFilters?.();
+});
 
 /** =========================
  *  Error Boundary para evitar white screen
@@ -196,7 +277,14 @@ class RootErrorBoundary extends React.Component {
           <p style={{ opacity: 0.7, fontSize: 14 }}>
             O erro foi capturado para debug. A UI não deve ficar em branco.
           </p>
-          <pre style={{ whiteSpace: "pre-wrap", background: "#f6f8fa", padding: 12, borderRadius: 8 }}>
+          <pre
+            style={{
+              whiteSpace: "pre-wrap",
+              background: "#f6f8fa",
+              padding: 12,
+              borderRadius: 8,
+            }}
+          >
             {String(this.state.error?.message || this.state.error)}
           </pre>
         </div>

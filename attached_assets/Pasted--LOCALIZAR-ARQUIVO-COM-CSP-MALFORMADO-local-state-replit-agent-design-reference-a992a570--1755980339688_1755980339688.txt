@@ -1,13 +1,4 @@
 === LOCALIZAR ARQUIVO COM CSP MALFORMADO ===
-./.local/state/replit/agent/design_reference/a992a570-ff78-4bea-b414-69b99d34380e/85bbf33d-a853-4040-ab0d-7ad239b21d5d.html:9:    <meta http-equiv="Content-Security-Policy" content="
-./.local/state/replit/agent/design_reference/a992a570-ff78-4bea-b414-69b99d34380e/85bbf33d-a853-4040-ab0d-7ad239b21d5d.html:147:&lt;meta http-equiv="Content-Security-Policy" content="<br>
-./.local/state/replit/agent/design_reference/a992a570-ff78-4bea-b414-69b99d34380e/85bbf33d-a853-4040-ab0d-7ad239b21d5d.html:289:                        <p class="text-sm text-slate-600">Corrected Content-Security-Policy in index.html to resolve browser console errors</p>
-./index-backup.html:9:    <meta http-equiv="Content-Security-Policy" 
-./index-backup.html:124:    <meta http-equiv="Content-Security-Policy" content="
-./dist/index.html:17:    <meta http-equiv="Content-Security-Policy" 
-./dist/index.html:134:    <meta http-equiv="Content-Security-Policy" content="
-./index.html:17:    <meta http-equiv="Content-Security-Policy" 
-./index.html:135:    <meta http-equiv="Content-Security-Policy" content="
 
 === VERIFICAR SE É NO INDEX.HTML ===
 
@@ -15,7 +6,6 @@
     <!-- Permissions Policy para eliminar warnings -->
     <meta http-equiv="Permissions-Policy" content="accelerometer=(), autoplay=*, camera=(), geolocation=(), microphone=(), payment=()" />
     <!-- Content Security Policy - Permite Font Awesome e outras fontes críticas -->
-    <meta http-equiv="Content-Security-Policy" 
           content="default-src 'self' https: data: blob:; 
                    font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://ka-f.fontawesome.com https://use.fontawesome.com data:; 
                    style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://ka-f.fontawesome.com https://use.fontawesome.com; 
@@ -23,7 +13,6 @@
     </style>
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="
       default-src 'self' 'unsafe-inline' 'unsafe-eval';
       connect-src 'self' https://firestore.googleapis.com https://api.olitcrm.com.br https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://app.meucredere.com.br https://embed.meucredere.com.br;
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;

@@ -9,7 +9,6 @@ Successfully implemented Content Security Policy (CSP) fix to allow Font Awesome
 #### 1. Content Security Policy Meta Tag
 Adicionada meta tag CSP com permissões completas para Font Awesome:
 ```html
-<meta http-equiv="Content-Security-Policy" 
       content="default-src 'self' https: data: blob:; 
                font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com 
                         https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 

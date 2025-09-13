@@ -1,58 +1,322 @@
-Plano “copiar o bom”: Estoque = Financiamento
-1) Faça o EstoqueLayout herdar o layout correto (atalho simples)
+/* =================================================================
+   OVERRIDES CSS — ajustes globais e das páginas internas
+   ================================================================= */
 
-Em vez de manter um layout próprio para o estoque, aponte o arquivo para o mesmo layout do Financiamento:
+/* ---------- Globais básicos ---------- */
 
-src/layouts/EstoqueLayout.jsx
-
-- import { Outlet } from "react-router-dom";
-- import Header1 from "@/components/headers/Header1";
-- import Footer1 from "@/components/footers/Footer1";
--
-- export default function EstoqueLayout() {
--   return (
--     <>
--       <Header1
--         headerClass="boxcar-header header-style-v1 style-two inner-header cus-style-1"
--         white={true}
--       />
--       <Outlet />
--       <Footer1 />
--     </>
--   );
-- }
-+// Alias: o Estoque usa exatamente o mesmo layout das páginas internas (Financiamento)
-+import FinanciamentoLayout from "./FinanciamentoLayout";
-+export default FinanciamentoLayout;
-
-
-Isso garante o mesmo header, mesmas curvas e mesma estrutura DOM das páginas internas que já estão certas.
-
-2) Garanta que não haja header duplicado dentro da página do estoque
-
-Remova qualquer <Header1 ...> dentro das páginas de listagem/estoque (deixe o header só no layout):
-
-rg -n "<\s*Header1" src/pages/car-listings/inventory-list-01
-# Se aparecer, remova esse Header1 da página.
-
-3) Remova os “overrides” que criamos só para o estoque
-
-Abra src/styles/overrides.css e apague tudo que seja .page-estoque, .estoque-header ou regras específicas do estoque que mexem em padding/margin/curvas.
-Objetivo: zero CSS especial — o Estoque passa a usar exatamente o que o Financiamento usa.
-
-4) (Opcional, mas recomendado) Curvas globais do header interno
-
-Se alguma página interna ainda estiver sem as curvas, mantenha um único CSS global para todas as internas (é o mesmo que o Financiamento já usa):
-
-src/styles/overrides.css (pode deixar no final do arquivo)
-
-/* Curvas no cabeçalho interno (todas as páginas internas) */
-.boxcar-header.header-style-v1.style-two.inner-header {
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
-  overflow: hidden;
+/* 1) Tamanho da logo no header */
+.boxcar-header .header-logo img{
+  max-height:50px !important;
+  height:50px !important;
+  width:auto !important;
+  object-fit:contain !important;
 }
 
-5) Hard reload (sem cache)
+/* 2) Curvas no cabeçalho interno (todas as páginas internas) */
+.boxcar-header.header-style-v1.style-two.inner-header{
+  border-bottom-left-radius:24px;
+  border-bottom-right-radius:24px;
+  overflow:hidden;
+}
 
-Abra DevTools > Network > marque Disable cache e recarregue a página.
+/* 3) Garantir que backgrounds de heros cubram corretamente */
+.page-hero{
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+/* ---------- Breadcrumb linear padrão (páginas que usam nav.breadcrumb) ---------- */
+
+nav.breadcrumb{ display:block; margin:0; padding:0; }
+nav.breadcrumb ol{
+  display:flex; align-items:center; gap:8px;
+  list-style:none; margin:0; padding:0;
+  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
+}
+/* zera separadores/eventuais resquícios do tema */
+nav.breadcrumb ol li::before,
+nav.breadcrumb ol li::after,
+nav.breadcrumb .bc-sep{ content:none !important; display:none !important; }
+/* único separador */
+nav.breadcrumb ol li:not(:last-child)::after{
+  content:"/"; color:#cbd5e1; margin:0 8px;
+}
+nav.breadcrumb a{
+  color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px;
+}
+nav.breadcrumb a:hover{ text-decoration:underline; }
+
+/* ---------- Bloco .boxcar-title-three (internas) ---------- */
+
+.boxcar-header.header-style-v1.style-two.inner-header + * > .boxcar-title-three:first-child,
+.boxcar-header.header-style-v1.style-two.inner-header + main > .boxcar-title-three:first-child{
+  margin-top:0;
+  padding-top:14px;   /* respiração do topo */
+  padding-bottom:6px; /* aproxima do conteúdo seguinte */
+}
+
+.boxcar-title-three nav.breadcrumb{ display:block; margin:0 0 6px 0; padding:0; }
+.boxcar-title-three nav.breadcrumb ol{
+  display:flex; align-items:center; list-style:none; margin:0; padding:0;
+  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
+}
+.boxcar-title-three nav.breadcrumb ol li + li::before,
+.boxcar-title-three nav.breadcrumb ol li::after,
+.boxcar-title-three nav.breadcrumb .bc-sep{ content:none !important; display:none !important; }
+.boxcar-title-three nav.breadcrumb ol li:not(:last-child)::after{
+  content:"/"; color:#cbd5e1; margin:0 8px;
+}
+.boxcar-title-three nav.breadcrumb a{
+  color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px;
+}
+.boxcar-title-three nav.breadcrumb a:hover{ text-decoration:underline; }
+
+.boxcar-title-three h1,
+.boxcar-title-three h2.title,
+.boxcar-title-three .title{
+  margin:0 0 12px 0 !important;
+  color:#1a2332 !important;
+  font-size:40px !important;
+  font-weight:700 !important;
+  line-height:1.15 !important;
+  letter-spacing:-0.01em;
+}
+
+/* ---------- SOBRE (exemplo de interna com subtítulo) ---------- */
+
+.page-sobre .boxcar-title-three h1,
+.page-sobre .boxcar-title-three .title{
+  font-weight:700; font-size:40px; line-height:1.15; letter-spacing:-0.01em;
+  color:#1a2332; margin:0 0 10px 0 !important;
+}
+.page-sobre .about-section-main .boxcar-title .lead-text{
+  font-size:18px; line-height:1.6; font-weight:500; color:#64748b;
+  margin:0 0 24px 0 !important;
+}
+.page-sobre .boxcar-title-three nav.breadcrumb{ margin-bottom:6px; }
+.page-sobre .inventory-section.pb-0.layout-radius{ padding-bottom:0; }
+
+/* =================================================================
+   ESTOQUE — layout do topo, grid e responsividade
+   ================================================================= */
+
+/* --- Grid do Estoque: sidebar + listagem --- */
+.page-estoque .inventory-grid{
+  display:grid; grid-template-columns:320px 1fr;
+  gap:24px; align-items:start; margin-top:12px;
+}
+
+/* Sidebar sticky sob o header interno */
+.page-estoque .inventory-sidebar{ position:sticky; top:96px; }
+
+/* Força largura/offset do painel de filtros (componente) */
+.page-estoque .filters-panel.desktop{
+  width:100% !important; max-width:320px !important; top:96px !important;
+}
+
+/* Remover padding-top que o Listings1 aplicava inline */
+.page-estoque .inventory-content .boxcar-container{ padding-top:0 !important; }
+
+/* Barra “Mostrando X veículos” mais próxima do conteúdo */
+.page-estoque .inventory-content .text-box{ margin-top:0 !important; }
+
+/* Breadcrumb/Título sob o header interno (mantendo padrão visual do site) */
+.page-estoque .breadcrumb-one{ padding-top:14px; padding-bottom:6px; }
+.page-estoque .breadcrumb-one h1{
+  margin:0 0 12px 0 !important; color:#1a2332 !important;
+  font-size:40px !important; font-weight:700 !important; line-height:1.15 !important; letter-spacing:-0.01em;
+}
+
+/* Breadcrumb linear dentro do bloco .breadcrumb-one (quando existir) */
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"]{ display:block; margin:0 0 6px 0; padding:0; }
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] ol{
+  display:flex; align-items:center; gap:8px; list-style:none; margin:0; padding:0;
+  white-space:nowrap; font-size:14px; line-height:1.4; color:#64748b;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] .bc-sep{ display:none !important; }
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] ol li + li::before{
+  content:"/"; color:#cbd5e1; margin:0 8px;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a{
+  color:#405FF2; text-decoration:none; font-weight:500; text-underline-offset:2px;
+}
+.page-estoque .breadcrumb-one nav[aria-label="breadcrumb"] a:hover{ text-decoration:underline; }
+
+/* Busca colada ao título (mas sem “amassar”) */
+.page-estoque .inventory-search{ margin-top:10px; }
+.page-estoque .inventory-search .container{ padding-top:0; padding-bottom:0; }
+
+/* Grid imediatamente após a busca */
+.page-estoque .inventory-grid{ margin-top:12px; }
+
+/* --- Alinhamento do bloco “Mostrando X / Ordenar por / Recente” --- */
+.page-estoque .inventory-content .text-box{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 0; border-bottom:1px solid #e9ecef; margin-bottom:16px; gap:12px;
+}
+.page-estoque .inventory-content .text-box .text{
+  font-size:14px; color:#64748b; font-weight:500;
+}
+.page-estoque .inventory-content .text-box form{ margin:0; }
+
+/* Tornar o seletor de ordenação estável em largura */
+.page-estoque .inventory-content .text-box .form_boxes,
+.page-estoque .inventory-content .text-box .form_boxes.v3{
+  display:flex; align-items:center; gap:8px;
+}
+.page-estoque .inventory-content .text-box .form_boxes select,
+.page-estoque .inventory-content .text-box .form_boxes .nice-select,
+.page-estoque .inventory-content .text-box .form_boxes .react-select__control{
+  min-width:190px;
+}
+
+/* --- Ajustes nos cards: evitar texto cortado em (Combustível/KM/Câmbio) --- */
+.page-estoque .car-block-four .content-box ul{
+  display:flex; flex-wrap:wrap; gap:8px 12px;
+}
+.page-estoque .car-block-four .content-box ul li{
+  /* Permite quebrar, evitando “...” e sobreposição */
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  min-width:0;
+}
+
+/* =================================================================
+   ESTOQUE — responsividade (mobile)
+   ================================================================= */
+
+@media (max-width: 991px){
+  /* Empilhar: sidebar vira “fora do fluxo” e a listagem ocupa 100% */
+  .page-estoque .inventory-grid{ grid-template-columns:1fr; }
+  .page-estoque .inventory-sidebar{ position:static; top:auto; }
+}
+
+/* Mobile estreito */
+@media (max-width: 767.98px){
+  /* Evita overflow horizontal em qualquer container da página de estoque */
+  .page-estoque,
+  .page-estoque main,
+  .page-estoque .inventory-page,
+  .page-estoque .inventory-content,
+  .page-estoque .boxcar-container{
+    overflow-x:hidden !important;
+  }
+
+  /* Gutter consistente da listagem no mobile */
+  .page-estoque .boxcar-container{
+    padding-left:16px !important;
+    padding-right:16px !important;
+  }
+
+  /* A .row do tema usa margens negativas; neutralizamos e usamos grid 1x */
+  .page-estoque .inventory-content .row{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:16px !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+  }
+
+  /* Colunas ocupam 100% (sem paddings laterais) */
+  .page-estoque .inventory-content .row > [class*="col"]{
+    width:100% !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+
+  /* Card ocupa a largura útil do viewport (com os 16px de gutter) */
+  .page-estoque .car-block-four .inner-box{
+    width:calc(100vw - 32px) !important;
+    max-width:720px;
+    margin:0 auto !important;
+    border-radius:14px; overflow:hidden;
+  }
+
+  /* Imagem 100% do card */
+  .page-estoque .car-block-four .image-box,
+  .page-estoque .car-block-four figure.image,
+  .page-estoque .car-block-four figure.image img{
+    width:100% !important; max-width:100% !important; height:auto !important; display:block !important;
+  }
+
+  /* Tipografia mais contida para não “encostar” nas bordas */
+  .page-estoque .car-block-four .content-box ul li{
+    font-size:13px !important;
+    line-height:1.35 !important;
+  }
+
+  /* Empilhar “Mostrando X” e “Ordenar por” */
+  .page-estoque .inventory-content .text-box{
+    flex-direction:column; align-items:flex-start; gap:10px; padding-top:12px; padding-bottom:12px;
+  }
+
+  .page-estoque .inventory-content .text-box .form_boxes,
+  .page-estoque .inventory-content .text-box .form_boxes.v3{
+    width:100%;
+  }
+  .page-estoque .inventory-content .text-box .form_boxes small{ margin-right:4px; }
+  .page-estoque .inventory-content .text-box .form_boxes select,
+  .page-estoque .inventory-content .text-box .form_boxes .nice-select,
+  .page-estoque .inventory-content .text-box .form_boxes .react-select__control{
+    width:100% !important; min-width:0; flex:1 1 auto;
+  }
+}
+
+/* =================================================================
+   FILTER SIDEBAR — salvaguardas para o mobile em tela cheia
+   (Estas regras não “criam” o componente; apenas garantem que,
+    quando ele estiver com classe de abertura, ocupe a tela toda,
+    com z-index alto e sem ser “bloqueado” por overflow.)
+   ================================================================= */
+
+@media (max-width: 991px){
+  /* Painel mobile (nomes comuns que vimos no projeto) */
+  .filters-panel.mobile,
+  .filter-sidebar.mobile,
+  .filters-drawer,
+  .filters-offcanvas{
+    position:fixed !important;
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:none !important;
+    background:#fff;
+    box-shadow:0 12px 40px rgba(0,0,0,.24);
+    transform:translateY(100%);
+    transition:transform .28s ease-in-out, opacity .2s ease-in-out;
+    opacity:.0;
+    z-index:10050;       /* acima de header e demais overlays */
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* Estados “aberto” mais comuns */
+  .filters-panel.mobile.is-open,
+  .filters-panel.mobile.open,
+  .filter-sidebar.mobile.is-open,
+  .filter-sidebar.mobile.open,
+  .filters-drawer.is-open,
+  .filters-offcanvas.is-open{
+    transform:translateY(0);
+    opacity:1;
+  }
+
+  /* Backdrop genérico (se existir) */
+  .filters-backdrop,
+  .filters-overlay{
+    position:fixed; inset:0; background:rgba(2,6,23,.45);
+    z-index:10040; display:block;
+  }
+
+  /* Botão flutuante do filtro (se existir); garante que fique clicável */
+  .floating-filter-button{
+    position:fixed; right:16px; bottom:92px;
+    z-index:10060; /* acima do backdrop */
+  }
+}
+
+/* =================================================================
+   FIM
+   ================================================================= */

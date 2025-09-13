@@ -2,11 +2,9 @@ PROMPT A — substituir a meta CSP (1 arquivo, 1 troca)
 
 Arquivo: index.html na raiz do projeto (é o que o Vite usa no dev).
 
-Abra index.html e remova qualquer <meta http-equiv="Content-Security-Policy" …> existente.
 
 Cole exatamente esta linha no <head>:
 
-<meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
   base-uri 'self';
   img-src 'self' data: https:;
@@ -47,7 +45,6 @@ Abra firebase.json e substitua (ou adicione) este bloco dentro de "hosting":
         "source": "/index.html",
         "headers": [
           {
-            "key": "Content-Security-Policy",
             "value": "default-src 'self'; base-uri 'self'; img-src 'self' data: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https:; connect-src 'self' https: wss:; frame-src 'self' https:; form-action 'self'; upgrade-insecure-requests; report-uri https://o1151714.ingest.sentry.io/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e;"
           }
         ]

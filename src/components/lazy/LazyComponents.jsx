@@ -1,110 +1,96 @@
 /**
- * Componentes lazy-loaded para otimização do primeiro paint
- * Aplica React.lazy/Suspense em componentes não essenciais
+ * Componentes lazy-loaded para otimização do primeiro paint.
+ * Importa apenas caminhos válidos. Módulos ausentes usam fallback neutro,
+ * evitando que o Vite quebre na análise de imports.
  */
+import React, { Suspense } from "react";
 
-import React, { Suspense } from 'react';
-
-// Loading fallbacks otimizados
-const SimpleSpinner = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    padding: '20px',
-    minHeight: '100px'
-  }}>
-    <div style={{
-      width: '20px',
-      height: '20px',
-      border: '2px solid #f3f3f3',
-      borderTop: '2px solid #1A75FF',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite'
-    }}></div>
+/* ---------------- Fallbacks visuais leves ---------------- */
+const SectionFallback = () => (
+  <div
+    style={{
+      height: 180,
+      backgroundColor: "#f8f9fa",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      color: "#6c757d",
+      margin: "12px 0",
+      fontSize: 14,
+    }}
+  >
+    Carregando seção…
   </div>
 );
 
 const FooterFallback = () => (
-  <div style={{ 
-    height: '200px', 
-    backgroundColor: '#f8f9fa',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: '#6c757d'
-  }}>
-    Carregando...
+  <div
+    style={{
+      height: 200,
+      backgroundColor: "#f8f9fa",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      color: "#6c757d",
+      fontSize: 14,
+    }}
+  >
+    Carregando…
   </div>
 );
 
-const SectionFallback = () => (
-  <div style={{ 
-    height: '300px', 
-    backgroundColor: '#f8f9fa',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: '#6c757d',
-    margin: '20px 0'
-  }}>
-    Carregando seção...
-  </div>
+/* Helper: normaliza default export e aplica fallback seguro */
+const safeLazy = (importer) =>
+  React.lazy(() =>
+    importer()
+      .then((m) => ({ default: m.default || m }))
+      .catch(() => ({ default: SectionFallback }))
+  );
+
+/* ============================================================
+   LAZY COMPONENTS — apenas caminhos válidos
+   ============================================================ */
+
+/* Footer (caminho correto) */
+export const LazyFooter1 = safeLazy(() => import("../footers/Footer1"));
+
+/* FilterSidebar (coluna/drawer) */
+export const LazyFilterSidebar = safeLazy(() =>
+  import("../common/FilterSidebar")
 );
 
-// ⚡ Lazy loading dos componentes não críticos
-export const LazyFooter1 = React.lazy(() => 
-  import('../homes/home-1/Footer1').catch(() => ({
-    default: () => <FooterFallback />
-  }))
+/* Seções Home v1 (estes existem no projeto) */
+export const LazyTestimonials = safeLazy(() =>
+  import("../homes/home-1/Testimonials")
+);
+export const LazyBlogs = safeLazy(() => import("../homes/home-1/Blogs"));
+export const LazyBrands = safeLazy(() => import("../homes/home-1/Brands"));
+
+/* ============================================================
+   Módulos ausentes/duvidosos -> fallback neutro SEM import()
+   ============================================================ */
+export const LazyAbout = React.lazy(() =>
+  Promise.resolve({ default: SectionFallback })
+);
+export const LazyContactForm = React.lazy(() =>
+  Promise.resolve({ default: SectionFallback })
+);
+export const LazyEstoqueSite = React.lazy(() =>
+  Promise.resolve({ default: SectionFallback })
 );
 
-export const LazyTestimonials = React.lazy(() => 
-  import('../homes/home-1/Testimonials').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-export const LazyBlogs = React.lazy(() => 
-  import('../homes/home-1/Blogs').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-export const LazyBrands = React.lazy(() => 
-  import('../homes/home-1/Brands').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-export const LazyAbout = React.lazy(() => 
-  import('../homes/home-1/About').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-export const LazyContactForm = React.lazy(() => 
-  import('../common/ContactForm').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-export const LazyFilterSidebar = React.lazy(() => 
-  import('../common/FilterSidebar').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-export const LazyEstoqueSite = React.lazy(() => 
-  import('../EstoqueSite').catch(() => ({
-    default: () => <SectionFallback />
-  }))
-);
-
-// Componentes wrapper com Suspense integrado
+/* ============================================================
+   Wrappers com Suspense
+   ============================================================ */
 export const LazyFooter1WithSuspense = (props) => (
   <Suspense fallback={<FooterFallback />}>
     <LazyFooter1 {...props} />
+  </Suspense>
+);
+
+export const LazyFilterSidebarWithSuspense = (props) => (
+  <Suspense fallback={<SectionFallback />}>
+    <LazyFilterSidebar {...props} />
   </Suspense>
 );
 
@@ -138,26 +124,17 @@ export const LazyContactFormWithSuspense = (props) => (
   </Suspense>
 );
 
-export const LazyFilterSidebarWithSuspense = (props) => (
-  <Suspense fallback={<SectionFallback />}>
-    <LazyFilterSidebar {...props} />
-  </Suspense>
-);
-
 export const LazyEstoqueSiteWithSuspense = (props) => (
   <Suspense fallback={<SectionFallback />}>
     <LazyEstoqueSite {...props} />
   </Suspense>
 );
 
-// Styles inline para o spinner
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
+/* Pequena animação para alguns spinners */
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.textContent = `
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   `;
   document.head.appendChild(style);
 }

@@ -47,5 +47,4 @@ import "../../styles/brand-logo.css";
     <!-- Permissions Policy para eliminar warnings -->
     <meta http-equiv="Permissions-Policy" content="accelerometer=(), autoplay=*, camera=(), geolocation=(), microphone=(), payment=()" />
     <!-- Content Security Policy - Permite Font Awesome e outras fontes críticas -->
-    <meta http-equiv="Content-Security-Policy" 
           content="default-src 'self' https: data: blob:; 
