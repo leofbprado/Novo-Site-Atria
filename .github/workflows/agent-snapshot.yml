@@ -14,24 +14,28 @@ jobs:
       - name: Build snapshot (code + configs)
         shell: bash
         run: |
-          set -euo pipefail
+          set -u  # sem -e pra não matar o job por detalhe bobo
           mkdir -p out
+
           git ls-files > git-files.txt
 
-          # Seleciona arquivos de código/config para o pacote
+          # Lista só código/config pra empacotar
           awk '/\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|toml|conf|md|css|scss|sass|html|env(\.|$))$/{print}' git-files.txt > include.txt || true
 
-          # Pacote do código
+          # Pacote principal
           if [ -s include.txt ]; then
             tar -czf out/code-snapshot.tar.gz -T include.txt
           else
             echo "Sem arquivos de código para empacotar" > out/EMPTY.txt
           fi
 
-          # Relatórios auxiliares
-          (echo -e "bytes\tpath"; while IFS= read -r f; do [ -f "$f" ] && stat -c '%s\t%n' "$f"; done < git-files.txt | sort -nr | head -n 400) > out/largest-files.tsv
-          (echo -e "size\tpath"; du -ah --threshold=1M | sort -h) > out/tree-over-1MB.tsv
-          (echo "PATH"; cat git-files.txt) > out/git-files.txt
+          # Relatórios auxiliares (não fazem o job falhar)
+          find . -type f -not -path "./.git/*" -not -path "./node_modules/*" -printf "%s\t%p\n" \
+            | sort -nr | head -n 400 > out/largest-files.tsv || true
+
+          du -ah -d 3 2>/dev/null | sort -h | tail -n 400 > out/du-tree.tsv || true
+
+          cp git-files.txt out/git-files.txt || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
