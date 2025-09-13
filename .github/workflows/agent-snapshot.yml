@@ -10,15 +10,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
       - name: Build snapshot (code + configs)
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           mkdir -p out
           git ls-files > git-files.txt
 
-          # Arquivos de código e config (tudo que preciso para auditoria)
-          grep -E '\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|toml|conf|md|css|scss|sass|html|env(\.|$))$' git-files.txt \
-            > include.txt || true
+          # Seleciona arquivos de código/config para o pacote
+          awk '/\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|toml|conf|md|css|scss|sass|html|env(\.|$))$/{print}' git-files.txt > include.txt || true
 
           # Pacote do código
           if [ -s include.txt ]; then
@@ -27,7 +28,7 @@ jobs:
             echo "Sem arquivos de código para empacotar" > out/EMPTY.txt
           fi
 
-          # Relatórios auxiliares (para priorizar limpeza/pesos)
+          # Relatórios auxiliares
           (echo -e "bytes\tpath"; while IFS= read -r f; do [ -f "$f" ] && stat -c '%s\t%n' "$f"; done < git-files.txt | sort -nr | head -n 400) > out/largest-files.tsv
           (echo -e "size\tpath"; du -ah --threshold=1M | sort -h) > out/tree-over-1MB.tsv
           (echo "PATH"; cat git-files.txt) > out/git-files.txt
