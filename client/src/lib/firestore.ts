@@ -4,9 +4,31 @@ import {
   where,
   orderBy,
   getDocs,
+  addDoc,
+  serverTimestamp,
   QueryConstraint,
 } from "firebase/firestore";
 import { db } from "./firebase";
+
+// ─── Lead Capture ─────────────────────────────────────────────────────────────
+export interface Lead {
+  nome?: string;
+  whatsapp: string;
+  source: string;
+  query?: string;
+  dados?: Record<string, unknown>;
+}
+
+export async function saveLead(lead: Lead): Promise<void> {
+  if (!db) {
+    console.log("[mock] Lead salvo:", lead);
+    return;
+  }
+  await addDoc(collection(db, "leads"), {
+    ...lead,
+    createdAt: serverTimestamp(),
+  });
+}
 
 export interface Vehicle {
   id: string;

@@ -1,5 +1,26 @@
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
-const WHATSAPP = "https://wa.me/5519999999999";
+const WA = "https://wa.me/5519996525211";
+
+const LOJAS = [
+  {
+    nome: "Loja Abolição",
+    endereco: "Rua Abolição, 1500 – VL Joaquim Inácio",
+    cidade: "Campinas-SP · CEP 13045-750",
+    tel: "(19) 3199-2552",
+  },
+  {
+    nome: "Loja Campos Elíseos",
+    endereco: "R. Domício Pacheco e Silva, 1328 – Jd Campos Elíseos",
+    cidade: "Campinas-SP · CEP 13060-190",
+    tel: "(19) 3500-8271",
+  },
+  {
+    nome: "Loja Guanabara",
+    endereco: "Av. Brasil, 1277 – Jd Guanabara",
+    cidade: "Campinas-SP · CEP 13070-178",
+    tel: "(19) 3094-0015",
+  },
+];
 
 const LINKS = {
   institucional: [
@@ -9,7 +30,7 @@ const LINKS = {
     { label: "Blog", href: "/blog" },
   ],
   atendimento: [
-    { label: "WhatsApp", href: WHATSAPP },
+    { label: "WhatsApp", href: WA },
     { label: "Contato", href: "#contato" },
     { label: "Financiamento", href: "/financiamento" },
     { label: "Avaliação do Seu Carro", href: "/avaliacao" },
@@ -30,17 +51,11 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="mb-4">
-              <img
-                src={LOGO_BRANCO}
-                alt="Átria Veículos"
-                className="h-10 w-auto object-contain"
-              />
+              <img src={LOGO_BRANCO} alt="Átria Veículos" className="h-10 w-auto object-contain" />
             </div>
-            <p className="font-barlow text-sm text-white/60 leading-relaxed mb-5">
-              Há mais de 13 anos levando qualidade, transparência e as melhores
-              condições para quem quer comprar um veículo em Campinas.
+            <p className="font-inter text-sm text-white/60 leading-relaxed mb-5">
+              Há mais de 13 anos levando qualidade, transparência e as melhores condições para quem quer comprar um veículo em Campinas.
             </p>
-            {/* Socials */}
             <div className="flex gap-3">
               {[
                 {
@@ -63,7 +78,7 @@ export function Footer() {
                 },
                 {
                   label: "WhatsApp",
-                  href: WHATSAPP,
+                  href: WA,
                   icon: (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" />
@@ -93,10 +108,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {LINKS.institucional.map(({ label, href }) => (
                 <li key={label}>
-                  <a
-                    href={href}
-                    className="font-barlow text-sm text-white/60 hover:text-white transition-colors"
-                  >
+                  <a href={href} className="font-inter text-sm text-white/60 hover:text-white transition-colors">
                     {label}
                   </a>
                 </li>
@@ -104,20 +116,15 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Atendimento */}
+          {/* Veículos */}
           <div>
             <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow mb-5">
-              Atendimento
+              Veículos
             </h4>
             <ul className="space-y-2.5">
-              {LINKS.atendimento.map(({ label, href }) => (
+              {LINKS.veiculos.map(({ label, href }) => (
                 <li key={label}>
-                  <a
-                    href={href}
-                    target={href.startsWith("http") ? "_blank" : undefined}
-                    rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="font-barlow text-sm text-white/60 hover:text-white transition-colors"
-                  >
+                  <a href={href} className="font-inter text-sm text-white/60 hover:text-white transition-colors">
                     {label}
                   </a>
                 </li>
@@ -130,34 +137,36 @@ export function Footer() {
             <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow mb-5">
               Nossas Lojas
             </h4>
-            <div className="space-y-4">
-              <div>
-                <p className="font-barlow font-semibold text-sm text-white mb-0.5">Loja Central</p>
-                <p className="font-barlow text-sm text-white/60">
-                  Campinas, SP
-                  <br />
-                  Seg–Sex: 9h–19h | Sáb: 9h–17h
-                </p>
-              </div>
-              <div>
-                <p className="font-barlow font-semibold text-sm text-white mb-0.5">Contato</p>
-                <a
-                  href={WHATSAPP}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-barlow text-sm text-atria-yellow hover:text-atria-yellow-light transition-colors"
-                >
-                  (19) 99999-9999
-                </a>
-              </div>
+            <div className="space-y-5">
+              {LOJAS.map((loja) => (
+                <div key={loja.nome}>
+                  <p className="font-inter font-semibold text-sm text-white mb-0.5">{loja.nome}</p>
+                  <p className="font-inter text-xs text-white/50 leading-relaxed">
+                    {loja.endereco}
+                    <br />
+                    {loja.cidade}
+                  </p>
+                  <a
+                    href={`tel:${loja.tel.replace(/\D/g, "")}`}
+                    className="font-inter text-xs text-atria-yellow hover:text-atria-yellow-light transition-colors mt-0.5 inline-block"
+                  >
+                    {loja.tel}
+                  </a>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-white/40 text-xs font-barlow">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-white/40 text-xs font-inter">
           <p>© {new Date().getFullYear()} Átria Veículos. Todos os direitos reservados.</p>
-          <p>CNPJ 00.000.000/0001-00 · Campinas, São Paulo</p>
+          <p>
+            <a href={WA} target="_blank" rel="noopener noreferrer" className="hover:text-atria-yellow transition-colors">
+              (19) 99652-5211
+            </a>
+            {" · "}Campinas, São Paulo
+          </p>
         </div>
       </div>
     </footer>
