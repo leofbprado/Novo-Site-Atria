@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -106,6 +104,36 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-barlow antialiased bg-white text-atria-text-dark;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-barlow-condensed;
+  }
+}
+
+@layer utilities {
+  .section-label {
+    @apply font-barlow text-xs font-semibold uppercase tracking-[0.3em] text-atria-yellow;
+  }
+
+  .section-title {
+    @apply font-barlow-condensed text-4xl md:text-5xl font-black uppercase text-atria-text-dark leading-tight;
+  }
+
+  .section-title-white {
+    @apply font-barlow-condensed text-4xl md:text-5xl font-black uppercase text-white leading-tight;
+  }
+
+  .btn-yellow {
+    @apply bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-barlow font-bold uppercase tracking-wider px-6 py-3 transition-colors duration-200;
+  }
+
+  .btn-navy {
+    @apply bg-atria-navy hover:bg-atria-navy-mid text-white font-barlow font-bold uppercase tracking-wider px-6 py-3 transition-colors duration-200;
+  }
+
+  .btn-outline-white {
+    @apply border-2 border-white text-white hover:bg-white hover:text-atria-navy font-barlow font-bold uppercase tracking-wider px-6 py-3 transition-all duration-200;
   }
 }

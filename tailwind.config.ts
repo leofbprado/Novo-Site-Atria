@@ -61,44 +61,51 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Átria Veículos Design System
         atria: {
-          dark: "#0d1124",
-          "blue-deep": "#001A70",
-          "blue-mid": "#0a2580",
-          "blue-light": "#1a3aaa",
-          gold: "#C9A84C",
-          "gold-bright": "#F5C800",
-          "gold-hover": "#b8903a",
+          navy: "#1a237e",
+          "navy-dark": "#0d1355",
+          "navy-mid": "#283593",
+          "navy-light": "#3949ab",
+          yellow: "#f9a825",
+          "yellow-dark": "#f57f17",
+          "yellow-light": "#fdd835",
+          "gray-light": "#f5f5f5",
+          "gray-medium": "#e0e0e0",
+          "text-dark": "#1a1a2e",
+          "text-gray": "#64748b",
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
+        sans: ["Barlow", "sans-serif"],
+        serif: ["Barlow Condensed", "sans-serif"],
         mono: ["var(--font-mono)"],
         barlow: ["Barlow", "sans-serif"],
         "barlow-condensed": ["Barlow Condensed", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "count-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        marquee: "marquee 25s linear infinite",
+        "count-up": "count-up 0.6s ease-out forwards",
       },
     },
   },
