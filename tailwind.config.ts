@@ -77,10 +77,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Barlow", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
         serif: ["Barlow Condensed", "sans-serif"],
         mono: ["var(--font-mono)"],
-        barlow: ["Barlow", "sans-serif"],
+        inter: ["Inter", "sans-serif"],
+        barlow: ["Inter", "sans-serif"],
         "barlow-condensed": ["Barlow Condensed", "sans-serif"],
       },
       keyframes: {

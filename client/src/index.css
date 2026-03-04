@@ -104,7 +104,7 @@
   }
 
   body {
-    @apply font-barlow antialiased bg-white text-atria-text-dark;
+    @apply font-inter antialiased bg-white text-atria-text-dark;
   }
 
   h1, h2, h3, h4 {
@@ -114,7 +114,7 @@
 
 @layer utilities {
   .section-label {
-    @apply font-barlow text-xs font-semibold uppercase tracking-[0.3em] text-atria-yellow;
+    @apply font-inter text-xs font-semibold uppercase tracking-[0.3em] text-atria-yellow;
   }
 
   .section-title {
@@ -126,14 +126,18 @@
   }
 
   .btn-yellow {
-    @apply bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-barlow font-bold uppercase tracking-wider px-6 py-3 transition-colors duration-200;
+    @apply bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider px-6 py-3 transition-colors duration-200;
   }
 
   .btn-navy {
-    @apply bg-atria-navy hover:bg-atria-navy-mid text-white font-barlow font-bold uppercase tracking-wider px-6 py-3 transition-colors duration-200;
+    @apply bg-atria-navy hover:bg-atria-navy-mid text-white font-inter font-bold uppercase tracking-wider px-6 py-3 transition-colors duration-200;
   }
 
   .btn-outline-white {
-    @apply border-2 border-white text-white hover:bg-white hover:text-atria-navy font-barlow font-bold uppercase tracking-wider px-6 py-3 transition-all duration-200;
+    @apply border-2 border-white text-white hover:bg-white hover:text-atria-navy font-inter font-bold uppercase tracking-wider px-6 py-3 transition-all duration-200;
+  }
+
+  .btn-outline-navy {
+    @apply border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold uppercase tracking-wider px-6 py-3 transition-all duration-200;
   }
 }

@@ -1,3 +1,4 @@
+const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
 const WHATSAPP = "https://wa.me/5519999999999";
 
 const LINKS = {
@@ -29,12 +30,11 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="mb-4">
-              <span className="font-barlow-condensed font-black text-2xl uppercase tracking-tight text-white">
-                ÁTRIA
-              </span>
-              <span className="font-barlow font-light text-2xl uppercase tracking-widest text-white/50 ml-1">
-                VEÍCULOS
-              </span>
+              <img
+                src={LOGO_BRANCO}
+                alt="Átria Veículos"
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <p className="font-barlow text-sm text-white/60 leading-relaxed mb-5">
               Há mais de 13 anos levando qualidade, transparência e as melhores

@@ -12,6 +12,8 @@ export interface Vehicle {
   id: string;
   marca: string;
   modelo: string;
+  titulo?: string;
+  tipo?: string;
   ano: number;
   preco: number;
   km: number;
