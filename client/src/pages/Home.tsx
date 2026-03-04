@@ -841,7 +841,7 @@ const WHATSAPP = "https://wa.me/5519999999999?text=Olá!%20Vim%20pelo%20site%20e
 function CTAFinal() {
   return (
     <section className="py-24 bg-atria-navy relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#1a237e_0%,_#0d1355_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <p className="section-label mb-4">Pronto para começar?</p>
         <h2 className="section-title-white mb-6 max-w-2xl mx-auto">

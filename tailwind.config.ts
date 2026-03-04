@@ -63,10 +63,10 @@ export default {
         },
         // Átria Veículos Design System
         atria: {
-          navy: "#1a237e",
-          "navy-dark": "#0d1355",
-          "navy-mid": "#283593",
-          "navy-light": "#3949ab",
+          navy: "#001A8C",
+          "navy-dark": "#001066",
+          "navy-mid": "#002BB5",
+          "navy-light": "#1a3cc9",
           yellow: "#f9a825",
           "yellow-dark": "#f57f17",
           "yellow-light": "#fdd835",
