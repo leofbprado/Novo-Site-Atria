@@ -64,9 +64,41 @@
 
 ---
 
-## FASE 2: Próximos Passos
-- [ ] Implementar página de Listagem de Veículos
-- [ ] Implementar página de Detalhes do Veículo
-- [ ] Criar componentes de filtros
-- [ ] Adicionar paginação
+## FASE 2: Homepage Moderna ✅ CONCLUÍDA
+
+### 2.1 Componentes de Layout
+- [x] Criar `client/src/components/Header.tsx` (logo Átria Veículos, nav, botão WhatsApp)
+- [x] Criar `client/src/components/Footer.tsx` (info empresa, links, redes sociais, endereço Campinas)
+- [x] Criar `client/src/components/Layout.tsx` (wrapper Header + Footer + children)
+
+### 2.2 Página Home
+- [x] Criar `client/src/pages/Home.tsx` com seções:
+  - Hero (banner grande, CTA Ver Estoque, gradiente escuro)
+  - Diferenciais (4 cards com ícones)
+  - Destaques (grid cards veículos com getFeaturedVehicles + fallback mock)
+  - Sobre (texto Átria Veículos com stats)
+  - CTA WhatsApp (seção azul destacada)
+  - Localização (endereço + horários Campinas)
+
+### 2.3 Design System Atria
+- [x] Tema escuro (`#0d1124` base, `#001A70` azul profundo)
+- [x] Dourado `#C9A84C` como cor de destaque
+- [x] Fonte Barlow + Barlow Condensed (referência consignacao.atriaveiculos.com.br)
+- [x] Tailwind config com cores `atria.*` customizadas
+- [x] Animações framer-motion mobile-first
+
+### 2.4 Integração App.tsx
+- [x] Atualizar `App.tsx` para usar Layout + Home na rota `/`
+
+### 2.5 Versionamento
+- [x] Fazer git commit: 'feat: Fase 2 - Homepage moderna com design Atria'
+
+---
+
+## FASE 3: Próximos Passos
+- [ ] Implementar página de Listagem de Veículos (`/vehicles`)
+- [ ] Implementar página de Detalhes do Veículo (`/vehicles/:slug`)
+- [ ] Criar componentes de filtros (marca, ano, preço, câmbio)
+- [ ] Adicionar paginação ao estoque
+- [ ] Integrar busca em tempo real
 

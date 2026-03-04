@@ -66,6 +66,19 @@ export default {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        barlow: ["Barlow", "sans-serif"],
+        "barlow-condensed": ["Barlow Condensed", "sans-serif"],
+      },
+      colors: {
+        atria: {
+          dark: "#0d1124",
+          "blue-deep": "#001A70",
+          "blue-mid": "#0a2580",
+          "blue-light": "#1a3aaa",
+          gold: "#C9A84C",
+          "gold-bright": "#F5C800",
+          "gold-hover": "#b8903a",
+        },
       },
       keyframes: {
         "accordion-down": {
