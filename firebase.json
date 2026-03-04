@@ -3,8 +3,11 @@
     "rules": "firestore.rules"
   },
   "hosting": {
-    "public": "dist",
+    "public": "dist/public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ],
     "redirects": [
       { "source": "/inventory-list-01**", "destination": "/estoque", "type": 301 },
       { "source": "/veiculos**", "destination": "/estoque", "type": 301 },

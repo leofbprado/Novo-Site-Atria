@@ -3,58 +3,6 @@ import { motion } from "framer-motion";
 import { ChevronRight, MapPin, Phone, MessageCircle, Shield, Star, Clock, Award } from "lucide-react";
 import { getFeaturedVehicles, type Vehicle } from "@/lib/firestore";
 
-// Mock data for fallback when Firebase is not configured
-const mockVehicles: Vehicle[] = [
-  {
-    id: "1",
-    marca: "BMW",
-    modelo: "X5",
-    ano: 2023,
-    preco: 350000,
-    km: 5000,
-    cor: "Preto",
-    cambio: "Automática",
-    combustivel: "Diesel",
-    fotos: ["https://images.unsplash.com/photo-1553882900-d5160ca3fc10?w=600&q=80"],
-    descricao: "BMW X5 2023 impecável, revisões em dia, único dono",
-    destaque: true,
-    slug: "bmw-x5-2023",
-    createdAt: new Date("2024-01-15"),
-  },
-  {
-    id: "2",
-    marca: "Mercedes-Benz",
-    modelo: "C300",
-    ano: 2022,
-    preco: 250000,
-    km: 15000,
-    cor: "Prata",
-    cambio: "Automática",
-    combustivel: "Gasolina",
-    fotos: ["https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&q=80"],
-    descricao: "Mercedes-Benz C300 2022, interior de luxo, pacote AMG",
-    destaque: true,
-    slug: "mercedes-c300-2022",
-    createdAt: new Date("2024-01-10"),
-  },
-  {
-    id: "3",
-    marca: "Audi",
-    modelo: "A4",
-    ano: 2023,
-    preco: 280000,
-    km: 8000,
-    cor: "Cinza",
-    cambio: "Automática",
-    combustivel: "Gasolina",
-    fotos: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=80"],
-    descricao: "Audi A4 2023 com tecnologia de ponta, teto panorâmico",
-    destaque: true,
-    slug: "audi-a4-2023",
-    createdAt: new Date("2024-01-05"),
-  },
-];
-
 const diferenciais = [
   { icon: Shield, title: "Garantia Inclusa", desc: "Todos os veículos com garantia de procedência" },
   { icon: Star, title: "Qualidade Premium", desc: "Seleção rigorosa e inspeção técnica completa" },
@@ -78,8 +26,8 @@ export function Home() {
 
   useEffect(() => {
     getFeaturedVehicles()
-      .then((data) => setVehicles(data.length > 0 ? data : mockVehicles))
-      .catch(() => setVehicles(mockVehicles))
+      .then(setVehicles)
+      .catch(() => setVehicles([]))
       .finally(() => setLoading(false));
   }, []);
 

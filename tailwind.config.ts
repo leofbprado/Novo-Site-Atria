@@ -61,15 +61,6 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
-      },
-      fontFamily: {
-        sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
-        barlow: ["Barlow", "sans-serif"],
-        "barlow-condensed": ["Barlow Condensed", "sans-serif"],
-      },
-      colors: {
         atria: {
           dark: "#0d1124",
           "blue-deep": "#001A70",
@@ -79,6 +70,13 @@ export default {
           "gold-bright": "#F5C800",
           "gold-hover": "#b8903a",
         },
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        serif: ["var(--font-serif)"],
+        mono: ["var(--font-mono)"],
+        barlow: ["Barlow", "sans-serif"],
+        "barlow-condensed": ["Barlow Condensed", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
