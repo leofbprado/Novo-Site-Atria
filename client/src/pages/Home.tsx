@@ -1051,6 +1051,117 @@ function FAQ() {
   );
 }
 
+// ─── Contato ──────────────────────────────────────────────────────────────────
+const LOJAS_CONTATO = [
+  { nome: "Loja Abolicao", endereco: "Rua Abolicao, 1500 - VL Joaquim Inacio, Campinas-SP", telefone: "(19) 3199-2552" },
+  { nome: "Loja Campos Eliseos", endereco: "R. Domicio Pacheco e Silva, 1328 - Jd Campos Eliseos, Campinas-SP", telefone: "(19) 3500-8271" },
+  { nome: "Loja Guanabara", endereco: "Av. Brasil, 1277 - Jd Guanabara, Campinas-SP", telefone: "(19) 3094-0015" },
+];
+
+function Contato() {
+  const [form, setForm] = useState({ nome: "", email: "", telefone: "", mensagem: "" });
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.nome || !form.telefone) return;
+    setSending(true);
+    await saveLead({
+      nome: form.nome,
+      whatsapp: form.telefone,
+      source: "contato-home",
+      query: form.mensagem,
+      dados: { email: form.email },
+    });
+    setSending(false);
+    setSent(true);
+  };
+
+  return (
+    <section id="contato" className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <p className="section-label mb-2">Contato</p>
+          <h2 className="section-title">Fale Conosco</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+          {LOJAS_CONTATO.map((loja) => (
+            <div key={loja.nome} className="bg-atria-gray-light rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin size={18} className="text-atria-navy flex-shrink-0" />
+                <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark">{loja.nome}</h3>
+              </div>
+              <p className="font-inter text-sm text-atria-text-gray mb-2">{loja.endereco}</p>
+              <p className="font-inter text-sm text-atria-text-gray flex items-center gap-1.5">
+                <Phone size={14} className="text-atria-navy" />
+                {loja.telefone}
+              </p>
+              <p className="font-inter text-xs text-atria-text-gray mt-2 flex items-center gap-1.5">
+                <Clock size={12} className="text-atria-navy" />
+                Seg a Sex 9h-19h, Sab 9h-17h
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="max-w-xl mx-auto">
+          {sent ? (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+              <CheckCircle size={32} className="text-green-500 mx-auto mb-3" />
+              <p className="font-inter font-semibold text-atria-text-dark">Mensagem enviada com sucesso!</p>
+              <p className="font-inter text-sm text-atria-text-gray mt-1">Entraremos em contato em breve.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Seu nome"
+                  value={form.nome}
+                  onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
+                  required
+                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                />
+                <input
+                  type="email"
+                  placeholder="Seu e-mail"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                />
+              </div>
+              <input
+                type="tel"
+                placeholder="Seu telefone"
+                value={form.telefone}
+                onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))}
+                required
+                className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+              />
+              <textarea
+                placeholder="Sua mensagem"
+                rows={4}
+                value={form.mensagem}
+                onChange={(e) => setForm((f) => ({ ...f, mensagem: e.target.value }))}
+                className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors resize-none"
+              />
+              <button
+                type="submit"
+                disabled={sending}
+                className="w-full bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm py-4 rounded-xl transition-colors disabled:opacity-50"
+              >
+                {sending ? "Enviando..." : "Enviar Mensagem"}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── CTA Final ────────────────────────────────────────────────────────────────
 function CTAFinal() {
   const [showLeadModal, setShowLeadModal] = useState(false);
@@ -1116,6 +1227,7 @@ export default function Home() {
       <Depoimentos />
       <Blog />
       <FAQ />
+      <Contato />
       <CTAFinal />
     </>
   );

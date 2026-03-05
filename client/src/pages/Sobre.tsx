@@ -1,0 +1,333 @@
+import { useEffect, useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
+import {
+  MapPin, Phone, Clock, Target, Eye, Heart,
+  Award, Car, Users, Store, Star, Calendar,
+} from "lucide-react";
+
+const WA_NUMBER = "5519996525211";
+const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+
+// ---- SEO -------------------------------------------------------------------
+function useSEO() {
+  useEffect(() => {
+    document.title = "Sobre | Atria Veiculos - Ha mais de 13 anos em Campinas SP";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute("content", "Atria Veiculos: ha mais de 13 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 5000 veiculos vendidos. Confianca e transparencia.");
+  }, []);
+}
+
+// ---- Hero ------------------------------------------------------------------
+function Hero() {
+  return (
+    <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
+      <div className="relative z-10 container mx-auto px-4 text-center">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Sobre Nos</p>
+          <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
+            Sobre a <span className="text-atria-yellow">Atria Veiculos</span>
+          </h1>
+          <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
+            Ha mais de 13 anos guiando voce na melhor escolha
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Historia --------------------------------------------------------------
+function Historia() {
+  return (
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Nossa Historia</p>
+          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase mb-6">
+            De uma Loja a Referencia em Campinas
+          </h2>
+          <div className="font-inter text-atria-text-gray text-base leading-relaxed space-y-4 max-w-3xl mx-auto text-left md:text-center">
+            <p>
+              Fundada em Campinas, a Atria Veiculos nasceu com o proposito de transformar a experiencia de compra de veiculos seminovos.
+              O que comecou como uma unica loja, com dedicacao e compromisso com o cliente, cresceu para se tornar uma das principais
+              revendas da regiao.
+            </p>
+            <p>
+              Hoje, contamos com <strong className="text-atria-text-dark">3 lojas estrategicamente localizadas</strong> em Campinas,
+              mais de <strong className="text-atria-text-dark">5.000 veiculos vendidos</strong> e uma equipe especializada pronta para
+              oferecer a melhor consultoria automotiva.
+            </p>
+            <p>
+              Nosso diferencial esta na transparencia: cada veiculo passa por rigorosa inspecao tecnica, com laudo e garantia,
+              para que voce tenha total seguranca na sua escolha.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Missao/Visao/Valores --------------------------------------------------
+function MissaoVisaoValores() {
+  const cards = [
+    {
+      icon: <Target size={28} />,
+      title: "Missao",
+      desc: "Oferecer a melhor experiencia na compra de veiculos seminovos, com transparencia, qualidade e atendimento humanizado.",
+    },
+    {
+      icon: <Eye size={28} />,
+      title: "Visao",
+      desc: "Ser referencia em transparencia e qualidade no mercado automotivo da regiao de Campinas e interior de Sao Paulo.",
+    },
+    {
+      icon: <Heart size={28} />,
+      title: "Valores",
+      desc: "Honestidade, transparencia e compromisso com o cliente. Cada negociacao e conduzida com respeito e etica.",
+    },
+  ];
+
+  return (
+    <section className="py-20 bg-atria-gray-light">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {cards.map((c, i) => (
+            <motion.div
+              key={c.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white rounded-xl p-8 text-center shadow-sm"
+            >
+              <div className="w-14 h-14 rounded-full bg-atria-navy/10 text-atria-navy flex items-center justify-center mx-auto mb-4">
+                {c.icon}
+              </div>
+              <h3 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-3 uppercase">{c.title}</h3>
+              <p className="font-inter text-sm text-atria-text-gray leading-relaxed">{c.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Numeros ---------------------------------------------------------------
+function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const step = (target / 1800) * 16;
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { setCount(target); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+
+  return <span ref={ref}>{count.toLocaleString("pt-BR")}{suffix}</span>;
+}
+
+function Numeros() {
+  const stats = [
+    { icon: <Award size={24} />, label: "Anos no mercado", value: 13, suffix: "+" },
+    { icon: <Car size={24} />, label: "Veiculos vendidos", value: 5000, suffix: "+" },
+    { icon: <Store size={24} />, label: "Veiculos em estoque", value: 200, suffix: "+" },
+    { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 3, suffix: "" },
+    { icon: <Star size={24} />, label: "Satisfacao", value: 98, suffix: "%" },
+  ];
+
+  return (
+    <section className="py-16 bg-atria-navy">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <div className="text-atria-yellow mx-auto mb-2 flex justify-center">{s.icon}</div>
+              <p className="font-barlow-condensed font-black text-4xl md:text-5xl text-atria-yellow">
+                <Counter target={s.value} suffix={s.suffix} />
+              </p>
+              <p className="font-inter text-xs text-white/60 mt-1 uppercase tracking-wider">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Equipe ----------------------------------------------------------------
+function Equipe() {
+  const membros = [
+    { nome: "Diretoria", cargo: "Gestao e estrategia", icon: <Award size={32} /> },
+    { nome: "Gerente Comercial", cargo: "Negociacao e estoque", icon: <Users size={32} /> },
+    { nome: "Consultor de Vendas", cargo: "Atendimento ao cliente", icon: <Car size={32} /> },
+    { nome: "Financeiro", cargo: "Financiamento e documentacao", icon: <Store size={32} /> },
+  ];
+
+  return (
+    <section id="equipe" className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Equipe</p>
+          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
+            Nossa Equipe
+          </h2>
+          <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
+            Profissionais dedicados a encontrar o melhor veiculo para voce.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {membros.map((m) => (
+            <motion.div
+              key={m.nome}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-atria-gray-light rounded-xl p-6 text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-atria-navy/10 text-atria-navy flex items-center justify-center mx-auto mb-4">
+                {m.icon}
+              </div>
+              <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark">{m.nome}</h3>
+              <p className="font-inter text-sm text-atria-text-gray mt-1">{m.cargo}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Lojas -----------------------------------------------------------------
+const LOJAS = [
+  {
+    nome: "Loja Abolicao",
+    endereco: "Rua Abolicao, 1500 - VL Joaquim Inacio",
+    cidade: "Campinas-SP",
+    cep: "CEP 13045-750",
+    telefone: "(19) 3199-2552",
+  },
+  {
+    nome: "Loja Campos Eliseos",
+    endereco: "R. Domicio Pacheco e Silva, 1328 - Jd Campos Eliseos",
+    cidade: "Campinas-SP",
+    cep: "CEP 13060-190",
+    telefone: "(19) 3500-8271",
+  },
+  {
+    nome: "Loja Guanabara",
+    endereco: "Av. Brasil, 1277 - Jd Guanabara",
+    cidade: "Campinas-SP",
+    cep: "CEP 13070-178",
+    telefone: "(19) 3094-0015",
+  },
+];
+
+function NossasLojas() {
+  return (
+    <section className="py-20 bg-atria-gray-light">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Localizacao</p>
+          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
+            Nossas Lojas
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {LOJAS.map((loja) => (
+            <motion.div
+              key={loja.nome}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-xl p-6 shadow-sm"
+            >
+              <div className="w-12 h-12 rounded-full bg-atria-navy text-white flex items-center justify-center mb-4">
+                <MapPin size={20} />
+              </div>
+              <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark mb-3">{loja.nome}</h3>
+              <div className="space-y-2">
+                <p className="font-inter text-sm text-atria-text-gray flex items-start gap-2">
+                  <MapPin size={14} className="flex-shrink-0 mt-0.5 text-atria-navy" />
+                  {loja.endereco}, {loja.cidade}, {loja.cep}
+                </p>
+                <p className="font-inter text-sm text-atria-text-gray flex items-center gap-2">
+                  <Phone size={14} className="flex-shrink-0 text-atria-navy" />
+                  {loja.telefone}
+                </p>
+                <p className="font-inter text-sm text-atria-text-gray flex items-center gap-2">
+                  <Clock size={14} className="flex-shrink-0 text-atria-navy" />
+                  Seg a Sex 9h-19h, Sab 9h-17h
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- CTA -------------------------------------------------------------------
+function CTA() {
+  return (
+    <section className="py-20 bg-atria-navy relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
+      <div className="relative z-10 container mx-auto px-4 text-center">
+        <Calendar size={40} className="text-atria-yellow mx-auto mb-4" />
+        <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase mb-4">
+          Visite-nos
+        </h2>
+        <p className="font-inter text-white/70 mb-8 max-w-lg mx-auto">
+          Venha conhecer nossas lojas e encontrar o veiculo ideal para voce.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href={waLink("Ola! Gostaria de agendar uma visita presencial na loja Atria.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
+          >
+            <Phone size={18} />
+            Falar via WhatsApp
+          </a>
+          <a href="/estoque" className="inline-flex items-center justify-center gap-2 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
+            <Car size={18} />
+            Ver Estoque
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---- Page ------------------------------------------------------------------
+export default function Sobre() {
+  useSEO();
+
+  return (
+    <>
+      <Hero />
+      <Historia />
+      <MissaoVisaoValores />
+      <Numeros />
+      <Equipe />
+      <NossasLojas />
+      <CTA />
+    </>
+  );
+}

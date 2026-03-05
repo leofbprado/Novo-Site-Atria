@@ -12,6 +12,8 @@ import Home from "@/pages/Home";
 // Lazy-loaded pages (below the fold / separate routes)
 const Estoque = lazy(() => import("@/pages/Estoque"));
 const VehicleDetail = lazy(() => import("@/pages/VehicleDetail"));
+const Financiamento = lazy(() => import("@/pages/Financiamento"));
+const Sobre = lazy(() => import("@/pages/Sobre"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Simple full-page spinner for route transitions
@@ -36,6 +38,16 @@ function Router() {
         <Route path="/veiculo/:slug" component={() => (
           <Layout>
             <VehicleDetail />
+          </Layout>
+        )} />
+        <Route path="/financiamento" component={() => (
+          <Layout>
+            <Financiamento />
+          </Layout>
+        )} />
+        <Route path="/sobre" component={() => (
+          <Layout>
+            <Sobre />
           </Layout>
         )} />
         <Route component={() => <Layout><NotFound /></Layout>} />
