@@ -461,6 +461,24 @@ export default function VehicleDetail() {
 
   useVehicleSEO(vehicle);
 
+  // Load Credere widget script after vehicle data is in the DOM
+  useEffect(() => {
+    if (!vehicle) return;
+    const CREDERE_SRC = "https://app.meucredere.com.br/simulador/loja/21.411.055/0001-64/veiculo/detectar.js";
+    const old = document.querySelector(`script[src="${CREDERE_SRC}"]`);
+    if (old) old.remove();
+    const timer = setTimeout(() => {
+      const s = document.createElement("script");
+      s.src = CREDERE_SRC;
+      s.async = true;
+      document.body.appendChild(s);
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+      document.querySelector(`script[src="${CREDERE_SRC}"]`)?.remove();
+    };
+  }, [vehicle]);
+
   const similar = useMemo(() => {
     if (!vehicle) return [];
     return allVehicles
