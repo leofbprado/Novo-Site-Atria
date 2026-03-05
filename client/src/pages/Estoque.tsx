@@ -100,7 +100,7 @@ function isFilterActive(f: FilterState): boolean {
   return (
     f.busca !== "" ||
     f.marcas.length > 0 ||
-    f.modelos.length > 0 ||
+    (f.modelos ?? []).length > 0 ||
     f.tipos.length > 0 ||
     f.combustivel.length > 0 ||
     f.cambio.length > 0 ||
@@ -546,11 +546,11 @@ function Sidebar({
       </FilterAccordion>
 
       {/* ── Modelo ── */}
-      <FilterAccordion title="Modelo" defaultOpen={false} hasActive={filters.modelos.length > 0}>
+      <FilterAccordion title="Modelo" defaultOpen={false} hasActive={(filters.modelos ?? []).length > 0}>
         <ModeloFilter
           vehicles={vehicles}
           selectedMarcas={filters.marcas}
-          selectedModelos={filters.modelos}
+          selectedModelos={filters.modelos ?? []}
           onChange={(v) => set({ modelos: v })}
         />
       </FilterAccordion>
@@ -640,7 +640,7 @@ function ActiveFilters({ filters, onChange }: { filters: FilterState; onChange: 
     if (filters.preco[0] > DEFAULT_RANGES.preco[0] || filters.preco[1] < DEFAULT_RANGES.preco[1])
       result.push({ label: `${fmt(filters.preco[0])} – ${fmt(filters.preco[1])}`, onRemove: () => set({ preco: [...DEFAULT_RANGES.preco] }) });
     filters.marcas.forEach((m) => result.push({ label: m, onRemove: () => set({ marcas: filters.marcas.filter((x) => x !== m) }) }));
-    filters.modelos.forEach((m) => result.push({ label: m, onRemove: () => set({ modelos: filters.modelos.filter((x) => x !== m) }) }));
+    (filters.modelos ?? []).forEach((m) => result.push({ label: m, onRemove: () => set({ modelos: (filters.modelos ?? []).filter((x) => x !== m) }) }));
     filters.tipos.forEach((t) => result.push({ label: t, onRemove: () => set({ tipos: filters.tipos.filter((x) => x !== t) }) }));
     if (filters.ano[0] > DEFAULT_RANGES.ano[0] || filters.ano[1] < DEFAULT_RANGES.ano[1])
       result.push({ label: `${filters.ano[0]}–${filters.ano[1]}`, onRemove: () => set({ ano: [...DEFAULT_RANGES.ano] }) });
@@ -855,7 +855,7 @@ export default function Estoque() {
     if (filters.busca) p.set("q", filters.busca);
     if (filters.tipos.length === 1) p.set("tipo", filters.tipos[0]);
     if (filters.marcas.length) p.set("marca", filters.marcas.join(","));
-    if (filters.modelos.length) p.set("modelo", filters.modelos.join(","));
+    if ((filters.modelos ?? []).length) p.set("modelo", (filters.modelos ?? []).join(","));
     const url = `${window.location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
     window.history.replaceState({}, "", url);
   }, [filters.busca, filters.tipos, filters.marcas, filters.modelos]);
@@ -864,7 +864,7 @@ export default function Estoque() {
   const filtered = useMemo(() => {
     let res = all.filter((v) => {
       if (filters.marcas.length && !filters.marcas.includes(v.marca)) return false;
-      if (filters.modelos.length && !filters.modelos.includes(v.modelo)) return false;
+      if ((filters.modelos ?? []).length && !(filters.modelos ?? []).includes(v.modelo)) return false;
       if (filters.tipos.length && !filters.tipos.includes(v.tipo ?? "")) return false;
       if (v.preco < filters.preco[0] || v.preco > filters.preco[1]) return false;
       if (v.ano < filters.ano[0] || v.ano > filters.ano[1]) return false;
