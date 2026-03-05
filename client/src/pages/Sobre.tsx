@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import {
   MapPin, Phone, Clock, Target, Eye, Heart,
-  Award, Car, Users, Store, Star, Calendar,
+  Award, Car, Store, Star, Calendar,
 } from "lucide-react";
 
 const WA_NUMBER = "5519996525211";
@@ -21,7 +21,11 @@ function useSEO() {
 function Hero() {
   return (
     <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url(https://images.unsplash.com/photo-1562141961-b5d1980713c0?w=1200&h=600&fit=crop)" }}
+      />
+      <div className="absolute inset-0 bg-atria-navy/80" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Sobre Nos</p>
@@ -172,10 +176,10 @@ function Numeros() {
 // ---- Equipe ----------------------------------------------------------------
 function Equipe() {
   const membros = [
-    { nome: "Diretoria", cargo: "Gestao e estrategia", icon: <Award size={32} /> },
-    { nome: "Gerente Comercial", cargo: "Negociacao e estoque", icon: <Users size={32} /> },
-    { nome: "Consultor de Vendas", cargo: "Atendimento ao cliente", icon: <Car size={32} /> },
-    { nome: "Financeiro", cargo: "Financiamento e documentacao", icon: <Store size={32} /> },
+    { nome: "Diretoria", cargo: "Gestao e estrategia", foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face" },
+    { nome: "Gerente Comercial", cargo: "Negociacao e estoque", foto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face" },
+    { nome: "Consultor de Vendas", cargo: "Atendimento ao cliente", foto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face" },
+    { nome: "Financeiro", cargo: "Financiamento e documentacao", foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=face" },
   ];
 
   return (
@@ -199,9 +203,7 @@ function Equipe() {
               viewport={{ once: true }}
               className="bg-atria-gray-light rounded-xl p-6 text-center"
             >
-              <div className="w-20 h-20 rounded-full bg-atria-navy/10 text-atria-navy flex items-center justify-center mx-auto mb-4">
-                {m.icon}
-              </div>
+              <img src={m.foto} alt={m.nome} className="w-20 h-20 rounded-full object-cover mx-auto mb-4 shadow-md" loading="lazy" />
               <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark">{m.nome}</h3>
               <p className="font-inter text-sm text-atria-text-gray mt-1">{m.cargo}</p>
             </motion.div>

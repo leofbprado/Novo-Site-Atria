@@ -347,14 +347,11 @@ function Simulador() {
   const [parcela, setParcela] = useState(1500);
   const [entrada, setEntrada] = useState(10000);
   const [prazo, setPrazo] = useState(48);
-  const [perfil, setPerfil] = useState<"alto" | "medio" | "baixo">("medio");
   const [showCTA, setShowCTA] = useState(false);
   const [showLeadModal, setShowLeadModal] = useState(false);
   const interacted = useRef(false);
 
-  const taxa = perfil === "alto" ? 0.0099 : perfil === "medio" ? 0.0149 : 0.0199;
-  const pvFactor = (Math.pow(1 + taxa, prazo) - 1) / (taxa * Math.pow(1 + taxa, prazo));
-  const valorVeiculo = Math.round(parcela * pvFactor + entrada);
+  const valorVeiculo = Math.round(parcela * prazo + entrada);
 
   const fmt = (v: number) =>
     v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -422,19 +419,6 @@ function Simulador() {
               </div>
             </div>
 
-            <div>
-              <label className="font-inter font-semibold text-sm text-atria-text-dark block mb-2">Perfil de crédito</label>
-              <div className="flex gap-2">
-                {(["alto", "medio", "baixo"] as const).map((p) => (
-                  <button key={p} onClick={() => { setPerfil(p); handleInteraction(); }}
-                    className={`flex-1 py-2 font-inter text-sm font-semibold rounded capitalize transition-all ${
-                      perfil === p ? "bg-atria-yellow text-atria-navy" : "bg-atria-gray-light text-atria-text-dark hover:bg-atria-gray-medium"
-                    }`}>
-                    {p === "alto" ? "Ótimo" : p === "medio" ? "Bom" : "Regular"}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Result */}
@@ -453,10 +437,6 @@ function Simulador() {
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">Parcelas</span>
                   <span className="font-semibold">{prazo}x de {fmt(parcela)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Taxa aprox.</span>
-                  <span className="font-semibold">{(taxa * 100).toFixed(2)}% a.m.</span>
                 </div>
               </div>
             </div>
@@ -500,7 +480,7 @@ function Simulador() {
             title="Simulação personalizada 💰"
             subtitle="Nosso especialista vai buscar as melhores taxas para o seu perfil."
             source="simulador"
-            extraData={{ parcela, entrada, prazo, perfil, valorVeiculo }}
+            extraData={{ parcela, entrada, prazo, valorVeiculo }}
             prefillMsg={`Olá! Fiz uma simulação no site: parcela de ${fmt(parcela)}, entrada de ${fmt(entrada)}, prazo ${prazo}x. Quero saber as opções reais para mim.`}
             onClose={() => setShowLeadModal(false)}
           />
@@ -733,6 +713,12 @@ function VendaSeuCarro() {
                 </li>
               ))}
             </ul>
+            <img
+              src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop"
+              alt="Pessoa sorrindo ao lado do carro"
+              className="mt-8 rounded-xl shadow-md w-full object-cover h-48 lg:h-56 hidden md:block"
+              loading="lazy"
+            />
           </div>
 
           <div className="bg-white rounded-xl p-8">
@@ -839,6 +825,14 @@ function ComoFunciona() {
           <p className="section-label mb-2">Processo</p>
           <h2 className="section-title">Como Funciona</h2>
         </div>
+        <div className="mb-10">
+          <img
+            src="https://images.unsplash.com/photo-1549924231-f129b911e442?w=800&h=500&fit=crop"
+            alt="Familia feliz com carro novo"
+            className="w-full max-w-3xl mx-auto h-48 md:h-64 object-cover rounded-2xl shadow-md"
+            loading="lazy"
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
           {STEPS.map((s, i) => (
             <div key={s.n} className="relative">
@@ -939,9 +933,9 @@ function Marcas() {
 
 // ─── Depoimentos ─────────────────────────────────────────────────────────────
 const DEPOIMENTOS = [
-  { nome: "Carlos Mendonça", cargo: "Empresário", texto: "Comprei meu BMW X5 na Átria e a experiência foi incrível. Transparência total, sem surpresas. Recomendo demais!", nota: 5 },
-  { nome: "Ana Paula Ribeiro", cargo: "Médica", texto: "Processo de financiamento super ágil. Em 3 dias estava com o carro. Equipe muito atenciosa e profissional.", nota: 5 },
-  { nome: "Roberto Alves", cargo: "Engenheiro", texto: "Já é minha segunda compra na Átria. Voltei porque confio no trabalho deles. Preço justo e qualidade garantida.", nota: 5 },
+  { nome: "Carlos Mendonça", cargo: "Empresário", texto: "Comprei meu BMW X5 na Átria e a experiência foi incrível. Transparência total, sem surpresas. Recomendo demais!", nota: 5, foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" },
+  { nome: "Ana Paula Ribeiro", cargo: "Médica", texto: "Processo de financiamento super ágil. Em 3 dias estava com o carro. Equipe muito atenciosa e profissional.", nota: 5, foto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" },
+  { nome: "Roberto Alves", cargo: "Engenheiro", texto: "Já é minha segunda compra na Átria. Voltei porque confio no trabalho deles. Preço justo e qualidade garantida.", nota: 5, foto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face" },
 ];
 
 function Depoimentos() {
@@ -961,9 +955,12 @@ function Depoimentos() {
                 ))}
               </div>
               <p className="font-inter text-atria-text-gray text-sm leading-relaxed mb-5">"{d.texto}"</p>
-              <div>
-                <p className="font-inter font-semibold text-sm text-atria-text-dark">{d.nome}</p>
-                <p className="font-inter text-xs text-atria-text-gray">{d.cargo}</p>
+              <div className="flex items-center gap-3">
+                <img src={d.foto} alt={d.nome} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
+                <div>
+                  <p className="font-inter font-semibold text-sm text-atria-text-dark">{d.nome}</p>
+                  <p className="font-inter text-xs text-atria-text-gray">{d.cargo}</p>
+                </div>
               </div>
             </div>
           ))}

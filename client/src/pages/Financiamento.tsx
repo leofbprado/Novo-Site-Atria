@@ -22,7 +22,11 @@ function useSEO() {
 function Hero() {
   return (
     <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url(https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&h=600&fit=crop)" }}
+      />
+      <div className="absolute inset-0 bg-atria-navy/80" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Financiamento</p>
@@ -43,14 +47,11 @@ function Simulador() {
   const [parcela, setParcela] = useState(1500);
   const [entrada, setEntrada] = useState(10000);
   const [prazo, setPrazo] = useState(48);
-  const [perfil, setPerfil] = useState<"alto" | "medio" | "baixo">("medio");
   const [showCTA, setShowCTA] = useState(false);
   const [showLead, setShowLead] = useState(false);
   const interacted = useRef(false);
 
-  const taxa = perfil === "alto" ? 0.0099 : perfil === "medio" ? 0.0149 : 0.0199;
-  const pvFactor = (Math.pow(1 + taxa, prazo) - 1) / (taxa * Math.pow(1 + taxa, prazo));
-  const valorVeiculo = Math.round(parcela * pvFactor + entrada);
+  const valorVeiculo = Math.round(parcela * prazo + entrada);
 
   const fmt = (v: number) =>
     v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -128,19 +129,6 @@ function Simulador() {
               </div>
             </div>
 
-            <div>
-              <label className="font-inter font-semibold text-sm text-atria-text-dark block mb-2">Perfil de credito</label>
-              <div className="flex gap-2">
-                {(["alto", "medio", "baixo"] as const).map((p) => (
-                  <button key={p} onClick={() => { setPerfil(p); handleInteraction(); }}
-                    className={`flex-1 py-2 font-inter text-sm font-semibold rounded capitalize transition-all ${
-                      perfil === p ? "bg-atria-yellow text-atria-navy" : "bg-atria-gray-light text-atria-text-dark hover:bg-atria-gray-medium"
-                    }`}>
-                    {p === "alto" ? "Otimo" : p === "medio" ? "Bom" : "Regular"}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="bg-atria-navy rounded-xl p-8 flex flex-col justify-between text-white">
@@ -162,10 +150,6 @@ function Simulador() {
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">Prazo</span>
                   <span className="font-semibold">{prazo} meses</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Taxa estimada</span>
-                  <span className="font-semibold">{(taxa * 100).toFixed(2)}% a.m.</span>
                 </div>
               </div>
             </div>
@@ -212,7 +196,7 @@ function Simulador() {
 // ---- Vantagens -------------------------------------------------------------
 function Vantagens() {
   const cards = [
-    { icon: <TrendingDown size={28} />, title: "Taxas a partir de 0.99%/mes", desc: "Trabalhamos com os melhores bancos para garantir taxas competitivas." },
+    { icon: <TrendingDown size={28} />, title: "Taxas a partir de 0.99%/mes", desc: "Trabalhamos com os melhores bancos para garantir taxas competitivas.", disclaimer: true },
     { icon: <Clock size={28} />, title: "Aprovacao em 24h", desc: "Processo agil e desburocratizado. Resposta rapida para voce sair dirigindo." },
     { icon: <CreditCard size={28} />, title: "Sem entrada minima", desc: "Flexibilidade para voce financiar da forma que melhor cabe no bolso." },
     { icon: <Calendar size={28} />, title: "Ate 60x", desc: "Parcelas em ate 60 meses para diminuir o valor mensal ao maximo." },
@@ -241,6 +225,9 @@ function Vantagens() {
               </div>
               <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark mb-2">{c.title}</h3>
               <p className="font-inter text-sm text-atria-text-gray">{c.desc}</p>
+              {"disclaimer" in c && c.disclaimer && (
+                <p className="font-inter text-xs text-atria-text-gray/70 italic mt-2">* Taxas sujeitas a analise de credito. Consulte condicoes.</p>
+              )}
             </motion.div>
           ))}
         </div>
@@ -266,6 +253,14 @@ function ComoFunciona() {
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
             Como Funciona
           </h2>
+        </div>
+        <div className="mb-10">
+          <img
+            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop"
+            alt="Consultor atendendo cliente"
+            className="w-full max-w-3xl mx-auto h-48 md:h-64 object-cover rounded-2xl shadow-md"
+            loading="lazy"
+          />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {steps.map((s, i) => (
@@ -293,7 +288,7 @@ function ComoFunciona() {
 
 // ---- Bancos Parceiros ------------------------------------------------------
 function BancosParceiros() {
-  const bancos = ["Bradesco", "Itau", "Santander", "BV", "Pan", "Credere"];
+  const bancos = ["Bradesco", "Itau", "Santander", "BV", "Pan"];
 
   return (
     <section className="py-16 bg-white">
