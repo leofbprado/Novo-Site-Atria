@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft, ChevronRight, ChevronDown, Calendar,
   Gauge, Fuel, Settings, Palette, DoorOpen, ShieldCheck,
-  Star, Phone, CheckCircle, Car, MapPin, Zap, Mountain,
-  Cog, Users, TrendingDown, Mail, User,
+  Star, Phone, CheckCircle, Car, MapPin, Mountain,
+  Cog, Users, TrendingDown,
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 
@@ -61,103 +61,46 @@ function useVehicleSEO(v: Vehicle | null) {
   }, [v]);
 }
 
-// ---- AI Insights Generator --------------------------------------------------
-interface AIInsight {
+// ---- AI Badge Generator -----------------------------------------------------
+interface AIBadge {
   icon: React.ReactNode;
-  techLabel: string;
-  humanLabel: string;
+  label: string;
 }
 
-function generateInsights(v: Vehicle): AIInsight[] {
-  const insights: AIInsight[] = [];
+function generateBadges(v: Vehicle): AIBadge[] {
+  const badges: AIBadge[] = [];
   const versaoLower = (v.versao ?? "").toLowerCase();
-  const descLower = v.descricao.toLowerCase();
   const opcionaisLower = (v.opcionais ?? []).map(o => o.toLowerCase()).join(" ");
+  const descLower = v.descricao.toLowerCase();
+  const vehicleAge = Math.max(1, new Date().getFullYear() - v.ano);
+  const kmPerYear = Math.round(v.km / vehicleAge);
 
-  // Diesel / Turbo Diesel
   if (v.combustivel === "Diesel" || versaoLower.includes("diesel") || versaoLower.includes("tdi")) {
-    insights.push({
-      icon: <Fuel size={22} className="text-[#001A8C]" />,
-      techLabel: `Motor ${v.combustivel}${versaoLower.includes("turbo") ? " Turbo" : ""}`,
-      humanLabel: "Ideal para torque em subidas e economia em viagens longas",
-    });
+    badges.push({ icon: <Fuel size={14} />, label: "Torque premium" });
   }
-
-  // Low KM
-  if (v.km < 50000) {
-    const kmPerYear = Math.round(v.km / Math.max(1, new Date().getFullYear() - v.ano));
-    insights.push({
-      icon: <TrendingDown size={22} className="text-[#001A8C]" />,
-      techLabel: fmtKm(v.km),
-      humanLabel: `Equivale a apenas ${kmPerYear.toLocaleString("pt-BR")} km/ano - uso muito conservador`,
-    });
+  if (v.km < 50000 && v.km >= 30000) {
+    badges.push({ icon: <TrendingDown size={14} />, label: `${kmPerYear.toLocaleString("pt-BR")} km/ano` });
   }
-
-  // 4x4
+  if (v.km < 30000) {
+    badges.push({ icon: <TrendingDown size={14} />, label: "Baixa km" });
+  }
   if (versaoLower.includes("4x4") || opcionaisLower.includes("4x4") || descLower.includes("4x4")) {
-    insights.push({
-      icon: <Mountain size={22} className="text-[#001A8C]" />,
-      techLabel: "Tracao 4x4",
-      humanLabel: "Versatilidade para cidade e off-road",
-    });
+    badges.push({ icon: <Mountain size={14} />, label: "Tracao integral" });
   }
-
-  // Automatic
   if (v.cambio === "Autom\u00e1tica" || v.cambio === "CVT") {
-    insights.push({
-      icon: <Cog size={22} className="text-[#001A8C]" />,
-      techLabel: `Cambio ${v.cambio}`,
-      humanLabel: "Conforto total no dia a dia, sem estresse no transito",
-    });
+    badges.push({ icon: <Cog size={14} />, label: "Cambio automatico" });
   }
-
-  // 7 seats
   if (descLower.includes("7 lugares") || opcionaisLower.includes("7 lugares")) {
-    insights.push({
-      icon: <Users size={22} className="text-[#001A8C]" />,
-      techLabel: "7 Lugares",
-      humanLabel: "Configuracao perfeita para familias grandes",
-    });
+    badges.push({ icon: <Users size={14} />, label: "7 lugares" });
+  }
+  if (v.ano >= 2022) {
+    badges.push({ icon: <Calendar size={14} />, label: "Seminovo recente" });
+  }
+  if (v.tipo === "SUV" || v.tipo === "Pickup") {
+    badges.push({ icon: <Car size={14} />, label: "Versatil" });
   }
 
-  // SUV
-  if (v.tipo === "SUV") {
-    insights.push({
-      icon: <Car size={22} className="text-[#001A8C]" />,
-      techLabel: `SUV ${v.marca}`,
-      humanLabel: "Posicao elevada de direcao com seguranca e visibilidade",
-    });
-  }
-
-  // Turbo (non-diesel)
-  if (v.combustivel !== "Diesel" && (versaoLower.includes("turbo") || versaoLower.includes("tsi") || versaoLower.includes("tfsi"))) {
-    insights.push({
-      icon: <Zap size={22} className="text-[#001A8C]" />,
-      techLabel: "Motor Turbo",
-      humanLabel: "Potencia quando voce precisa, economia quando nao precisa",
-    });
-  }
-
-  // Portas
-  if (v.portas && v.portas >= 4) {
-    insights.push({
-      icon: <DoorOpen size={22} className="text-[#001A8C]" />,
-      techLabel: `${v.portas} portas`,
-      humanLabel: "Acesso facil para todos os passageiros",
-    });
-  }
-
-  // Cor
-  insights.push({
-    icon: <Palette size={22} className="text-[#001A8C]" />,
-    techLabel: `Cor ${v.cor}`,
-    humanLabel: v.cor === "Preto" ? "Elegancia classica - sempre valorizado na revenda"
-      : v.cor === "Branco" ? "Cor mais procurada do mercado - otima valorizacao"
-      : v.cor === "Prata" ? "Cor neutra e pratica - esconde pequenas sujeiras"
-      : "Visual marcante e diferenciado",
-  });
-
-  return insights;
+  return badges.slice(0, 3);
 }
 
 // ---- Photo Gallery ----------------------------------------------------------
@@ -328,8 +271,6 @@ function PricePanel({ v }: { v: Vehicle }) {
   const [agendarDone, setAgendarDone] = useState(false);
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
   const parcela60 = calcParcela(v.preco, 20, 60);
-  const insights = useMemo(() => generateInsights(v), [v]);
-  const topInsights = insights.slice(0, 3);
 
   const handleAgendar = async () => {
     await saveLead({ source: "vehicle-agendar", whatsapp: "", query: titulo, dados: { slug: v.slug, preco: v.preco } });
@@ -345,26 +286,11 @@ function PricePanel({ v }: { v: Vehicle }) {
         {/* Header */}
         <div>
           <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider">{v.marca}</p>
-          <h1 className="font-barlow-condensed font-black text-2xl text-atria-text-dark leading-tight">
+          <h2 className="font-barlow-condensed font-black text-2xl text-atria-text-dark leading-tight">
             {v.marca} {v.modelo}
-          </h1>
+          </h2>
           {v.versao && (
             <p className="font-inter text-sm text-atria-text-gray mt-0.5">{v.versao}</p>
-          )}
-        </div>
-
-        {/* Badges */}
-        <div className="flex gap-2 flex-wrap">
-          <span className="bg-atria-gray-light font-inter text-xs font-semibold text-atria-text-dark px-3 py-1.5 rounded-full flex items-center gap-1.5">
-            <Gauge size={12} className="text-atria-navy" /> {fmtKm(v.km)}
-          </span>
-          <span className="bg-atria-gray-light font-inter text-xs font-semibold text-atria-text-dark px-3 py-1.5 rounded-full flex items-center gap-1.5">
-            <Calendar size={12} className="text-atria-navy" /> {v.ano}
-          </span>
-          {v.tipo && (
-            <span className="bg-atria-gray-light font-inter text-xs font-semibold text-atria-text-dark px-3 py-1.5 rounded-full">
-              {v.tipo}
-            </span>
           )}
         </div>
 
@@ -380,20 +306,6 @@ function PricePanel({ v }: { v: Vehicle }) {
           </p>
         </div>
 
-        {/* AI Strong Points */}
-        {topInsights.length > 0 && (
-          <div className="space-y-2">
-            {topInsights.map((insight, i) => (
-              <div key={i} className="flex items-start gap-3 bg-[#E8EFFF] rounded-lg p-3">
-                <span className="mt-0.5 flex-shrink-0">{insight.icon}</span>
-                <p className="font-inter text-sm text-atria-text-dark leading-snug">
-                  {insight.humanLabel}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* WhatsApp CTA */}
         <a
           href={waLink(`Ola! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Atria Veiculos e tenho interesse! Codigo: ${v.slug}`)}
@@ -404,7 +316,7 @@ function PricePanel({ v }: { v: Vehicle }) {
           <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
           </svg>
-          QUERO ESSE {v.marca.toUpperCase()} {v.modelo.toUpperCase()}!
+          QUERO ESSA {v.marca.toUpperCase()} {v.modelo.toUpperCase()}!
         </a>
 
         {/* Schedule visit */}
@@ -424,12 +336,21 @@ function PricePanel({ v }: { v: Vehicle }) {
           )}
         </button>
 
+        {/* Scroll to financing */}
+        <button
+          onClick={() => document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" })}
+          className="w-full font-inter text-sm text-atria-navy hover:text-atria-navy-dark underline underline-offset-2 transition-colors py-1"
+        >
+          Simular financiamento com CPF
+        </button>
+
         {/* Trust seals */}
         <div className="border-t border-atria-gray-medium pt-4 space-y-2.5">
           {[
             { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veiculo inspecionado com laudo" },
             { icon: <Star size={16} className="text-atria-yellow" />, text: "Garantia de 90 dias" },
             { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
+            { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
           ].map((item) => (
             <div key={item.text} className="flex items-center gap-2.5">
               {item.icon}
@@ -442,68 +363,86 @@ function PricePanel({ v }: { v: Vehicle }) {
   );
 }
 
-// ---- AI Technical Translation Cards -----------------------------------------
-function AITranslationCards({ v }: { v: Vehicle }) {
-  const insights = useMemo(() => generateInsights(v), [v]);
+// ---- Ficha Tecnica with IA subtexts -----------------------------------------
+function FichaTecnica({ v }: { v: Vehicle }) {
+  const versaoLower = (v.versao ?? "").toLowerCase();
+  const vehicleAge = Math.max(1, new Date().getFullYear() - v.ano);
+  const kmPerYear = Math.round(v.km / vehicleAge);
+
+  const motorLabel = v.versao
+    ? v.versao.replace(/^.*?(\d[\d.]*\s*(?:T(?:urbo)?(?:\s*Diesel)?|TSI|TFSI|TDI|TDCi|VTEC)[^\s]*).*$/i, "$1").trim()
+    : v.combustivel;
+  const motorFallback = motorLabel === v.versao ? v.combustivel : motorLabel;
+
+  function motorSubtext(): string | null {
+    if (v.combustivel === "Diesel" || versaoLower.includes("diesel"))
+      return "Economia em viagens longas";
+    if (versaoLower.includes("turbo") || versaoLower.includes("tsi") || versaoLower.includes("tfsi"))
+      return "Potencia com eficiencia";
+    return null;
+  }
+
+  function kmSubtext(): string | null {
+    if (v.km < 30000) return `~${kmPerYear.toLocaleString("pt-BR")} km/ano - uso muito conservador`;
+    if (v.km < 50000) return `~${kmPerYear.toLocaleString("pt-BR")} km/ano - uso conservador`;
+    return null;
+  }
+
+  function cambioSubtext(): string | null {
+    if (v.cambio === "Autom\u00e1tica") return "Conforto no transito urbano";
+    if (v.cambio === "CVT") return "Transicoes suaves, economia otimizada";
+    return null;
+  }
+
+  function combustivelSubtext(): string | null {
+    if (v.combustivel === "Diesel") return "Menor custo por km rodado";
+    if (v.combustivel === "Flex") return "Flexibilidade na bomba";
+    if (v.combustivel === "H\u00edbrido" || v.combustivel === "El\u00e9trico") return "Mobilidade sustentavel";
+    return null;
+  }
+
+  const specs = [
+    { icon: <Fuel size={16} />, label: "Motor", value: motorFallback, sub: motorSubtext() },
+    { icon: <Gauge size={16} />, label: "Quilometragem", value: fmtKm(v.km), sub: kmSubtext() },
+    { icon: <Settings size={16} />, label: "Cambio", value: v.cambio, sub: cambioSubtext() },
+    { icon: <Fuel size={16} />, label: "Combustivel", value: v.combustivel, sub: combustivelSubtext() },
+    { icon: <Palette size={16} />, label: "Cor", value: v.cor, sub: null },
+    { icon: <DoorOpen size={16} />, label: "Portas", value: v.portas ? `${v.portas} portas` : "-", sub: null },
+  ];
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
+    <section>
       <h2 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-4 uppercase tracking-wide">
-        Traducao Tecnica IA
+        Ficha Tecnica
       </h2>
-      <p className="font-inter text-sm text-atria-text-gray mb-4">
-        Entenda o que cada especificacao significa no seu dia a dia
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {insights.map((insight, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-            className="bg-[#E8EFFF] border border-[#C5D5FF] rounded-xl p-4 flex gap-3 items-start"
-          >
-            <span className="mt-0.5 flex-shrink-0">{insight.icon}</span>
-            <div>
-              <p className="font-inter text-xs font-semibold text-[#001A8C] uppercase tracking-wider">
-                {insight.techLabel}
-              </p>
-              <p className="font-inter text-sm text-atria-text-dark mt-1 leading-relaxed">
-                {insight.humanLabel}
-              </p>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+        {specs.map((s) => (
+          <div key={s.label} className="flex items-start gap-3">
+            <span className="text-atria-navy mt-0.5 flex-shrink-0">{s.icon}</span>
+            <div className="min-w-0">
+              <p className="font-inter text-xs text-atria-text-gray">{s.label}</p>
+              <p className="font-inter text-sm font-semibold text-atria-text-dark">{s.value}</p>
+              {s.sub && (
+                <p className="font-inter text-xs text-atria-text-gray mt-0.5 italic">{s.sub}</p>
+              )}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }
 
-// ---- Financing Banner + Credere Plugin --------------------------------------
+// ---- Financing Section (Credere Plugin) -------------------------------------
 function FinancingSection({ v }: { v: Vehicle }) {
-  const modelo = v.titulo ?? `${v.marca} ${v.modelo}`;
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
-      {/* Banner */}
-      <div className="bg-gradient-to-r from-atria-navy to-atria-navy-mid rounded-xl p-6 mb-6">
-        <h2 className="font-barlow-condensed font-black text-2xl text-white mb-2">
-          Simule o financiamento
-        </h2>
-        <p className="font-inter text-sm text-white/80">
-          Gostou desta {modelo}? Simule as parcelas e receba pre-aprovacao em 30 segundos
-        </p>
-      </div>
+    <section id="financiamento">
+      <h2 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-1 uppercase tracking-wide">
+        Simule seu financiamento
+      </h2>
+      <p className="font-inter text-sm text-atria-text-gray mb-5">
+        Pre-aprovacao em 30 segundos com a Credere
+      </p>
 
       {/* Credere widget container - DO NOT CHANGE */}
       <div
@@ -513,23 +452,22 @@ function FinancingSection({ v }: { v: Vehicle }) {
         data-ano={String(v.ano)}
         data-preco={String(v.preco)}
       />
-    </motion.section>
+    </section>
   );
 }
 
-// ---- Lead Capture Form ------------------------------------------------------
-function LeadCaptureForm({ v }: { v: Vehicle }) {
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
+// ---- Compact Lead Capture ---------------------------------------------------
+function CompactLeadCapture({ v }: { v: Vehicle }) {
+  const [form, setForm] = useState({ email: "", telefone: "" });
   const [sent, setSent] = useState(false);
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nome || !form.telefone) return;
+    if (!form.email || !form.telefone) return;
     await saveLead({
       source: "vehicle-comparativo-ia",
       whatsapp: form.telefone,
-      nome: form.nome,
       query: titulo,
       dados: { email: form.email, slug: v.slug, preco: v.preco },
     });
@@ -538,79 +476,45 @@ function LeadCaptureForm({ v }: { v: Vehicle }) {
 
   if (sent) {
     return (
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-gradient-to-br from-atria-navy to-atria-navy-dark rounded-2xl p-8 text-center"
-      >
-        <CheckCircle size={48} className="text-green-400 mx-auto mb-4" />
-        <h3 className="font-barlow-condensed font-black text-2xl text-white mb-2">
-          Comparativo enviado!
-        </h3>
-        <p className="font-inter text-sm text-white/70">
-          Voce recebera o comparativo inteligente do {titulo} no seu e-mail em instantes.
-        </p>
-      </motion.div>
+      <div className="bg-[#F0F4FF] border border-[#D0DCFF] rounded-xl px-5 py-4 flex items-center gap-3">
+        <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
+        <p className="font-inter text-sm text-atria-text-dark">Comparativo enviado para seu e-mail!</p>
+      </div>
     );
   }
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="bg-gradient-to-br from-atria-navy to-atria-navy-dark rounded-2xl p-8">
-        <h2 className="font-barlow-condensed font-black text-2xl text-white mb-1">
-          Receba um comparativo inteligente
-        </h2>
-        <p className="font-inter text-sm text-white/70 mb-6">
-          Nossa IA compara este veiculo com seus concorrentes diretos
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="relative">
-            <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-            <input
-              type="text"
-              placeholder="Seu nome"
-              value={form.nome}
-              onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
-              className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/40 font-inter text-sm focus:outline-none focus:border-white/50 transition-colors"
-              required
-            />
-          </div>
-          <div className="relative">
-            <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-            <input
-              type="email"
-              placeholder="Seu e-mail"
-              value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/40 font-inter text-sm focus:outline-none focus:border-white/50 transition-colors"
-            />
-          </div>
-          <div className="relative">
-            <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-            <input
-              type="tel"
-              placeholder="Seu telefone"
-              value={form.telefone}
-              onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))}
-              className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/40 font-inter text-sm focus:outline-none focus:border-white/50 transition-colors"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3.5 rounded-xl transition-colors"
-          >
-            Receber Comparativo Gratis
-          </button>
-        </form>
+    <div className="bg-[#F0F4FF] border border-[#D0DCFF] rounded-xl px-5 py-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Gauge size={18} className="text-[#001A8C]" />
+        <span className="font-inter font-semibold text-sm text-atria-text-dark">Compare este veiculo</span>
+        <span className="font-inter text-xs text-atria-text-gray ml-1">- Receba um comparativo com concorrentes diretos por email</span>
       </div>
-    </motion.section>
+      <form onSubmit={handleSubmit} className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
+        <input
+          type="email"
+          placeholder="Seu e-mail"
+          value={form.email}
+          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          className="flex-1 min-w-[160px] bg-white border border-[#D0DCFF] rounded-lg px-3 py-2 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
+          required
+        />
+        <input
+          type="tel"
+          placeholder="Seu telefone"
+          value={form.telefone}
+          onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))}
+          className="flex-1 min-w-[140px] bg-white border border-[#D0DCFF] rounded-lg px-3 py-2 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
+          required
+        />
+        <button
+          type="submit"
+          className="bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+        >
+          Enviar
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -783,24 +687,36 @@ export default function VehicleDetail() {
         </nav>
       </div>
 
-      {/* ============ HERO: 60/40 Layout ============ */}
+      {/* ============ HERO: 70/30 Layout ============ */}
       <div className="container mx-auto px-4 py-6 pb-24 lg:pb-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
 
-          {/* LEFT COLUMN (60%) */}
-          <div className="w-full lg:w-[60%] space-y-8 min-w-0">
+          {/* LEFT COLUMN (70%) */}
+          <div className="w-full lg:w-[70%] space-y-8 min-w-0">
             {/* Gallery */}
             <PhotoGallery fotos={vehicle.fotos} titulo={titulo} />
 
-            {/* Title (mobile only) */}
-            <div className="lg:hidden">
+            {/* Title + AI Badges */}
+            <div>
               <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider">{vehicle.marca}</p>
               <h1 className="font-barlow-condensed font-black text-3xl text-atria-text-dark leading-tight">
-                {titulo}
+                {vehicle.marca} {vehicle.modelo}
               </h1>
               {vehicle.versao && (
                 <p className="font-inter text-sm text-atria-text-gray mt-1">{vehicle.versao}</p>
               )}
+              {/* AI Badges */}
+              <div className="flex gap-2 flex-wrap mt-3">
+                {generateBadges(vehicle).map((badge, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1.5 bg-[#E8EFFF] text-[#001A8C] font-inter text-xs font-semibold px-3 py-1.5 rounded-full"
+                  >
+                    {badge.icon}
+                    {badge.label}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Description */}
@@ -811,11 +727,8 @@ export default function VehicleDetail() {
               <p className="font-inter text-base text-atria-text-dark leading-relaxed">{vehicle.descricao}</p>
             </section>
 
-            {/* AI Translation Cards */}
-            <AITranslationCards v={vehicle} />
-
-            {/* Financing / Credere */}
-            <FinancingSection v={vehicle} />
+            {/* Ficha Tecnica */}
+            <FichaTecnica v={vehicle} />
 
             {/* Opcionais */}
             {vehicle.opcionais && vehicle.opcionais.length > 0 && (
@@ -827,12 +740,15 @@ export default function VehicleDetail() {
               </section>
             )}
 
-            {/* Lead Capture Form */}
-            <LeadCaptureForm v={vehicle} />
+            {/* Compact Lead Capture */}
+            <CompactLeadCapture v={vehicle} />
+
+            {/* Financing / Credere */}
+            <FinancingSection v={vehicle} />
           </div>
 
-          {/* RIGHT COLUMN (40%) - Sticky */}
-          <aside className="hidden lg:block w-[40%] shrink-0">
+          {/* RIGHT COLUMN (30%) - Sticky */}
+          <aside className="hidden lg:block w-[30%] shrink-0">
             <div className="sticky top-[80px]">
               <PricePanel v={vehicle} />
             </div>
