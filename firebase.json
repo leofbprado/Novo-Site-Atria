@@ -1,7 +1,4 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
   "hosting": {
     "public": "dist/public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -10,15 +7,15 @@
     ],
     "redirects": [
       { "source": "/inventory-list-01**", "destination": "/estoque", "type": 301 },
-      { "source": "/veiculos**", "destination": "/estoque", "type": 301 },
-      { "source": "/listings**", "destination": "/estoque", "type": 301 },
-      { "source": "/seminovos**", "destination": "/estoque", "type": 301 },
-      { "source": "/carros-usados**", "destination": "/estoque", "type": 301 },
-      { "source": "/blog-list-02**", "destination": "/blog", "type": 301 },
-      { "source": "/loan-calculator**", "destination": "/simulador", "type": 301 },
-      { "source": "/about**", "destination": "/sobre", "type": 301 },
-      { "source": "/compare**", "destination": "/comparar", "type": 301 },
-      { "source": "/venda-seu-carro**", "destination": "/vender", "type": 301 }
+      { "source": "/veiculos**",          "destination": "/estoque", "type": 301 },
+      { "source": "/listings**",          "destination": "/estoque", "type": 301 },
+      { "source": "/seminovos**",         "destination": "/estoque", "type": 301 },
+      { "source": "/carros-usados**",     "destination": "/estoque", "type": 301 },
+      { "source": "/blog-list-02**",      "destination": "/blog",    "type": 301 },
+      { "source": "/loan-calculator**",   "destination": "/simulador","type": 301 },
+      { "source": "/about**",             "destination": "/sobre",   "type": 301 },
+      { "source": "/compare**",           "destination": "/comparar","type": 301 },
+      { "source": "/venda-seu-carro**",   "destination": "/vender",  "type": 301 }
     ],
     "headers": [
       {
@@ -35,8 +32,8 @@
       },
       {
         "source": "/index.html",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" },
-          {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://static.hotjar.com https://script.hotjar.com https://static.cloudflareinsights.com https://js.stripe.com https://m.stripe.com https://cdn.launchdarkly.com https://browser.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://www.google-analytics.com https://px.ads.linkedin.com https://q.stripe.com https://*.fbcdn.net https://*.facebook.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' wss: https://www.google-analytics.com https://region1.google-analytics.com https://www.google
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }]
+      }
+    ]
+  }
+}
