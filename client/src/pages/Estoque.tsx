@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X, Car, ChevronDown, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
@@ -12,18 +12,6 @@ const fmtKm = (n: number) => `${n.toLocaleString("pt-BR")} km`;
 const TIPOS = ["SUV", "Sedan", "Hatch", "Pickup"];
 const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"];
 const CAMBIOS = ["Automática", "Manual", "CVT"];
-const COR_MAP: Record<string, string> = {
-  Preto: "#1a1a1a",
-  Branco: "#f0f0f0",
-  Prata: "#b0b0b0",
-  Cinza: "#808080",
-  Vermelho: "#dc2626",
-  Azul: "#2563eb",
-  Verde: "#16a34a",
-  Bege: "#d4b896",
-  Laranja: "#ea580c",
-  Amarelo: "#ca8a04",
-};
 
 const SORT_OPTIONS = [
   { label: "Mais recente", key: "recente" },
@@ -32,6 +20,16 @@ const SORT_OPTIONS = [
   { label: "Menor km", key: "km_asc" },
 ] as const;
 type SortKey = typeof SORT_OPTIONS[number]["key"];
+
+// ─── Brand Logos (Wikimedia Commons) ─────────────────────────────────────────
+const POPULAR_BRANDS = [
+  { name: "Toyota",     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Toyota_carlogo.svg/80px-Toyota_carlogo.svg.png" },
+  { name: "Volkswagen", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Volkswagen_logo_2019.svg/80px-Volkswagen_logo_2019.svg.png" },
+  { name: "Chevrolet",  logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Chevrolet_Gold_Bowtie_logo.svg/80px-Chevrolet_Gold_Bowtie_logo.svg.png" },
+  { name: "Hyundai",    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Hyundai_Motor_Company_logo.svg/80px-Hyundai_Motor_Company_logo.svg.png" },
+  { name: "BMW",        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/80px-BMW.svg.png" },
+  { name: "Honda",      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Honda_Logo.svg/80px-Honda_Logo.svg.png" },
+];
 
 const TIPO_ICONS: Record<string, JSX.Element> = {
   SUV: (
@@ -70,13 +68,12 @@ interface FilterState {
   busca: string;
   preco: [number, number];
   marcas: string[];
+  modelos: string[];
   tipos: string[];
   ano: [number, number];
   km: [number, number];
   combustivel: string[];
   cambio: string[];
-  cores: string[];
-  portas: number[];
   sort: SortKey;
 }
 
@@ -90,13 +87,12 @@ const EMPTY_FILTERS: FilterState = {
   busca: "",
   preco: [...DEFAULT_RANGES.preco],
   marcas: [],
+  modelos: [],
   tipos: [],
   ano: [...DEFAULT_RANGES.ano],
   km: [...DEFAULT_RANGES.km],
   combustivel: [],
   cambio: [],
-  cores: [],
-  portas: [],
   sort: "recente",
 };
 
@@ -104,11 +100,10 @@ function isFilterActive(f: FilterState): boolean {
   return (
     f.busca !== "" ||
     f.marcas.length > 0 ||
+    f.modelos.length > 0 ||
     f.tipos.length > 0 ||
     f.combustivel.length > 0 ||
     f.cambio.length > 0 ||
-    f.cores.length > 0 ||
-    f.portas.length > 0 ||
     f.preco[0] > DEFAULT_RANGES.preco[0] ||
     f.preco[1] < DEFAULT_RANGES.preco[1] ||
     f.ano[0] > DEFAULT_RANGES.ano[0] ||
@@ -173,14 +168,11 @@ function RangeSlider({
   return (
     <div>
       <div className="relative h-5 flex items-center mb-3">
-        {/* Track */}
         <div className="absolute w-full h-1 bg-atria-gray-medium rounded-full" />
-        {/* Active range */}
         <div
           className="absolute h-1 bg-atria-navy rounded-full"
           style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }}
         />
-        {/* Min thumb */}
         <input
           type="range" min={min} max={max} step={step} value={lo}
           onChange={(e) => onChange([Math.min(Number(e.target.value), hi - step), hi])}
@@ -188,7 +180,6 @@ function RangeSlider({
           style={{ zIndex: atMax ? 5 : 3 }}
           aria-label="Valor mínimo"
         />
-        {/* Max thumb */}
         <input
           type="range" min={min} max={max} step={step} value={hi}
           onChange={(e) => onChange([lo, Math.max(Number(e.target.value), lo + step)])}
@@ -206,9 +197,7 @@ function RangeSlider({
 }
 
 // ─── PriceHistogram ───────────────────────────────────────────────────────────
-function PriceHistogram({
-  vehicles, range,
-}: { vehicles: Vehicle[]; range: [number, number] }) {
+function PriceHistogram({ vehicles, range }: { vehicles: Vehicle[]; range: [number, number] }) {
   const BINS = 14;
   const allMin = DEFAULT_RANGES.preco[0];
   const allMax = DEFAULT_RANGES.preco[1];
@@ -288,7 +277,7 @@ function FilterAccordion({
   );
 }
 
-// ─── CheckList helper ─────────────────────────────────────────────────────────
+// ─── CheckList ────────────────────────────────────────────────────────────────
 function CheckList({
   options, selected, onChange,
 }: { options: string[]; selected: string[]; onChange: (v: string[]) => void }) {
@@ -320,30 +309,211 @@ function CheckList({
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({
-  filters, onChange, vehicles,
-}: { filters: FilterState; onChange: (f: FilterState) => void; vehicles: Vehicle[] }) {
-  const set = useCallback((patch: Partial<FilterState>) => onChange({ ...filters, ...patch }), [filters, onChange]);
+// ─── CheckListWithCount ───────────────────────────────────────────────────────
+function CheckListWithCount({
+  options, selected, onChange,
+}: { options: [string, number][]; selected: string[]; onChange: (v: string[]) => void }) {
+  const toggle = (val: string) =>
+    onChange(selected.includes(val) ? selected.filter((x) => x !== val) : [...selected, val]);
+  return (
+    <div className="space-y-1.5">
+      {options.map(([opt, count]) => (
+        <label key={opt} className="flex items-center gap-2.5 cursor-pointer group">
+          <div
+            className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+              selected.includes(opt)
+                ? "bg-atria-navy border-atria-navy"
+                : "border-atria-gray-medium group-hover:border-atria-navy"
+            }`}
+            onClick={() => toggle(opt)}
+          >
+            {selected.includes(opt) && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="white">
+                <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            )}
+          </div>
+          <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="sr-only" />
+          <span className="font-inter text-sm text-atria-text-dark flex-1">{opt}</span>
+          <span className="font-inter text-xs text-atria-text-gray">({count})</span>
+        </label>
+      ))}
+    </div>
+  );
+}
 
-  // Derived: all brands with counts
-  const marcaOptions = useMemo(() => {
+// ─── BrandLogoCard ────────────────────────────────────────────────────────────
+function BrandLogoCard({
+  name, logo, selected, onToggle,
+}: { name: string; logo: string; selected: boolean; onToggle: () => void }) {
+  const [imgError, setImgError] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={selected}
+      className={`flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border-2 transition-all duration-150 ${
+        selected
+          ? "border-atria-navy bg-blue-50"
+          : "border-atria-gray-medium hover:border-atria-navy bg-white"
+      }`}
+    >
+      <div className="h-8 flex items-center justify-center">
+        {imgError ? (
+          <span className="font-barlow-condensed font-black text-xl text-atria-navy">
+            {name.slice(0, 2).toUpperCase()}
+          </span>
+        ) : (
+          <img
+            src={logo}
+            alt={`Logo ${name}`}
+            className="max-h-8 max-w-[52px] object-contain"
+            onError={() => setImgError(true)}
+          />
+        )}
+      </div>
+      <span className={`font-inter text-[11px] font-semibold leading-tight text-center ${selected ? "text-atria-navy" : "text-atria-text-dark"}`}>
+        {name}
+      </span>
+    </button>
+  );
+}
+
+// ─── MarcaFilter ─────────────────────────────────────────────────────────────
+function MarcaFilter({
+  vehicles, selected, onChange,
+}: { vehicles: Vehicle[]; selected: string[]; onChange: (v: string[]) => void }) {
+  const toggle = (name: string) =>
+    onChange(selected.includes(name) ? selected.filter((x) => x !== name) : [...selected, name]);
+
+  // All brands with counts (from actual data)
+  const allBrandCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] ?? 0) + 1; });
     return Object.entries(counts).sort((a, b) => b[1] - a[1]);
   }, [vehicles]);
 
-  const coresDisponiveis = useMemo(() => {
-    const set = new Set(vehicles.map((v) => v.cor));
-    return [...set].filter((c) => c in COR_MAP);
-  }, [vehicles]);
+  // Brands NOT in the popular 6 grid
+  const popularNames = POPULAR_BRANDS.map((b) => b.name);
+  const otherBrands = allBrandCounts.filter(([m]) => !popularNames.includes(m));
 
-  const [marcaBusca, setMarcaBusca] = useState("");
-  const filteredMarcas = marcaOptions.filter(([m]) =>
-    m.toLowerCase().includes(marcaBusca.toLowerCase())
+  return (
+    <div>
+      {/* Popular grid 2×3 */}
+      <p className="font-inter text-[11px] font-semibold uppercase tracking-wider text-atria-text-gray mb-2">
+        Mais populares
+      </p>
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {POPULAR_BRANDS.map((b) => (
+          <BrandLogoCard
+            key={b.name}
+            name={b.name}
+            logo={b.logo}
+            selected={selected.includes(b.name)}
+            onToggle={() => toggle(b.name)}
+          />
+        ))}
+      </div>
+
+      {/* All brands with counts */}
+      <p className="font-inter text-[11px] font-semibold uppercase tracking-wider text-atria-text-gray mb-2">
+        Todas as marcas
+      </p>
+      <CheckListWithCount
+        options={allBrandCounts}
+        selected={selected}
+        onChange={onChange}
+      />
+
+      {/* Show extra brands that appear in data but aren't in the list (safety net) */}
+      {otherBrands.length > 0 && (
+        <div className="mt-0" /> // already included in allBrandCounts
+      )}
+    </div>
+  );
+}
+
+// ─── ModeloFilter ─────────────────────────────────────────────────────────────
+function ModeloFilter({
+  vehicles, selectedMarcas, selectedModelos, onChange,
+}: {
+  vehicles: Vehicle[];
+  selectedMarcas: string[];
+  selectedModelos: string[];
+  onChange: (v: string[]) => void;
+}) {
+  // Available models (filtered by brand selection)
+  const modeloCounts = useMemo(() => {
+    const source = selectedMarcas.length
+      ? vehicles.filter((v) => selectedMarcas.includes(v.marca))
+      : vehicles;
+    const counts: Record<string, number> = {};
+    source.forEach((v) => { counts[v.modelo] = (counts[v.modelo] ?? 0) + 1; });
+    return counts;
+  }, [vehicles, selectedMarcas]);
+
+  // Group by first letter
+  const grouped = useMemo(() => {
+    const entries = Object.entries(modeloCounts).sort(([a], [b]) => a.localeCompare(b));
+    const groups: Record<string, [string, number][]> = {};
+    entries.forEach(([modelo, count]) => {
+      const letter = modelo[0].toUpperCase();
+      if (!groups[letter]) groups[letter] = [];
+      groups[letter].push([modelo, count]);
+    });
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [modeloCounts]);
+
+  const toggle = (val: string) =>
+    onChange(selectedModelos.includes(val) ? selectedModelos.filter((x) => x !== val) : [...selectedModelos, val]);
+
+  if (!grouped.length) {
+    return <p className="font-inter text-sm text-atria-text-gray italic">Selecione uma marca primeiro</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {grouped.map(([letter, modelos]) => (
+        <div key={letter}>
+          <p className="font-inter text-xs font-bold text-atria-text-gray uppercase mb-1">{letter}</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+            {modelos.map(([modelo, count]) => (
+              <label key={modelo} className="flex items-center gap-1.5 cursor-pointer group min-w-0">
+                <div
+                  className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                    selectedModelos.includes(modelo)
+                      ? "bg-atria-navy border-atria-navy"
+                      : "border-atria-gray-medium group-hover:border-atria-navy"
+                  }`}
+                  onClick={() => toggle(modelo)}
+                >
+                  {selectedModelos.includes(modelo) && (
+                    <svg width="8" height="7" viewBox="0 0 10 8" fill="white">
+                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    </svg>
+                  )}
+                </div>
+                <input type="checkbox" checked={selectedModelos.includes(modelo)} onChange={() => toggle(modelo)} className="sr-only" />
+                <span className="font-inter text-xs text-atria-text-dark truncate">{modelo}</span>
+                <span className="font-inter text-[10px] text-atria-text-gray flex-shrink-0">({count})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+function Sidebar({
+  filters, onChange, vehicles,
+}: { filters: FilterState; onChange: (f: FilterState) => void; vehicles: Vehicle[] }) {
+  const set = useCallback(
+    (patch: Partial<FilterState>) => onChange({ ...filters, ...patch }),
+    [filters, onChange]
   );
 
-  // Toggle helper
   const toggleArr = <T,>(arr: T[], val: T): T[] =>
     arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 
@@ -368,43 +538,25 @@ function Sidebar({
 
       {/* ── Marca ── */}
       <FilterAccordion title="Marca" defaultOpen hasActive={filters.marcas.length > 0}>
-        <div className="relative mb-2">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-atria-text-gray" />
-          <input
-            type="text"
-            placeholder="Buscar marca..."
-            value={marcaBusca}
-            onChange={(e) => setMarcaBusca(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 border border-atria-gray-medium rounded-lg font-inter text-xs outline-none focus:border-atria-navy transition-colors"
-          />
-        </div>
-        <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-          {filteredMarcas.map(([marca, count]) => (
-            <label key={marca} className="flex items-center gap-2.5 cursor-pointer group">
-              <div
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                  filters.marcas.includes(marca)
-                    ? "bg-atria-navy border-atria-navy"
-                    : "border-atria-gray-medium group-hover:border-atria-navy"
-                }`}
-                onClick={() => set({ marcas: toggleArr(filters.marcas, marca) })}
-              >
-                {filters.marcas.includes(marca) && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </div>
-              <input type="checkbox" checked={filters.marcas.includes(marca)} onChange={() => set({ marcas: toggleArr(filters.marcas, marca) })} className="sr-only" />
-              <span className="font-inter text-sm text-atria-text-dark flex-1">{marca}</span>
-              <span className="font-inter text-xs text-atria-text-gray">({count})</span>
-            </label>
-          ))}
-        </div>
+        <MarcaFilter
+          vehicles={vehicles}
+          selected={filters.marcas}
+          onChange={(v) => set({ marcas: v, modelos: [] })}
+        />
+      </FilterAccordion>
+
+      {/* ── Modelo ── */}
+      <FilterAccordion title="Modelo" defaultOpen={false} hasActive={filters.modelos.length > 0}>
+        <ModeloFilter
+          vehicles={vehicles}
+          selectedMarcas={filters.marcas}
+          selectedModelos={filters.modelos}
+          onChange={(v) => set({ modelos: v })}
+        />
       </FilterAccordion>
 
       {/* ── Tipo de Carroceria ── */}
-      <FilterAccordion title="Tipo" defaultOpen hasActive={filters.tipos.length > 0}>
+      <FilterAccordion title="Tipo de carroceria" defaultOpen hasActive={filters.tipos.length > 0}>
         <div className="grid grid-cols-2 gap-2">
           {TIPOS.map((tipo) => (
             <button
@@ -474,49 +626,6 @@ function Sidebar({
           onChange={(v) => set({ cambio: v })}
         />
       </FilterAccordion>
-
-      {/* ── Cor ── */}
-      <FilterAccordion title="Cor" hasActive={filters.cores.length > 0}>
-        <div className="flex flex-wrap gap-2.5">
-          {coresDisponiveis.map((cor) => (
-            <button
-              key={cor}
-              type="button"
-              onClick={() => set({ cores: toggleArr(filters.cores, cor) })}
-              title={cor}
-              aria-label={cor}
-              aria-pressed={filters.cores.includes(cor)}
-              className={`w-8 h-8 rounded-full border-2 transition-all ${
-                filters.cores.includes(cor)
-                  ? "border-atria-navy scale-110 shadow-md"
-                  : "border-white shadow hover:scale-105"
-              }`}
-              style={{ backgroundColor: COR_MAP[cor] }}
-            />
-          ))}
-        </div>
-      </FilterAccordion>
-
-      {/* ── Portas ── */}
-      <FilterAccordion title="Portas" hasActive={filters.portas.length > 0}>
-        <div className="flex gap-2">
-          {[2, 4].map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => set({ portas: toggleArr(filters.portas, p) })}
-              aria-pressed={filters.portas.includes(p)}
-              className={`flex-1 py-2.5 font-inter font-semibold text-sm rounded-lg border-2 transition-all ${
-                filters.portas.includes(p)
-                  ? "border-atria-navy bg-atria-navy text-white"
-                  : "border-atria-gray-medium text-atria-text-dark hover:border-atria-navy"
-              }`}
-            >
-              {p} portas
-            </button>
-          ))}
-        </div>
-      </FilterAccordion>
     </div>
   );
 }
@@ -531,6 +640,7 @@ function ActiveFilters({ filters, onChange }: { filters: FilterState; onChange: 
     if (filters.preco[0] > DEFAULT_RANGES.preco[0] || filters.preco[1] < DEFAULT_RANGES.preco[1])
       result.push({ label: `${fmt(filters.preco[0])} – ${fmt(filters.preco[1])}`, onRemove: () => set({ preco: [...DEFAULT_RANGES.preco] }) });
     filters.marcas.forEach((m) => result.push({ label: m, onRemove: () => set({ marcas: filters.marcas.filter((x) => x !== m) }) }));
+    filters.modelos.forEach((m) => result.push({ label: m, onRemove: () => set({ modelos: filters.modelos.filter((x) => x !== m) }) }));
     filters.tipos.forEach((t) => result.push({ label: t, onRemove: () => set({ tipos: filters.tipos.filter((x) => x !== t) }) }));
     if (filters.ano[0] > DEFAULT_RANGES.ano[0] || filters.ano[1] < DEFAULT_RANGES.ano[1])
       result.push({ label: `${filters.ano[0]}–${filters.ano[1]}`, onRemove: () => set({ ano: [...DEFAULT_RANGES.ano] }) });
@@ -538,8 +648,6 @@ function ActiveFilters({ filters, onChange }: { filters: FilterState; onChange: 
       result.push({ label: `${fmtKm(filters.km[0])} – ${fmtKm(filters.km[1])}`, onRemove: () => set({ km: [...DEFAULT_RANGES.km] }) });
     filters.combustivel.forEach((c) => result.push({ label: c, onRemove: () => set({ combustivel: filters.combustivel.filter((x) => x !== c) }) }));
     filters.cambio.forEach((c) => result.push({ label: c, onRemove: () => set({ cambio: filters.cambio.filter((x) => x !== c) }) }));
-    filters.cores.forEach((c) => result.push({ label: c, onRemove: () => set({ cores: filters.cores.filter((x) => x !== c) }) }));
-    filters.portas.forEach((p) => result.push({ label: `${p} portas`, onRemove: () => set({ portas: filters.portas.filter((x) => x !== p) }) }));
 
     return result;
   }, [filters, onChange]);
@@ -726,7 +834,6 @@ export default function Estoque() {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Load data
   useEffect(() => {
     getVehicles().then((v) => { setAll(v); setLoading(false); });
   }, []);
@@ -738,6 +845,7 @@ export default function Estoque() {
       ...f,
       busca: p.get("q") ?? "",
       tipos: p.get("tipo") ? [p.get("tipo")!] : [],
+      marcas: p.get("marca") ? p.get("marca")!.split(",") : [],
     }));
   }, []);
 
@@ -747,22 +855,22 @@ export default function Estoque() {
     if (filters.busca) p.set("q", filters.busca);
     if (filters.tipos.length === 1) p.set("tipo", filters.tipos[0]);
     if (filters.marcas.length) p.set("marca", filters.marcas.join(","));
+    if (filters.modelos.length) p.set("modelo", filters.modelos.join(","));
     const url = `${window.location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
     window.history.replaceState({}, "", url);
-  }, [filters.busca, filters.tipos, filters.marcas]);
+  }, [filters.busca, filters.tipos, filters.marcas, filters.modelos]);
 
   // Filter + sort
   const filtered = useMemo(() => {
     let res = all.filter((v) => {
       if (filters.marcas.length && !filters.marcas.includes(v.marca)) return false;
+      if (filters.modelos.length && !filters.modelos.includes(v.modelo)) return false;
       if (filters.tipos.length && !filters.tipos.includes(v.tipo ?? "")) return false;
       if (v.preco < filters.preco[0] || v.preco > filters.preco[1]) return false;
       if (v.ano < filters.ano[0] || v.ano > filters.ano[1]) return false;
       if (v.km < filters.km[0] || v.km > filters.km[1]) return false;
       if (filters.combustivel.length && !filters.combustivel.includes(v.combustivel)) return false;
       if (filters.cambio.length && !filters.cambio.includes(v.cambio)) return false;
-      if (filters.cores.length && !filters.cores.includes(v.cor)) return false;
-      if (filters.portas.length && !filters.portas.includes(v.portas ?? 4)) return false;
       const q = filters.busca.toLowerCase();
       if (q && !`${v.marca} ${v.modelo} ${v.titulo ?? ""}`.toLowerCase().includes(q)) return false;
       return true;
@@ -779,7 +887,6 @@ export default function Estoque() {
 
   usePageSEO(all);
   const handleChange = useCallback((f: FilterState) => setFilters(f), []);
-
   const hasFilters = isFilterActive(filters);
 
   return (
@@ -797,10 +904,9 @@ export default function Estoque() {
         </div>
       </header>
 
-      {/* Top bar (mobile search + filter btn, desktop sort) */}
+      {/* Top bar */}
       <div className="sticky top-16 z-30 bg-white border-b border-atria-gray-medium shadow-sm">
         <div className="container mx-auto px-4 py-2.5 flex items-center gap-3">
-          {/* Search (always visible) */}
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-atria-text-gray" />
             <input
@@ -812,7 +918,6 @@ export default function Estoque() {
               className="w-full pl-9 pr-4 py-2.5 border border-atria-gray-medium rounded-lg font-inter text-sm outline-none focus:border-atria-navy transition-colors"
             />
           </div>
-          {/* Mobile filter button */}
           <button
             onClick={() => setDrawerOpen(true)}
             className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-atria-gray-medium rounded-lg font-inter text-sm font-semibold text-atria-text-dark whitespace-nowrap"
@@ -822,7 +927,6 @@ export default function Estoque() {
             Filtros
             {hasFilters && <span className="w-2 h-2 rounded-full bg-atria-navy" />}
           </button>
-          {/* Sort (desktop only) */}
           <div className="hidden lg:flex items-center gap-2 ml-auto">
             <span className="font-inter text-sm text-atria-text-gray whitespace-nowrap">
               {loading ? "…" : `${filtered.length} veículo${filtered.length !== 1 ? "s" : ""}`}
@@ -843,11 +947,8 @@ export default function Estoque() {
       <div className="container mx-auto px-4">
         <div className="flex gap-0 lg:gap-8 items-start py-6">
 
-          {/* ── Desktop Sidebar ── */}
-          <aside
-            className="hidden lg:block w-[260px] shrink-0"
-            aria-label="Filtros de busca"
-          >
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block w-[280px] shrink-0" aria-label="Filtros de busca">
             <div className="sticky top-[112px] max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
               <div className="flex items-center justify-between mb-3">
                 <span className="font-barlow-condensed font-bold text-base text-atria-text-dark uppercase tracking-wider">
@@ -866,12 +967,10 @@ export default function Estoque() {
             </div>
           </aside>
 
-          {/* ── Grid ── */}
+          {/* Grid */}
           <main className="flex-1 min-w-0" id="grid-veiculos">
-            {/* Active chips */}
             <ActiveFilters filters={filters} onChange={handleChange} />
 
-            {/* Mobile count + sort */}
             <div className="flex items-center justify-between mb-4 lg:hidden">
               <span className="font-inter text-sm text-atria-text-gray">
                 {filtered.length} veículo{filtered.length !== 1 ? "s" : ""}
@@ -917,11 +1016,10 @@ export default function Estoque() {
         </div>
       </div>
 
-      {/* ── Mobile Drawer ── */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {drawerOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="backdrop"
               initial={{ opacity: 0 }}
@@ -930,24 +1028,22 @@ export default function Estoque() {
               className="fixed inset-0 bg-black/50 z-40 lg:hidden"
               onClick={() => setDrawerOpen(false)}
             />
-            {/* Drawer */}
             <motion.div
               key="drawer"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-[320px] bg-white z-50 flex flex-col shadow-2xl lg:hidden"
+              className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-[340px] bg-white z-50 flex flex-col shadow-2xl lg:hidden"
               role="dialog"
               aria-modal="true"
               aria-label="Filtros"
             >
-              {/* Drawer header */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-atria-gray-medium">
                 <span className="font-barlow-condensed font-bold text-lg uppercase tracking-wider">Filtros</span>
                 <div className="flex items-center gap-3">
                   {hasFilters && (
-                    <button onClick={() => { setFilters(EMPTY_FILTERS); }} className="font-inter text-xs text-atria-navy">
+                    <button onClick={() => setFilters(EMPTY_FILTERS)} className="font-inter text-xs text-atria-navy">
                       Limpar
                     </button>
                   )}
@@ -956,11 +1052,9 @@ export default function Estoque() {
                   </button>
                 </div>
               </div>
-              {/* Drawer body */}
               <div className="flex-1 overflow-y-auto px-4 py-2">
                 <Sidebar filters={filters} onChange={handleChange} vehicles={all} />
               </div>
-              {/* Drawer footer */}
               <div className="px-4 py-4 border-t border-atria-gray-medium">
                 <button
                   onClick={() => setDrawerOpen(false)}
