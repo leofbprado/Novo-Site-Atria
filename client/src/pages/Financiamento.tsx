@@ -287,9 +287,17 @@ function ComoFunciona() {
 }
 
 // ---- Bancos Parceiros ------------------------------------------------------
-function BancosParceiros() {
-  const bancos = ["Bradesco", "Itau", "Santander", "BV", "Pan"];
+const BANCOS = [
+  { nome: "Bradesco", logo: "https://logo.clearbit.com/bradesco.com.br" },
+  { nome: "Itau", logo: "https://logo.clearbit.com/itau.com.br" },
+  { nome: "Santander", logo: "https://logo.clearbit.com/santander.com.br" },
+  { nome: "BV", logo: "https://logo.clearbit.com/bv.com.br" },
+  { nome: "Pan", logo: "https://logo.clearbit.com/bancopan.com.br" },
+  { nome: "C6", logo: "https://logo.clearbit.com/c6bank.com.br" },
+  { nome: "Safra", logo: "https://logo.clearbit.com/safra.com.br" },
+];
 
+function BancosParceiros() {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -299,12 +307,31 @@ function BancosParceiros() {
             Bancos Parceiros
           </h2>
         </div>
-        <div className="flex flex-wrap justify-center gap-6 max-w-3xl mx-auto">
-          {bancos.map((b) => (
-            <div key={b} className="flex items-center justify-center w-36 h-20 bg-atria-gray-light rounded-xl border border-atria-gray-medium">
-              <span className="font-barlow-condensed font-bold text-xl text-atria-text-gray">{b}</span>
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          {BANCOS.map((b) => (
+            <div key={b.nome} className="flex flex-col items-center justify-center aspect-square bg-white rounded-xl border border-atria-gray-medium p-4 hover:shadow-sm transition-shadow">
+              <img
+                src={b.logo}
+                alt={b.nome}
+                className="max-h-12 w-auto object-contain mb-2"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const parent = e.currentTarget.parentElement;
+                  if (parent && !parent.querySelector("span")) {
+                    const span = document.createElement("span");
+                    span.className = "font-barlow-condensed font-bold text-xl text-atria-text-gray";
+                    span.textContent = b.nome;
+                    parent.appendChild(span);
+                  }
+                }}
+              />
+              <span className="font-inter text-xs text-atria-text-gray">{b.nome}</span>
             </div>
           ))}
+          <div className="flex items-center justify-center aspect-square rounded-xl">
+            <span className="font-inter text-sm text-atria-text-gray italic">e outros</span>
+          </div>
         </div>
       </div>
     </section>
@@ -368,35 +395,25 @@ function FAQSection() {
   );
 }
 
-// ---- Credere Plugin --------------------------------------------------------
-function CrederePlugin() {
-  useEffect(() => {
-    const CREDERE_SRC = "https://app.meucredere.com.br/simulador/loja/21.411.055/0001-64/veiculo/detectar.js";
-    const old = document.querySelector(`script[src="${CREDERE_SRC}"]`);
-    if (old) old.remove();
-    const timer = setTimeout(() => {
-      const s = document.createElement("script");
-      s.src = CREDERE_SRC;
-      s.async = true;
-      document.body.appendChild(s);
-    }, 500);
-    return () => {
-      clearTimeout(timer);
-      document.querySelector(`script[src="${CREDERE_SRC}"]`)?.remove();
-    };
-  }, []);
-
+// ---- Simulacao com CPF CTA --------------------------------------------------
+function SimulacaoCPF() {
   return (
     <section className="py-16 bg-white">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="text-center mb-8">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Simulacao com CPF</p>
-          <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase">
-            Simule pelo Credere
-          </h2>
-          <p className="font-inter text-sm text-atria-text-gray mt-2">Pre-aprovacao em 30 segundos</p>
-        </div>
-        <div id="credere-pnp" />
+      <div className="container mx-auto px-4 max-w-3xl text-center">
+        <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Simulacao com CPF</p>
+        <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase mb-3">
+          Pre-aprovacao Online
+        </h2>
+        <p className="font-inter text-sm text-atria-text-gray mb-6">
+          Para simulacao com CPF, escolha um veiculo do nosso estoque e use o simulador Credere na pagina do veiculo.
+        </p>
+        <a
+          href="/estoque"
+          className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
+        >
+          <Car size={18} />
+          Ver Estoque
+        </a>
       </div>
     </section>
   );
@@ -445,7 +462,7 @@ export default function Financiamento() {
       <Vantagens />
       <ComoFunciona />
       <BancosParceiros />
-      <CrederePlugin />
+      <SimulacaoCPF />
       <FAQSection />
       <CTAFinal />
     </>
