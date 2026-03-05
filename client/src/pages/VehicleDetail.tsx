@@ -795,11 +795,6 @@ export default function VehicleDetail() {
 
       {/* Mobile price + CTA bar */}
       <MobileStickyBar v={vehicle} />
-
-      {/* Mobile: price panel below fold */}
-      <div className="lg:hidden container mx-auto px-4 pb-8">
-        <PricePanel v={vehicle} />
-      </div>
     </>
   );
 }
