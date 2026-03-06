@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
+  <rect width="200" height="80" fill="none"/>
+  <text x="100" y="52" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="42" fill="#0066CC">banco</text>
+  <text x="100" y="75" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="22" letter-spacing="8" fill="#0066CC">PAN</text>
+</svg>

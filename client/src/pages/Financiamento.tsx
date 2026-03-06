@@ -288,33 +288,14 @@ function ComoFunciona() {
 
 // ---- Bancos Parceiros ------------------------------------------------------
 const BANCOS = [
-  { nome: "Bradesco", cor: "#CC092F" },
-  { nome: "Itaú", cor: "#003399" },
-  { nome: "Santander", cor: "#EC0000" },
-  { nome: "BV", cor: "#2B9B2C" },
-  { nome: "Pan", cor: "#0066CC" },
-  { nome: "C6", cor: "#242424" },
-  { nome: "Safra", cor: "#003366" },
+  { nome: "Bradesco", cor: "#CC092F", logo: "/images/banks/bradesco.svg" },
+  { nome: "Itaú", cor: "#003399", logo: "/images/banks/itau.svg" },
+  { nome: "Santander", cor: "#EC0000", logo: "/images/banks/santander.svg" },
+  { nome: "BV", cor: "#2B9B2C", logo: "/images/banks/bv.svg" },
+  { nome: "Pan", cor: "#0066CC", logo: "/images/banks/pan.svg" },
+  { nome: "C6", cor: "#242424", logo: "/images/banks/c6.svg" },
+  { nome: "Safra", cor: "#003366", logo: "/images/banks/safra.svg" },
 ];
-
-function BankLogo({ nome, cor }: { nome: string; cor: string }) {
-  return (
-    <svg viewBox="0 0 120 40" className="w-full max-w-[120px] h-auto" role="img" aria-label={nome}>
-      <text
-        x="50%"
-        y="50%"
-        dominantBaseline="central"
-        textAnchor="middle"
-        fill={cor}
-        fontFamily="'Barlow Condensed', sans-serif"
-        fontWeight="700"
-        fontSize={nome.length > 6 ? "16" : "20"}
-      >
-        {nome}
-      </text>
-    </svg>
-  );
-}
 
 function BancosParceiros() {
   return (
@@ -329,7 +310,23 @@ function BancosParceiros() {
         <div className="grid grid-cols-3 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {BANCOS.map((b) => (
             <div key={b.nome} className="flex items-center justify-center aspect-square bg-white rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-shadow">
-              <BankLogo nome={b.nome} cor={b.cor} />
+              <img
+                src={b.logo}
+                alt={b.nome}
+                className="max-h-12 w-auto object-contain mx-auto"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const parent = e.currentTarget.parentElement;
+                  if (parent && !parent.querySelector("span")) {
+                    const span = document.createElement("span");
+                    span.className = "font-barlow-condensed font-bold text-xl";
+                    span.style.color = b.cor;
+                    span.textContent = b.nome;
+                    parent.appendChild(span);
+                  }
+                }}
+              />
             </div>
           ))}
           <div className="flex items-center justify-center aspect-square rounded-xl">
