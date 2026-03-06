@@ -5,8 +5,6 @@ import {
   fetchVeiculos,
   fetchVeiculosHome,
   fetchVeiculo,
-  getOpenAIKey,
-  saveOpenAIKey,
   type VeiculoResumo,
   type VeiculoDetalhe,
   type VeiculosResponse,
@@ -26,15 +24,11 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-    const ok = await adminLogin(user, pass);
-    setLoading(false);
-    if (ok) {
+    if (adminLogin(user, pass)) {
       sessionStorage.setItem("admin_auth", "1");
       onLogin();
     } else {
@@ -110,10 +104,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-400/30"
+          className="w-full bg-blue-500 hover:bg-blue-400 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-400/30"
         >
-          {loading ? "Entrando..." : "Entrar"}
+          Entrar
         </button>
       </motion.form>
     </div>
@@ -309,11 +302,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   // Modal
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // OpenAI key
-  const [oaiKey, setOaiKey] = useState("");
-  const [oaiKeyInput, setOaiKeyInput] = useState("");
-  const [showSettings, setShowSettings] = useState(false);
-
   // Available brands for filter
   const [marcas, setMarcas] = useState<string[]>([]);
 
@@ -361,19 +349,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       const m = Array.from(new Set(dados.map((v) => v.marca).filter(Boolean))).sort();
       setMarcas(m);
     });
-    getOpenAIKey().then(setOaiKey);
   }, []);
 
   const handleFilter = () => {
     setPage(1);
     loadVehicles();
-  };
-
-  const handleSaveOAI = async () => {
-    await saveOpenAIKey(oaiKeyInput);
-    const k = await getOpenAIKey();
-    setOaiKey(k);
-    setOaiKeyInput("");
   };
 
   return (
@@ -385,12 +365,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <span className="text-gray-600 text-xs">AutoConf API</span>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="text-gray-400 hover:text-white text-sm transition"
-          >
-            Config
-          </button>
           <button
             onClick={() => {
               sessionStorage.removeItem("admin_auth");
@@ -404,40 +378,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Settings panel */}
-        {showSettings && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-              Configuracoes
-            </h2>
-            <div>
-              <label className="text-gray-500 text-xs uppercase tracking-wider block mb-1">
-                Chave OpenAI (uso futuro)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  placeholder={oaiKey || "sk-..."}
-                  value={oaiKeyInput}
-                  onChange={(e) => setOaiKeyInput(e.target.value)}
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
-                />
-                <button
-                  onClick={handleSaveOAI}
-                  className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition"
-                >
-                  Salvar
-                </button>
-              </div>
-              {oaiKey && (
-                <p className="text-gray-600 text-xs mt-1">
-                  Chave atual: {oaiKey}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Stats cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[

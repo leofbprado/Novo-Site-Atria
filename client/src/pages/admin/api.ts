@@ -1,13 +1,27 @@
-// Admin API client - proxies through Express server to AutoConf
+// Admin API client - calls AutoConf API directly from the browser
 
-export async function adminLogin(user: string, pass: string): Promise<boolean> {
-  const res = await fetch("/api/admin/login", {
+const AUTOCONF_API = "https://api.autoconf.com.br";
+const AUTOCONF_BEARER = "5mHbswJ9CEHh18iHhEnkl8nZdVXXq0bNPYh1t9CqyNNqhp5NxlD8s68oCghqMbagDSsUOvqyXSsNp0Q7Euv7hSYEmHahQOlwfaHNgDvjqIaGTu7aXeIWwG8Y8HNxsrvfgqOjLqAFjwJ5JhZ8ZRA6zvBBxHXSNCb5SXKICvLzvr0mWuYDycTuQKCspl1mVCvkyoXdAp1ZGP1u8sbGScrkONASHrEAjl9QXb0klFuDgk8f1kgL5oabZqubnoqaHfyL";
+const AUTOCONF_TOKEN = "N0y5JfzY5nTQcNGOQ5D5G0dPXSnG2ngseaALptDS";
+
+// Admin credentials (client-side validation)
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "atria2024";
+
+async function autoconfPost(endpoint: string, body: Record<string, unknown>) {
+  const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user, pass }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${AUTOCONF_BEARER}`,
+    },
+    body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
   });
-  const data = await res.json();
-  return data.ok === true;
+  return res.json();
+}
+
+export function adminLogin(user: string, pass: string): boolean {
+  return user === ADMIN_USER && pass === ADMIN_PASS;
 }
 
 export interface VeiculoResumo {
@@ -61,41 +75,13 @@ export async function fetchVeiculos(params: {
   preco_ate?: number;
   ordenacao?: string;
 }): Promise<VeiculosResponse> {
-  const res = await fetch("/api/admin/veiculos", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-  });
-  return res.json();
+  return autoconfPost("/api/v1/veiculos", params);
 }
 
 export async function fetchVeiculosHome(): Promise<VeiculosResponse> {
-  const res = await fetch("/api/admin/veiculos-home", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
-  return res.json();
+  return autoconfPost("/api/v1/veiculos-home", {});
 }
 
 export async function fetchVeiculo(id: number): Promise<{ sucesso: boolean; dados: VeiculoDetalhe }> {
-  const res = await fetch("/api/admin/veiculo", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-  return res.json();
-}
-
-export async function getOpenAIKey(): Promise<string> {
-  const res = await fetch("/api/admin/openai-key");
-  const data = await res.json();
-  return data.key || "";
-}
-
-export async function saveOpenAIKey(key: string): Promise<void> {
-  await fetch("/api/admin/openai-key", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key }),
-  });
+  return autoconfPost("/api/v1/veiculo", { id });
 }
