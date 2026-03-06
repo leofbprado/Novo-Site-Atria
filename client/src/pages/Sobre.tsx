@@ -185,13 +185,12 @@ function Numeros() {
     { icon: <Car size={24} />, label: "Veiculos vendidos", value: 10000, suffix: "+" },
     { icon: <Store size={24} />, label: "Veiculos em estoque", value: 200, suffix: "+" },
     { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 3, suffix: "" },
-    { icon: <Star size={24} />, label: "Satisfacao", value: 98, suffix: "%" },
   ];
 
   return (
     <section className="py-16 bg-atria-navy">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {stats.map((s) => (
             <div key={s.label}>
               <div className="text-atria-yellow mx-auto mb-2 flex justify-center">{s.icon}</div>

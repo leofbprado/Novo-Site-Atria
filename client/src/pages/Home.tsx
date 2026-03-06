@@ -884,8 +884,8 @@ function Stats() {
           {[
             { label: "Anos no mercado", value: 12 },
             { label: "Veículos vendidos", value: 10000, suffix: "+" },
-            { label: "Clientes satisfeitos", value: 4800, suffix: "+" },
             { label: "Veículos em estoque", value: 200, suffix: "+" },
+            { label: "Lojas em Campinas", value: 3, suffix: "" },
           ].map((s) => (
             <div key={s.label}>
               <p className="font-barlow-condensed font-black text-5xl md:text-6xl text-atria-yellow">
