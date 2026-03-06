@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import {
   adminLogin,
   fetchVeiculos,
@@ -10,6 +11,9 @@ import {
   type VeiculoDetalhe,
   type VeiculosResponse,
 } from "./api";
+
+// ── Constants ────────────────────────────────────────────────────────────────
+const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (v: number) =>
@@ -39,51 +43,79 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <form
+    <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#0d2147] to-[#1a3a6b] flex items-center justify-center px-4">
+      <motion.form
         onSubmit={handleSubmit}
-        className="bg-gray-900 rounded-2xl p-8 w-full max-w-sm shadow-2xl border border-gray-800"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 w-full max-w-sm shadow-2xl border border-white/10"
       >
-        <h1 className="text-2xl font-bold text-white mb-1 text-center">
-          Atria Admin
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <img src={LOGO_BRANCO} alt="Atria Veiculos" className="h-14 object-contain" />
+        </div>
+
+        <h1 className="text-xl font-bold text-white mb-0.5 text-center font-barlow-condensed tracking-wide">
+          Painel Administrativo
         </h1>
-        <p className="text-gray-500 text-sm text-center mb-6">
-          Painel de gerenciamento
+        <p className="text-blue-300/60 text-sm text-center mb-8">
+          Acesso restrito
         </p>
 
-        <label className="block text-gray-400 text-xs uppercase tracking-wider mb-1">
+        {/* User field */}
+        <label className="block text-blue-200/70 text-xs uppercase tracking-wider mb-1.5">
           Usuario
         </label>
-        <input
-          type="text"
-          value={user}
-          onChange={(e) => setUser(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm mb-4 outline-none focus:border-blue-500 transition"
-          autoFocus
-        />
+        <div className="relative mb-4">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <input
+            type="text"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
+            placeholder="Seu usuario"
+            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm outline-none focus:border-blue-400 focus:bg-white/10 transition placeholder:text-white/20"
+            autoFocus
+          />
+        </div>
 
-        <label className="block text-gray-400 text-xs uppercase tracking-wider mb-1">
+        {/* Password field */}
+        <label className="block text-blue-200/70 text-xs uppercase tracking-wider mb-1.5">
           Senha
         </label>
-        <input
-          type="password"
-          value={pass}
-          onChange={(e) => setPass(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm mb-6 outline-none focus:border-blue-500 transition"
-        />
+        <div className="relative mb-6">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <input
+            type="password"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            placeholder="Sua senha"
+            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm outline-none focus:border-blue-400 focus:bg-white/10 transition placeholder:text-white/20"
+          />
+        </div>
 
         {error && (
-          <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
+          <motion.p
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-red-400 text-sm mb-4 text-center bg-red-500/10 rounded-lg py-2"
+          >
+            {error}
+          </motion.p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg transition"
+          className="w-full bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-400/30"
         >
           {loading ? "Entrando..." : "Entrar"}
         </button>
-      </form>
+      </motion.form>
     </div>
   );
 }
