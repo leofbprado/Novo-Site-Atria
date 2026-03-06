@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { motion, useInView, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 
@@ -491,34 +491,143 @@ function Simulador() {
 }
 
 
-// ─── Marquee (SVG logos) ─────────────────────────────────────────────────────
-function Marquee() {
-  const [brands, setBrands] = useState<string[]>([]);
+// ─── 3D Brand Carousel ───────────────────────────────────────────────────────
+function BrandCarousel() {
+  const [brands, setBrands] = useState<{ nome: string; qty: number }[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const dragX = useMotionValue(0);
+  const autoAngle = useRef(0);
+  const autoRef = useRef<number>(0);
+  const isDragging = useRef(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     getVehicles().then((vehicles) => {
       const counts: Record<string, number> = {};
       vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
-      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([m]) => m);
+      const sorted = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([nome, qty]) => ({ nome, qty }));
       setBrands(sorted);
     });
   }, []);
 
+  // Auto-rotate
+  useEffect(() => {
+    if (brands.length === 0) return;
+    const step = () => {
+      if (!isDragging.current) {
+        autoAngle.current -= 0.15;
+        dragX.set(autoAngle.current);
+      }
+      autoRef.current = requestAnimationFrame(step);
+    };
+    autoRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(autoRef.current);
+  }, [brands.length, dragX]);
+
+  const faceCount = brands.length;
+  const cylinderWidth = isMobile ? 1100 : 1800;
+  const radius = cylinderWidth / (2 * Math.PI);
+  const faceAngle = faceCount > 0 ? 360 / faceCount : 0;
+
+  const rotation = useSpring(
+    useTransform(dragX, (v) => v),
+    { stiffness: 100, damping: 30, mass: 0.1 }
+  );
+
+  const handleNavigate = useCallback((marca: string) => {
+    window.location.href = `/estoque?marca=${encodeURIComponent(marca)}`;
+  }, []);
+
   if (brands.length === 0) return null;
 
-  const items = [...brands, ...brands];
-
   return (
-    <div className="bg-atria-gray-light py-6 overflow-hidden">
-      <div className="flex gap-14 animate-marquee">
-        {items.map((marca, i) => (
-          <div key={`${marca}-${i}`} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <BrandLogo marca={marca} size={48} />
-            <span className="font-inter text-[10px] text-atria-text-gray/70 whitespace-nowrap">{marca}</span>
-          </div>
-        ))}
+    <section className="py-16 bg-gradient-to-b from-[#001A8C] to-[#000D47] overflow-hidden">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-10">
+          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-2">Navegue</p>
+          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase">
+            Escolha por Marca
+          </h2>
+          <p className="font-inter text-white/50 text-sm mt-2 max-w-md mx-auto">
+            Gire o carrossel ou clique em uma marca para ver os veículos disponíveis
+          </p>
+        </div>
+
+        <div
+          className="relative mx-auto"
+          style={{
+            height: isMobile ? 300 : 400,
+            perspective: 1000,
+          }}
+        >
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0}
+            onDragStart={() => { isDragging.current = true; }}
+            onDrag={(_, info) => {
+              autoAngle.current += info.delta.x * 0.3;
+              dragX.set(autoAngle.current);
+            }}
+            onDragEnd={() => {
+              isDragging.current = false;
+            }}
+            className="absolute inset-0 cursor-grab active:cursor-grabbing"
+            style={{ touchAction: "pan-y" }}
+          >
+            <motion.div
+              className="relative w-full h-full"
+              style={{
+                transformStyle: "preserve-3d",
+                rotateY: rotation,
+                translateZ: -radius,
+              }}
+            >
+              {brands.map((b, i) => {
+                const angle = i * faceAngle;
+                return (
+                  <div
+                    key={b.nome}
+                    className="absolute left-1/2 top-1/2"
+                    style={{
+                      width: isMobile ? 120 : 160,
+                      height: isMobile ? 140 : 180,
+                      marginLeft: isMobile ? -60 : -80,
+                      marginTop: isMobile ? -70 : -90,
+                      transformStyle: "preserve-3d",
+                      transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                    }}
+                  >
+                    <button
+                      onClick={() => handleNavigate(b.nome)}
+                      className="w-full h-full bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow flex flex-col items-center justify-center gap-3 p-4 border border-white/20"
+                    >
+                      <BrandLogo marca={b.nome} size={isMobile ? 56 : 80} />
+                      <div className="text-center">
+                        <p className="font-barlow-condensed font-bold text-sm md:text-base text-atria-text-dark leading-tight">
+                          {b.nome}
+                        </p>
+                        <p className="font-inter text-[10px] md:text-xs text-atria-text-gray mt-0.5">
+                          {b.qty} {b.qty === 1 ? "veículo" : "veículos"}
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -1336,7 +1445,7 @@ export default function Home() {
       <ExitIntentPopup />
       <Hero />
       <Simulador />
-      <Marquee />
+      <BrandCarousel />
       <EstoqueDestaque />
       <VendaSeuCarro />
       <PorQueAtria />
