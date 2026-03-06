@@ -385,6 +385,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
 
+  // Import All
+  const [importingAll, setImportingAll] = useState(false);
+  const [importProgress, setImportProgress] = useState("");
+
   // Config
   const [showSettings, setShowSettings] = useState(false);
   const [openaiKey, setOpenaiKey] = useState("");
@@ -453,6 +457,76 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       setSyncResult(`Erro: ${err.message}`);
     }
     setSyncing(false);
+  };
+
+  const handleImportAll = async () => {
+    setImportingAll(true);
+    setImportProgress("Buscando veiculos do AutoConf...");
+    try {
+      const res = await fetchAutoConfVeiculos({ registros_por_pagina: 500 });
+      const dados = Array.isArray(res.dados) ? res.dados : [];
+      const total = dados.length;
+
+      // Step 1: Import all vehicles
+      const imported: Array<{ id: number; data: AutoConfVeiculo; acessorios: string[] }> = [];
+      for (let i = 0; i < total; i++) {
+        setImportProgress(`Importando ${i + 1}/${total}...`);
+        const v = dados[i];
+        let fotos: string[] = [];
+        let acessorios: string[] = [];
+        try {
+          const detail = await fetchAutoConfVeiculo(v.id);
+          if (detail.dados) {
+            fotos = detail.dados.fotos || [];
+            acessorios = detail.dados.acessorios || [];
+          }
+        } catch {
+          fotos = v.foto_principal ? [v.foto_principal] : [];
+        }
+        await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
+        imported.push({ id: v.id, data: v, acessorios });
+      }
+
+      // Step 2: Generate AI descriptions (if key configured)
+      if (openaiKey) {
+        for (let i = 0; i < imported.length; i++) {
+          setImportProgress(`Gerando descricao ${i + 1}/${total}...`);
+          try {
+            const v = imported[i].data;
+            const desc = await generateDescription(openaiKey, {
+              marca: v.marca,
+              modelo: v.modelo,
+              versao: v.versao,
+              ano_fabricacao: v.ano_fabricacao,
+              ano_modelo: v.ano_modelo,
+              km: v.km,
+              cor: v.cor,
+              cambio: v.cambio,
+              combustivel: v.combustivel,
+              acessorios: imported[i].acessorios,
+            });
+            await updateVeiculoDescricao(imported[i].id, desc);
+          } catch {
+            // Skip vehicles where AI fails
+          }
+          if (i < imported.length - 1) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
+        }
+      }
+
+      // Step 3: Publish all
+      for (let i = 0; i < imported.length; i++) {
+        setImportProgress(`Publicando ${i + 1}/${total}...`);
+        await publishVeiculo(imported[i].id);
+      }
+
+      setImportProgress(`Concluido! ${total} veiculos importados, descricoes geradas e publicados.`);
+      loadVehicles();
+    } catch (err: any) {
+      setImportProgress(`Erro: ${err.message}`);
+    }
+    setImportingAll(false);
   };
 
   const handleSaveOpenAIKey = async () => {
@@ -549,25 +623,48 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             ))}
           </div>
           <div className="flex flex-col gap-2">
-            <button onClick={handleSync} disabled={syncing}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2">
-              {syncing ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Sincronizando...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Sincronizar Estoque
-                </>
-              )}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={handleSync} disabled={syncing || importingAll}
+                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2">
+                {syncing ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Sincronizando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Sincronizar Estoque
+                  </>
+                )}
+              </button>
+              <button onClick={handleImportAll} disabled={syncing || importingAll}
+                className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2">
+                {importingAll ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Importando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Importar Tudo
+                  </>
+                )}
+              </button>
+            </div>
             {syncResult && (
               <p className={`text-xs ${syncResult.startsWith("Erro") ? "text-red-400" : "text-green-400"}`}>
                 {syncResult}
+              </p>
+            )}
+            {importProgress && (
+              <p className={`text-xs ${importProgress.startsWith("Erro") ? "text-red-400" : importProgress.startsWith("Concluido") ? "text-green-400" : "text-blue-400"}`}>
+                {importProgress}
               </p>
             )}
           </div>
