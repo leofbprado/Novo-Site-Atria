@@ -273,10 +273,10 @@ const LOJAS = [
   },
   {
     nome: "Loja Novo Campos Eliseos",
-    endereco: "Jd Campos Eliseos",
+    endereco: "Av. John Boyd Dunlop, 3900",
     cidade: "Campinas-SP",
     cep: "",
-    telefone: "(19) 3500-8271",
+    telefone: "(19) 3500-8272",
   },
 ];
 

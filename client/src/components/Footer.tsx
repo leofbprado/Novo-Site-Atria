@@ -20,6 +20,12 @@ const LOJAS = [
     cidade: "Campinas-SP · CEP 13070-178",
     tel: "(19) 3094-0015",
   },
+  {
+    nome: "Loja Novo Campos Elíseos",
+    endereco: "Av. John Boyd Dunlop, 3900",
+    cidade: "Campinas-SP",
+    tel: "(19) 3500-8272",
+  },
 ];
 
 const LINKS = {
