@@ -288,13 +288,13 @@ function ComoFunciona() {
 
 // ---- Bancos Parceiros ------------------------------------------------------
 const BANCOS = [
-  { nome: "Bradesco", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Bradesco_logo_%28horizontal%29.svg/200px-Bradesco_logo_%28horizontal%29.svg.png" },
-  { nome: "Itau", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Banco_Ita%C3%BA_logo.svg/200px-Banco_Ita%C3%BA_logo.svg.png" },
-  { nome: "Santander", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/200px-Banco_Santander_Logotipo.svg.png" },
-  { nome: "BV", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/BV_logo.svg/200px-BV_logo.svg.png" },
-  { nome: "Pan", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Banco_Pan_logo.svg/200px-Banco_Pan_logo.svg.png" },
-  { nome: "C6", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/C6_Bank_logo.svg/200px-C6_Bank_logo.svg.png" },
-  { nome: "Safra", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Safra_logo.svg/200px-Safra_logo.svg.png" },
+  { nome: "Bradesco", cor: "#CC092F" },
+  { nome: "Itaú", cor: "#003399" },
+  { nome: "Santander", cor: "#EC0000" },
+  { nome: "BV", cor: "#2B9B2C" },
+  { nome: "Pan", cor: "#0066CC" },
+  { nome: "C6", cor: "#242424" },
+  { nome: "Safra", cor: "#003366" },
 ];
 
 function BancosParceiros() {
@@ -309,24 +309,8 @@ function BancosParceiros() {
         </div>
         <div className="grid grid-cols-3 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {BANCOS.map((b) => (
-            <div key={b.nome} className="flex flex-col items-center justify-center aspect-square bg-white rounded-xl border border-atria-gray-medium p-4 hover:shadow-sm transition-shadow">
-              <img
-                src={b.logo}
-                alt={b.nome}
-                className="max-h-12 w-auto object-contain mb-2"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  const parent = e.currentTarget.parentElement;
-                  if (parent && !parent.querySelector("span")) {
-                    const span = document.createElement("span");
-                    span.className = "font-barlow-condensed font-bold text-xl text-atria-text-gray";
-                    span.textContent = b.nome;
-                    parent.appendChild(span);
-                  }
-                }}
-              />
-              <span className="font-inter text-xs text-atria-text-gray">{b.nome}</span>
+            <div key={b.nome} className="flex items-center justify-center aspect-square bg-white rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-shadow">
+              <span className="font-barlow-condensed font-bold text-xl md:text-2xl" style={{ color: b.cor }}>{b.nome}</span>
             </div>
           ))}
           <div className="flex items-center justify-center aspect-square rounded-xl">
