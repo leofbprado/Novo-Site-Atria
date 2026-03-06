@@ -861,14 +861,17 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
   const inView = useInView(ref, { once: true });
   useEffect(() => {
     if (!inView) return;
-    let start = 0;
-    const step = (target / 1800) * 16;
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { setCount(target); clearInterval(timer); }
-      else setCount(Math.floor(start));
-    }, 16);
-    return () => clearInterval(timer);
+    const duration = 1800;
+    const startTime = performance.now();
+    let raf: number;
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
   }, [inView, target]);
   return <span ref={ref}>{count.toLocaleString("pt-BR")}{suffix}</span>;
 }
