@@ -1,22 +1,23 @@
-// Admin API client — AutoConf direct calls + OpenAI
-
-const AUTOCONF_API = "https://api.autoconf.com.br";
-const AUTOCONF_BEARER = "5mHbswJ9CEHh18iHhEnkl8nZdVXXq0bNPYh1t9CqyNNqhp5NxlD8s68oCghqMbagDSsUOvqyXSsNp0Q7Euv7hSYEmHahQOlwfaHNgDvjqIaGTu7aXeIWwG8Y8HNxsrvfgqOjLqAFjwJ5JhZ8ZRA6zvBBxHXSNCb5SXKICvLzvr0mWuYDycTuQKCspl1mVCvkyoXdAp1ZGP1u8sbGScrkONASHrEAjl9QXb0klFuDgk8f1kgL5oabZqubnoqaHfyL";
-const AUTOCONF_TOKEN = "N0y5JfzY5nTQcNGOQ5D5G0dPXSnG2ngseaALptDS";
+// Admin API client — AutoConf via server proxy + OpenAI direct
 
 // Admin credentials (client-side)
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "atria2024";
 
-async function autoconfPost(endpoint: string, body: Record<string, unknown>) {
-  const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
+// Uses /api/autoconf/* proxy routes:
+// - Dev: Express server proxy (server/routes.ts)
+// - Prod: Firebase Hosting rewrites to Cloud Function (firebase.json)
+async function proxyPost(path: string, body: Record<string, unknown>) {
+  const url = `/api/autoconf/${path}`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${AUTOCONF_BEARER}`,
-    },
-    body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Proxy error ${res.status}: ${text}`);
+  }
   return res.json();
 }
 
@@ -62,20 +63,20 @@ export interface AutoConfResponse {
   };
 }
 
-// ── AutoConf API calls ───────────────────────────────────────────────────────
+// ── AutoConf API calls (via proxy) ──────────────────────────────────────────
 
 export async function fetchAutoConfVeiculos(params?: {
   pagina?: number;
   registros_por_pagina?: number;
 }): Promise<AutoConfResponse> {
-  return autoconfPost("/api/v1/veiculos", params || {});
+  return proxyPost("veiculos", params || {});
 }
 
 export async function fetchAutoConfVeiculo(id: number): Promise<{
   sucesso: boolean;
   dados: AutoConfVeiculo;
 }> {
-  return autoconfPost("/api/v1/veiculo", { id });
+  return proxyPost("veiculo", { id });
 }
 
 // ── OpenAI ───────────────────────────────────────────────────────────────────

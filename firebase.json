@@ -1,8 +1,13 @@
 {
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  },
   "hosting": {
     "public": "dist/public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
+      { "source": "/api/autoconf/**", "function": "autoconf" },
       { "source": "**", "destination": "/index.html" }
     ],
     "redirects": [

@@ -17,7 +17,14 @@ async function autoconfPost(endpoint: string, body: Record<string, unknown>) {
     },
     body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
   });
-  return res.json();
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`AutoConf ${res.status}: ${text || "empty response"}`);
+  }
+  if (!text) {
+    throw new Error("AutoConf returned empty response");
+  }
+  return JSON.parse(text);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -50,6 +57,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/admin/veiculo", async (req: Request, res: Response) => {
+    try {
+      const data = await autoconfPost("/api/v1/veiculo", { id: req.body.id });
+      res.json(data);
+    } catch (e: any) {
+      res.status(502).json({ error: e.message });
+    }
+  });
+
+  // ── AutoConf proxy (used by admin frontend) ────────────────────────────
+  app.post("/api/autoconf/veiculos", async (req: Request, res: Response) => {
+    try {
+      const data = await autoconfPost("/api/v1/veiculos", req.body);
+      res.json(data);
+    } catch (e: any) {
+      res.status(502).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/autoconf/veiculo", async (req: Request, res: Response) => {
     try {
       const data = await autoconfPost("/api/v1/veiculo", { id: req.body.id });
       res.json(data);
