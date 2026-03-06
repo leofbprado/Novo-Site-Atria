@@ -1024,54 +1024,6 @@ function BrandLogo({ marca, size = 40 }: { marca: string; size?: number }) {
   );
 }
 
-// ─── Marcas (dynamic from inventory) ─────────────────────────────────────────
-function Marcas() {
-  const [brands, setBrands] = useState<{ nome: string; qty: number }[]>([]);
-
-  useEffect(() => {
-    getVehicles().then((vehicles) => {
-      const counts: Record<string, number> = {};
-      vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
-      const sorted = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 12)
-        .map(([nome, qty]) => ({ nome, qty }));
-      setBrands(sorted);
-    });
-  }, []);
-
-  if (brands.length === 0) return null;
-
-  return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Marcas</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            As Melhores Marcas do Mercado
-          </h2>
-        </div>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 max-w-5xl mx-auto">
-          {brands.map((b) => (
-            <a
-              key={b.nome}
-              href={`/estoque?marca=${encodeURIComponent(b.nome)}`}
-              className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-transparent hover:border-gray-200 hover:shadow-sm transition-all group"
-            >
-              <div className="flex items-center justify-center h-12 opacity-60 group-hover:opacity-100 transition-opacity">
-                <BrandLogo marca={b.nome} />
-              </div>
-              <span className="font-inter text-xs text-atria-text-gray group-hover:text-atria-navy transition-colors font-medium">
-                {b.nome} <span className="text-atria-text-gray/50">({b.qty})</span>
-              </span>
-            </a>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ─── Depoimentos ─────────────────────────────────────────────────────────────
 const DEPOIMENTOS = [
   { nome: "Carlos Mendonça", cargo: "Empresário", texto: "Comprei meu BMW X5 na Átria e a experiência foi incrível. Transparência total, sem surpresas. Recomendo demais!", nota: 5, foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" },
@@ -1361,7 +1313,6 @@ export default function Home() {
       <PorQueAtria />
       <ComoFunciona />
       <Stats />
-      <Marcas />
       <Depoimentos />
       <Blog />
       <FAQ />
