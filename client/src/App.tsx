@@ -14,6 +14,7 @@ const Estoque = lazy(() => import("@/pages/Estoque"));
 const VehicleDetail = lazy(() => import("@/pages/VehicleDetail"));
 const Financiamento = lazy(() => import("@/pages/Financiamento"));
 const Sobre = lazy(() => import("@/pages/Sobre"));
+const Admin = lazy(() => import("@/pages/admin/Admin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Simple full-page spinner for route transitions
@@ -50,6 +51,7 @@ function Router() {
             <Sobre />
           </Layout>
         )} />
+        <Route path="/admin" component={() => <Admin />} />
         <Route component={() => <Layout><NotFound /></Layout>} />
       </Switch>
     </Suspense>
