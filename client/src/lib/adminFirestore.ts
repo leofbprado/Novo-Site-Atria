@@ -182,6 +182,67 @@ export async function saveAdminConfig(config: { openai_key: string }): Promise<v
   await setDoc(doc(firestore, CONFIG_COLLECTION, "admin"), config, { merge: true });
 }
 
+// ── Leads ───────────────────────────────────────────────────────────────────
+
+export interface LeadAdmin {
+  id: string;
+  nome?: string;
+  whatsapp: string;
+  email?: string;
+  source: string;
+  query?: string;
+  dados?: Record<string, unknown>;
+  createdAt: Timestamp | null;
+  status?: "novo" | "contatado" | "convertido";
+}
+
+export async function getAllLeads(): Promise<LeadAdmin[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(collection(firestore, "leads"), orderBy("createdAt", "desc"))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as LeadAdmin));
+}
+
+export async function updateLeadStatus(
+  leadId: string,
+  status: "novo" | "contatado" | "convertido"
+): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, "leads", leadId), { status });
+}
+
+// ── WhatsApp Clicks ─────────────────────────────────────────────────────────
+
+export interface WhatsAppClick {
+  id: string;
+  veiculo?: string;
+  slug?: string;
+  page?: string;
+  createdAt: Timestamp | null;
+}
+
+export async function getAllWhatsAppClicks(): Promise<WhatsAppClick[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(collection(firestore, "whatsapp_clicks"), orderBy("createdAt", "desc"))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as WhatsAppClick));
+}
+
+export async function logWhatsAppClick(data: {
+  veiculo?: string;
+  slug?: string;
+  page?: string;
+}): Promise<void> {
+  const firestore = requireDb();
+  const { addDoc: firestoreAddDoc } = await import("firebase/firestore");
+  await firestoreAddDoc(collection(firestore, "whatsapp_clicks"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+}
+
 // ── Public queries (for the website) ─────────────────────────────────────────
 
 export async function getPublishedVeiculos(): Promise<VeiculoAdmin[]> {
