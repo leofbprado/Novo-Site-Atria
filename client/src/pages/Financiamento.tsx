@@ -288,13 +288,13 @@ function ComoFunciona() {
 
 // ---- Bancos Parceiros ------------------------------------------------------
 const BANCOS = [
-  { nome: "Bradesco", logo: "https://logo.clearbit.com/bradesco.com.br" },
-  { nome: "Itau", logo: "https://logo.clearbit.com/itau.com.br" },
-  { nome: "Santander", logo: "https://logo.clearbit.com/santander.com.br" },
-  { nome: "BV", logo: "https://logo.clearbit.com/bv.com.br" },
-  { nome: "Pan", logo: "https://logo.clearbit.com/bancopan.com.br" },
-  { nome: "C6", logo: "https://logo.clearbit.com/c6bank.com.br" },
-  { nome: "Safra", logo: "https://logo.clearbit.com/safra.com.br" },
+  { nome: "Bradesco", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Bradesco_logo_%28horizontal%29.svg/200px-Bradesco_logo_%28horizontal%29.svg.png" },
+  { nome: "Itau", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Banco_Ita%C3%BA_logo.svg/200px-Banco_Ita%C3%BA_logo.svg.png" },
+  { nome: "Santander", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/200px-Banco_Santander_Logotipo.svg.png" },
+  { nome: "BV", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/BV_logo.svg/200px-BV_logo.svg.png" },
+  { nome: "Pan", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Banco_Pan_logo.svg/200px-Banco_Pan_logo.svg.png" },
+  { nome: "C6", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/C6_Bank_logo.svg/200px-C6_Bank_logo.svg.png" },
+  { nome: "Safra", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Safra_logo.svg/200px-Safra_logo.svg.png" },
 ];
 
 function BancosParceiros() {
