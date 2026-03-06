@@ -773,7 +773,7 @@ function VendaSeuCarro() {
 // ─── Por que Átria ────────────────────────────────────────────────────────────
 const DIFERENCIAIS = [
   { icon: <Shield size={32} />, title: "Veículos com Garantia", desc: "Todos os veículos passam por inspeção técnica completa e saem com garantia contratual." },
-  { icon: <Award size={32} />, title: "13 Anos de Tradição", desc: "Mais de uma década no mercado de Campinas com milhares de clientes satisfeitos." },
+  { icon: <Award size={32} />, title: "12 Anos de Tradição", desc: "Mais de uma década no mercado de Campinas com milhares de clientes satisfeitos." },
   { icon: <Car size={32} />, title: "Mais de 200 Opções", desc: "Estoque diversificado de SUVs, sedans, hatches e picapes das melhores marcas." },
   { icon: <CheckCircle size={32} />, title: "Financiamento Facilitado", desc: "Parceiros com os principais bancos para aprovação rápida e taxas competitivas." },
 ];
@@ -879,8 +879,8 @@ function Stats() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
           {[
-            { label: "Anos no mercado", value: 13 },
-            { label: "Veículos vendidos", value: 5000, suffix: "+" },
+            { label: "Anos no mercado", value: 12 },
+            { label: "Veículos vendidos", value: 10000, suffix: "+" },
             { label: "Clientes satisfeitos", value: 4800, suffix: "+" },
             { label: "Veículos em estoque", value: 200, suffix: "+" },
           ].map((s) => (

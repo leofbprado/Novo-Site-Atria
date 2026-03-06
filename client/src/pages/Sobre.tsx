@@ -3,6 +3,7 @@ import { motion, useInView } from "framer-motion";
 import {
   MapPin, Phone, Clock, Target, Eye, Heart,
   Award, Car, Store, Star, Calendar,
+  BookOpen, Lightbulb, ShieldCheck, Users,
 } from "lucide-react";
 
 const WA_NUMBER = "5519996525211";
@@ -11,9 +12,9 @@ const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComp
 // ---- SEO -------------------------------------------------------------------
 function useSEO() {
   useEffect(() => {
-    document.title = "Sobre | Atria Veiculos - Ha mais de 13 anos em Campinas SP";
+    document.title = "Sobre | Atria Veiculos - Ha mais de 12 anos em Campinas SP";
     const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Atria Veiculos: ha mais de 13 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 5000 veiculos vendidos. Confianca e transparencia.");
+    if (desc) desc.setAttribute("content", "Atria Veiculos: ha mais de 12 anos no mercado automotivo em Campinas-SP. 4 lojas, mais de 10.000 veiculos vendidos. Confianca e transparencia.");
   }, []);
 }
 
@@ -33,7 +34,7 @@ function Hero() {
             Sobre a <span className="text-atria-yellow">Atria Veiculos</span>
           </h1>
           <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            Ha mais de 13 anos guiando voce na melhor escolha
+            Ha mais de 12 anos guiando voce na melhor escolha
           </p>
         </motion.div>
       </div>
@@ -63,13 +64,14 @@ function Historia() {
               revendas da regiao.
             </p>
             <p>
-              Hoje, contamos com <strong className="text-atria-text-dark">3 lojas estrategicamente localizadas</strong> em Campinas,
-              mais de <strong className="text-atria-text-dark">5.000 veiculos vendidos</strong> e uma equipe especializada pronta para
-              oferecer a melhor consultoria automotiva.
+              Com mais de <strong className="text-atria-text-dark">12 anos de mercado</strong>, ja sao mais de{" "}
+              <strong className="text-atria-text-dark">10.000 veiculos vendidos</strong> e{" "}
+              <strong className="text-atria-text-dark">4 lojas para atendimento</strong> em Campinas:
+              Abolicao, Campos Eliseos, Guanabara e Novo Campos Eliseos.
             </p>
             <p>
-              Nosso diferencial esta na transparencia: cada veiculo passa por rigorosa inspecao tecnica, com laudo e garantia,
-              para que voce tenha total seguranca na sua escolha.
+              Nosso diferencial esta na transparencia: cada veiculo passa por rigorosa pericia veicular, com laudo e garantia.
+              Contamos ainda com um time de vendas online e servicos delivery, para que voce tenha total comodidade e seguranca na sua escolha.
             </p>
           </div>
         </motion.div>
@@ -80,29 +82,33 @@ function Historia() {
 
 // ---- Missao/Visao/Valores --------------------------------------------------
 function MissaoVisaoValores() {
-  const cards = [
+  const missaoVisao = [
     {
       icon: <Target size={28} />,
       title: "Missao",
-      desc: "Oferecer a melhor experiencia na compra de veiculos seminovos, com transparencia, qualidade e atendimento humanizado.",
+      desc: "Proporcionar a melhor experiencia de compra de produtos e servicos do ramo automobilistico, sendo motivo de orgulho para nossos clientes, colaboradores e parceiros.",
     },
     {
       icon: <Eye size={28} />,
       title: "Visao",
-      desc: "Ser referencia em transparencia e qualidade no mercado automotivo da regiao de Campinas e interior de Sao Paulo.",
+      desc: "Estar entre os principais grupos de concessionarias de veiculos em Campinas e regiao, sendo referencia em atendimento.",
     },
-    {
-      icon: <Heart size={28} />,
-      title: "Valores",
-      desc: "Honestidade, transparencia e compromisso com o cliente. Cada negociacao e conduzida com respeito e etica.",
-    },
+  ];
+
+  const valores = [
+    { icon: <Heart size={22} />, title: "Etica", desc: "Agir com transparencia nas relacoes com colaboradores, clientes, parceiros e comunidade." },
+    { icon: <BookOpen size={22} />, title: "Conhecimento", desc: "Conquistar a confianca de todos atraves da busca incessante pela excelencia do conhecimento dos nossos produtos, servicos e negocio." },
+    { icon: <Lightbulb size={22} />, title: "Inovacao", desc: "Atuar com dinamismo e criatividade, sempre buscando eficiencia que agregue valor ao negocio." },
+    { icon: <ShieldCheck size={22} />, title: "Responsabilidade", desc: "Integridade, dedicacao, disciplina e comprometimento com o negocio, em base de resultados." },
+    { icon: <Users size={22} />, title: "Desenvolvimento Humano", desc: "Reconhecer a diversidade de nossos talentos atraves de iniciativas e liderancas, proporcionando oportunidades para desenvolvimento, treinamento e crescimento." },
   ];
 
   return (
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {cards.map((c, i) => (
+        {/* Missao e Visao */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-10">
+          {missaoVisao.map((c, i) => (
             <motion.div
               key={c.title}
               initial={{ opacity: 0, y: 20 }}
@@ -118,6 +124,31 @@ function MissaoVisaoValores() {
               <p className="font-inter text-sm text-atria-text-gray leading-relaxed">{c.desc}</p>
             </motion.div>
           ))}
+        </div>
+
+        {/* Valores */}
+        <div className="max-w-5xl mx-auto">
+          <h3 className="font-barlow-condensed font-black text-2xl text-atria-text-dark uppercase text-center mb-6">Nossos Valores</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {valores.map((v, i) => (
+              <motion.div
+                key={v.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white rounded-xl p-6 shadow-sm flex gap-4 items-start"
+              >
+                <div className="w-10 h-10 rounded-full bg-atria-navy/10 text-atria-navy flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {v.icon}
+                </div>
+                <div>
+                  <h4 className="font-barlow-condensed font-bold text-base text-atria-text-dark uppercase mb-1">{v.title}</h4>
+                  <p className="font-inter text-sm text-atria-text-gray leading-relaxed">{v.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -147,10 +178,10 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 
 function Numeros() {
   const stats = [
-    { icon: <Award size={24} />, label: "Anos no mercado", value: 13, suffix: "+" },
-    { icon: <Car size={24} />, label: "Veiculos vendidos", value: 5000, suffix: "+" },
+    { icon: <Award size={24} />, label: "Anos no mercado", value: 12, suffix: "+" },
+    { icon: <Car size={24} />, label: "Veiculos vendidos", value: 10000, suffix: "+" },
     { icon: <Store size={24} />, label: "Veiculos em estoque", value: 200, suffix: "+" },
-    { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 3, suffix: "" },
+    { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 4, suffix: "" },
     { icon: <Star size={24} />, label: "Satisfacao", value: 98, suffix: "%" },
   ];
 
@@ -236,6 +267,13 @@ const LOJAS = [
     cidade: "Campinas-SP",
     cep: "CEP 13070-178",
     telefone: "(19) 3094-0015",
+  },
+  {
+    nome: "Loja Novo Campos Eliseos",
+    endereco: "Jd Campos Eliseos",
+    cidade: "Campinas-SP",
+    cep: "",
+    telefone: "(19) 3500-8271",
   },
 ];
 

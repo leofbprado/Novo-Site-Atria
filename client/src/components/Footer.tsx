@@ -54,7 +54,7 @@ export function Footer() {
               <img src={LOGO_BRANCO} alt="Átria Veículos" className="h-10 w-auto object-contain" />
             </div>
             <p className="font-inter text-sm text-white/60 leading-relaxed mb-5">
-              Há mais de 13 anos levando qualidade, transparência e as melhores condições para quem quer comprar um veículo em Campinas.
+              Há mais de 12 anos levando qualidade, transparência e as melhores condições para quem quer comprar um veículo em Campinas.
             </p>
             <div className="flex gap-3">
               {[
