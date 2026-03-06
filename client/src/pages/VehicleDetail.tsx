@@ -415,7 +415,7 @@ function FichaTecnica({ v }: { v: Vehicle }) {
       <h2 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-4 uppercase tracking-wide">
         Ficha Tecnica
       </h2>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         {specs.map((s) => (
           <div key={s.label} className="flex items-start gap-3">
             <span className="text-atria-navy mt-0.5 flex-shrink-0">{s.icon}</span>
@@ -768,7 +768,7 @@ export default function VehicleDetail() {
             <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase mb-6">
               Voce tambem pode gostar
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {similar.map((v) => <SimilarCard key={v.id} v={v} />)}
             </div>
           </motion.section>
