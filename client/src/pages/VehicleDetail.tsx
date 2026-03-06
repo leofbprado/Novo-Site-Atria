@@ -574,8 +574,9 @@ function MobileStickyBar({ v }: { v: Vehicle }) {
 // ---- Store Locations Footer -------------------------------------------------
 function StoreLocations() {
   const stores = [
-    { name: "Atria Veiculos - Campinas", address: "Av. John Boyd Dunlop, 3900 - Jd. Ipaussurama, Campinas - SP" },
-    { name: "Atria Veiculos - Valinhos", address: "Rod. Anhanguera km 86 - Valinhos - SP" },
+    { name: "Loja Abolicao", address: "Rua Abolicao, 1500 - VL Joaquim Inacio, Campinas - SP" },
+    { name: "Loja Campos Eliseos", address: "R. Domicio Pacheco e Silva, 1328 - Jd Campos Eliseos, Campinas - SP" },
+    { name: "Loja Guanabara", address: "Av. Brasil, 1277 - Jd Guanabara, Campinas - SP" },
   ];
 
   return (
