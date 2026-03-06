@@ -20,18 +20,12 @@ const LOJAS = [
     cidade: "Campinas-SP · CEP 13070-178",
     tel: "(19) 3094-0015",
   },
-  {
-    nome: "Loja Novo Campos Elíseos",
-    endereco: "Av. John Boyd Dunlop, 3900",
-    cidade: "Campinas-SP",
-    tel: "(19) 3500-8272",
-  },
 ];
 
 const LINKS = {
   institucional: [
     { label: "Sobre a Átria", href: "/sobre" },
-    { label: "Nossa Equipe", href: "/sobre#equipe" },
+    { label: "Nossas Lojas", href: "/sobre#lojas" },
     { label: "Trabalhe Conosco", href: "/trabalhe-conosco" },
     { label: "Blog", href: "/blog" },
   ],

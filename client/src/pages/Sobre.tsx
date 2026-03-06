@@ -14,7 +14,7 @@ function useSEO() {
   useEffect(() => {
     document.title = "Sobre | Atria Veiculos - Ha mais de 12 anos em Campinas SP";
     const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Atria Veiculos: ha mais de 12 anos no mercado automotivo em Campinas-SP. 4 lojas, mais de 10.000 veiculos vendidos. Confianca e transparencia.");
+    if (desc) desc.setAttribute("content", "Atria Veiculos: ha mais de 12 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 10.000 veiculos vendidos. Confianca e transparencia.");
   }, []);
 }
 
@@ -66,8 +66,8 @@ function Historia() {
             <p>
               Com mais de <strong className="text-atria-text-dark">12 anos de mercado</strong>, ja sao mais de{" "}
               <strong className="text-atria-text-dark">10.000 veiculos vendidos</strong> e{" "}
-              <strong className="text-atria-text-dark">4 lojas para atendimento</strong> em Campinas:
-              Abolicao, Campos Eliseos, Guanabara e Novo Campos Eliseos.
+              <strong className="text-atria-text-dark">3 lojas para atendimento</strong> em Campinas:
+              Abolicao, Campos Eliseos e Guanabara.
             </p>
             <p>
               Nosso diferencial esta na transparencia: cada veiculo passa por rigorosa pericia veicular, com laudo e garantia.
@@ -184,7 +184,7 @@ function Numeros() {
     { icon: <Award size={24} />, label: "Anos no mercado", value: 12, suffix: "+" },
     { icon: <Car size={24} />, label: "Veiculos vendidos", value: 10000, suffix: "+" },
     { icon: <Store size={24} />, label: "Veiculos em estoque", value: 200, suffix: "+" },
-    { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 4, suffix: "" },
+    { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 3, suffix: "" },
     { icon: <Star size={24} />, label: "Satisfacao", value: 98, suffix: "%" },
   ];
 
@@ -200,47 +200,6 @@ function Numeros() {
               </p>
               <p className="font-inter text-xs text-white/60 mt-1 uppercase tracking-wider">{s.label}</p>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ---- Equipe ----------------------------------------------------------------
-function Equipe() {
-  const membros = [
-    { nome: "Diretoria", cargo: "Gestao e estrategia", foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face" },
-    { nome: "Gerente Comercial", cargo: "Negociacao e estoque", foto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face" },
-    { nome: "Consultor de Vendas", cargo: "Atendimento ao cliente", foto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face" },
-    { nome: "Financeiro", cargo: "Financiamento e documentacao", foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=face" },
-  ];
-
-  return (
-    <section id="equipe" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Equipe</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Nossa Equipe
-          </h2>
-          <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
-            Profissionais dedicados a encontrar o melhor veiculo para voce.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-          {membros.map((m) => (
-            <motion.div
-              key={m.nome}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-atria-gray-light rounded-xl p-6 text-center"
-            >
-              <img src={m.foto} alt={m.nome} className="w-20 h-20 rounded-full object-cover mx-auto mb-4 shadow-md" loading="lazy" />
-              <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark">{m.nome}</h3>
-              <p className="font-inter text-sm text-atria-text-gray mt-1">{m.cargo}</p>
-            </motion.div>
           ))}
         </div>
       </div>
@@ -270,13 +229,6 @@ const LOJAS = [
     cidade: "Campinas-SP",
     cep: "CEP 13070-178",
     telefone: "(19) 3094-0015",
-  },
-  {
-    nome: "Loja Novo Campos Eliseos",
-    endereco: "Av. John Boyd Dunlop, 3900",
-    cidade: "Campinas-SP",
-    cep: "",
-    telefone: "(19) 3500-8272",
   },
 ];
 
@@ -368,7 +320,6 @@ export default function Sobre() {
       <Historia />
       <MissaoVisaoValores />
       <Numeros />
-      <Equipe />
       <NossasLojas />
       <CTA />
     </>

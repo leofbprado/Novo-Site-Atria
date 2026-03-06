@@ -811,7 +811,7 @@ function PorQueAtria() {
 
 // ─── Como Funciona ────────────────────────────────────────────────────────────
 const STEPS = [
-  { n: "01", title: "Escolha seu veículo", desc: "Navegue pelo estoque online ou visite uma de nossas 4 lojas em Campinas." },
+  { n: "01", title: "Escolha seu veículo", desc: "Navegue pelo estoque online ou visite uma de nossas 3 lojas em Campinas." },
   { n: "02", title: "Faça a simulação", desc: "Use nosso simulador para entender as melhores condições de pagamento." },
   { n: "03", title: "Aprovação rápida", desc: "Nossa equipe agiliza o processo de financiamento com os principais bancos." },
   { n: "04", title: "Retire seu carro", desc: "Documentação pronta e carro preparado para você sair dirigindo." },
@@ -1016,7 +1016,7 @@ const FAQS = [
   { q: "Vocês oferecem garantia nos veículos?", a: "Sim! Todos os veículos passam por inspeção técnica e saem com garantia contratual. Consulte as condições específicas de cada veículo." },
   { q: "Como funciona o financiamento?", a: "Trabalhamos com os principais bancos do mercado. A aprovação costuma sair em até 48 horas. Basta trazer seus documentos ou fazer a simulação online." },
   { q: "Vocês aceitam meu carro como parte do pagamento?", a: "Sim, fazemos a avaliação do seu veículo e podemos usá-lo como parte do pagamento. Agende uma avaliação gratuita." },
-  { q: "Posso visitar a loja sem agendamento?", a: "Claro! Temos 4 lojas em Campinas: Abolição, Campos Elíseos, Guanabara e Novo Campos Elíseos. Funcionamos de segunda a sexta das 9h às 19h e sábados das 9h às 17h." },
+  { q: "Posso visitar a loja sem agendamento?", a: "Claro! Temos 3 lojas em Campinas: Abolição, Campos Elíseos e Guanabara. Funcionamos de segunda a sexta das 9h às 19h e sábados das 9h às 17h." },
   { q: "Os veículos têm procedência garantida?", a: "Sim. Verificamos histórico de sinistros, multas, alienação e débitos antes de colocar qualquer veículo em nosso estoque." },
 ];
 
@@ -1056,7 +1056,6 @@ const LOJAS_CONTATO = [
   { nome: "Loja Abolicao", endereco: "Rua Abolicao, 1500 - VL Joaquim Inacio, Campinas-SP", telefone: "(19) 3199-2552" },
   { nome: "Loja Campos Eliseos", endereco: "R. Domicio Pacheco e Silva, 1328 - Jd Campos Eliseos, Campinas-SP", telefone: "(19) 3500-8271" },
   { nome: "Loja Guanabara", endereco: "Av. Brasil, 1277 - Jd Guanabara, Campinas-SP", telefone: "(19) 3094-0015" },
-  { nome: "Loja Novo Campos Eliseos", endereco: "Av. John Boyd Dunlop, 3900 - Campinas-SP", telefone: "(19) 3500-8272" },
 ];
 
 function Contato() {
@@ -1191,7 +1190,7 @@ function CTAFinal() {
           </a>
         </div>
         <div className="mt-10 flex items-center justify-center gap-6 text-white/40 text-sm font-inter flex-wrap">
-          <span className="flex items-center gap-2"><MapPin size={14} /> 4 lojas em Campinas, SP</span>
+          <span className="flex items-center gap-2"><MapPin size={14} /> 3 lojas em Campinas, SP</span>
           <span className="flex items-center gap-2"><Phone size={14} /> (19) 99652-5211</span>
         </div>
       </div>
