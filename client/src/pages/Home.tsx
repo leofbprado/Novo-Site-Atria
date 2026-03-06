@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
-import { getFeaturedVehicles, saveLead, type Vehicle } from "@/lib/firestore";
+import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -490,23 +490,6 @@ function Simulador() {
   );
 }
 
-// ─── Marquee ─────────────────────────────────────────────────────────────────
-const TICKER_ITEMS = ["BMW", "Mercedes-Benz", "Audi", "Toyota", "Honda", "Volkswagen", "Chevrolet", "Jeep", "Ford", "Hyundai", "Nissan", "Volvo"];
-
-function Marquee() {
-  const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  return (
-    <div className="bg-atria-navy py-4 overflow-hidden">
-      <div className="flex gap-12 animate-marquee whitespace-nowrap">
-        {items.map((marca, i) => (
-          <span key={i} className="font-barlow-condensed font-black text-lg uppercase tracking-widest text-white/30">
-            {marca}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─── Skeleton loader ─────────────────────────────────────────────────────────
 function CardSkeleton() {
@@ -900,32 +883,137 @@ function Stats() {
   );
 }
 
-// ─── Marcas ────────────────────────────────────────────────────────────────────
-const MARCAS_GRID = [
-  { nome: "BMW", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/2048px-BMW.svg.png" },
-  { nome: "Mercedes", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Mercedes-Logo.svg/2048px-Mercedes-Logo.svg.png" },
-  { nome: "Audi", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Audi-Logo_2016.svg/2560px-Audi-Logo_2016.svg.png" },
-  { nome: "Toyota", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Toyota_carlogo.svg/1280px-Toyota_carlogo.svg.png" },
-  { nome: "Honda", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Honda.svg/1200px-Honda.svg.png" },
-  { nome: "Volkswagen", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Volkswagen_logo_2019.svg/1280px-Volkswagen_logo_2019.svg.png" },
-];
+// ─── Brand SVG Logos ─────────────────────────────────────────────────────────
+function BrandLogo({ marca, size = 40 }: { marca: string; size?: number }) {
+  const s = size;
+  const logos: Record<string, JSX.Element> = {
+    "Chevrolet": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><path d="M4 20h12l2-6h12l2 6h12v8H32l-2 6H18l-2-6H4z" fill="#D4A843" stroke="#C8972A" strokeWidth="1.5"/></svg>
+    ),
+    "Toyota": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><ellipse cx="24" cy="24" rx="20" ry="14" fill="none" stroke="#CC0000" strokeWidth="2.5"/><ellipse cx="24" cy="24" rx="12" ry="8" fill="none" stroke="#CC0000" strokeWidth="2"/><ellipse cx="24" cy="24" rx="5" ry="14" fill="none" stroke="#CC0000" strokeWidth="2"/></svg>
+    ),
+    "Honda": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="20" fill="#CC0000">H</text><rect x="4" y="10" width="40" height="28" rx="4" fill="none" stroke="#CC0000" strokeWidth="2"/></svg>
+    ),
+    "Volkswagen": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#001E50" strokeWidth="2.5"/><text x="24" y="20" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="16" fill="#001E50">V</text><text x="24" y="36" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="16" fill="#001E50">W</text></svg>
+    ),
+    "Hyundai": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><ellipse cx="24" cy="24" rx="20" ry="16" fill="none" stroke="#003580" strokeWidth="2.5"/><text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="18" fontStyle="italic" fill="#003580">H</text></svg>
+    ),
+    "BMW": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#262626" strokeWidth="2.5"/><path d="M24 4A20 20 0 0 1 44 24H24V4z" fill="#0066B1"/><path d="M24 24A20 20 0 0 1 4 24H24z" fill="#0066B1"/><path d="M24 24A20 20 0 0 1 24 44V24z" fill="white"/><path d="M24 4A20 20 0 0 0 4 24H24V4z" fill="white"/></svg>
+    ),
+    "Mercedes-Benz": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#333" strokeWidth="2.5"/><circle cx="24" cy="24" r="3" fill="#333"/><line x1="24" y1="24" x2="24" y2="6" stroke="#333" strokeWidth="2.5"/><line x1="24" y1="24" x2="8" y2="36" stroke="#333" strokeWidth="2.5"/><line x1="24" y1="24" x2="40" y2="36" stroke="#333" strokeWidth="2.5"/></svg>
+    ),
+    "Audi": (
+      <svg viewBox="0 0 64 32" width={s * 1.5} height={s * 0.75}><circle cx="12" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/><circle cx="24" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/><circle cx="36" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/><circle cx="48" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/></svg>
+    ),
+    "Jeep": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="14" letterSpacing="1" fill="#3A5A20">JEEP</text><rect x="4" y="14" width="40" height="20" rx="3" fill="none" stroke="#3A5A20" strokeWidth="2"/></svg>
+    ),
+    "Ford": (
+      <svg viewBox="0 0 48 32" width={s * 1.2} height={s * 0.8}><ellipse cx="24" cy="16" rx="22" ry="14" fill="#003399" stroke="#003399" strokeWidth="1"/><text x="24" y="22" textAnchor="middle" fontFamily="serif" fontWeight="700" fontSize="16" fontStyle="italic" fill="white">Ford</text></svg>
+    ),
+    "Fiat": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="#96172E" stroke="#96172E" strokeWidth="1"/><text x="24" y="22" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="10" fill="white">FIAT</text><line x1="8" y1="28" x2="40" y2="28" stroke="white" strokeWidth="1.5"/></svg>
+    ),
+    "Nissan": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#C3002F" strokeWidth="2.5"/><rect x="4" y="19" width="40" height="10" fill="white" stroke="#C3002F" strokeWidth="1.5"/><text x="24" y="27" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="9" fill="#C3002F">NISSAN</text></svg>
+    ),
+    "Caoa Chery": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#9B1B30" strokeWidth="2.5"/><text x="24" y="28" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="9" fill="#9B1B30">CHERY</text></svg>
+    ),
+    "GWM": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#1A1A1A" strokeWidth="2.5"/><text x="24" y="29" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="11" fill="#1A1A1A">GWM</text></svg>
+    ),
+    "Kia": (
+      <svg viewBox="0 0 48 32" width={s * 1.2} height={s * 0.8}><text x="24" y="26" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="22" fill="#05141F">KIA</text></svg>
+    ),
+    "Volvo": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#003057" strokeWidth="2.5"/><line x1="24" y1="4" x2="38" y2="28" stroke="#003057" strokeWidth="2.5"/><text x="24" y="34" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="10" fill="#003057">VOLVO</text></svg>
+    ),
+    "Renault": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><polygon points="24,4 40,44 8,44" fill="none" stroke="#FFCC00" strokeWidth="2.5" strokeLinejoin="round"/><polygon points="24,12 34,38 14,38" fill="none" stroke="#FFCC00" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+    ),
+    "Peugeot": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><rect x="14" y="4" width="20" height="40" rx="10" fill="none" stroke="#1A1A1A" strokeWidth="2.5"/><text x="24" y="28" textAnchor="middle" fontFamily="serif" fontWeight="700" fontSize="10" fill="#1A1A1A">PGT</text></svg>
+    ),
+    "Citroën": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><path d="M24 8L8 20l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/><path d="M24 20L8 32l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/></svg>
+    ),
+    "Citroen": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><path d="M24 8L8 20l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/><path d="M24 20L8 32l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/></svg>
+    ),
+    "Mitsubishi": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><polygon points="24,4 18,14 30,14" fill="#CC0000"/><polygon points="14,18 8,28 20,28" fill="#CC0000"/><polygon points="34,18 28,28 40,28" fill="#CC0000"/></svg>
+    ),
+    "Land Rover": (
+      <svg viewBox="0 0 56 32" width={s * 1.4} height={s * 0.7}><ellipse cx="28" cy="16" rx="26" ry="14" fill="#005A2B" stroke="#005A2B" strokeWidth="1"/><text x="28" y="14" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="6" fill="white">LAND</text><text x="28" y="22" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="6" fill="white">ROVER</text></svg>
+    ),
+    "Porsche": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><rect x="6" y="6" width="36" height="36" rx="4" fill="none" stroke="#A6192E" strokeWidth="2.5"/><text x="24" y="28" textAnchor="middle" fontFamily="serif" fontWeight="700" fontSize="9" fill="#A6192E">PORSCHE</text></svg>
+    ),
+    "Mini": (
+      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#1A1A1A" strokeWidth="2.5"/><text x="24" y="29" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="11" fill="#1A1A1A">MINI</text></svg>
+    ),
+  };
 
+  const key = Object.keys(logos).find((k) => k.toLowerCase() === marca.toLowerCase()) ?? marca;
+  if (logos[key]) return logos[key];
+
+  // Fallback: initials
+  const initials = marca.split(/[\s-]+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <svg viewBox="0 0 48 48" width={s} height={s}>
+      <circle cx="24" cy="24" r="20" fill="none" stroke="#6B7280" strokeWidth="2"/>
+      <text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="16" fill="#6B7280">{initials}</text>
+    </svg>
+  );
+}
+
+// ─── Marcas (dynamic from inventory) ─────────────────────────────────────────
 function Marcas() {
+  const [brands, setBrands] = useState<{ nome: string; qty: number }[]>([]);
+
+  useEffect(() => {
+    getVehicles().then((vehicles) => {
+      const counts: Record<string, number> = {};
+      vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
+      const sorted = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 12)
+        .map(([nome, qty]) => ({ nome, qty }));
+      setBrands(sorted);
+    });
+  }, []);
+
+  if (brands.length === 0) return null;
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <p className="section-label mb-2">Marcas</p>
-          <h2 className="section-title">As Melhores Marcas do Mercado</h2>
+          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Marcas</p>
+          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
+            As Melhores Marcas do Mercado
+          </h2>
         </div>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
-          {MARCAS_GRID.map((m) => (
-            <a key={m.nome} href={`/estoque?marca=${m.nome}`}
-              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-atria-gray-light transition-colors group">
-              <img src={m.logo} alt={m.nome}
-                className="h-10 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all opacity-50 group-hover:opacity-100"
-                loading="lazy" />
-              <span className="font-inter text-xs text-atria-text-gray group-hover:text-atria-navy transition-colors">{m.nome}</span>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 max-w-5xl mx-auto">
+          {brands.map((b) => (
+            <a
+              key={b.nome}
+              href={`/estoque?marca=${encodeURIComponent(b.nome)}`}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-transparent hover:border-gray-200 hover:shadow-sm transition-all group"
+            >
+              <div className="flex items-center justify-center h-12 opacity-60 group-hover:opacity-100 transition-opacity">
+                <BrandLogo marca={b.nome} />
+              </div>
+              <span className="font-inter text-xs text-atria-text-gray group-hover:text-atria-navy transition-colors font-medium">
+                {b.nome} <span className="text-atria-text-gray/50">({b.qty})</span>
+              </span>
             </a>
           ))}
         </div>
@@ -1217,7 +1305,6 @@ export default function Home() {
       <ExitIntentPopup />
       <Hero />
       <Simulador />
-      <Marquee />
       <EstoqueDestaque />
       <VendaSeuCarro />
       <PorQueAtria />
