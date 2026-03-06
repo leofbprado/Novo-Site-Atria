@@ -491,6 +491,37 @@ function Simulador() {
 }
 
 
+// ─── Marquee (SVG logos) ─────────────────────────────────────────────────────
+function Marquee() {
+  const [brands, setBrands] = useState<string[]>([]);
+
+  useEffect(() => {
+    getVehicles().then((vehicles) => {
+      const counts: Record<string, number> = {};
+      vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([m]) => m);
+      setBrands(sorted);
+    });
+  }, []);
+
+  if (brands.length === 0) return null;
+
+  const items = [...brands, ...brands];
+
+  return (
+    <div className="bg-atria-gray-light py-6 overflow-hidden">
+      <div className="flex gap-14 animate-marquee">
+        {items.map((marca, i) => (
+          <div key={`${marca}-${i}`} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+            <BrandLogo marca={marca} size={48} />
+            <span className="font-inter text-[10px] text-atria-text-gray/70 whitespace-nowrap">{marca}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Skeleton loader ─────────────────────────────────────────────────────────
 function CardSkeleton() {
   return (
@@ -1305,6 +1336,7 @@ export default function Home() {
       <ExitIntentPopup />
       <Hero />
       <Simulador />
+      <Marquee />
       <EstoqueDestaque />
       <VendaSeuCarro />
       <PorQueAtria />
