@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
-import { motion, useInView, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback, memo, lazy, Suspense } from "react";
+import { motion, useInView, useMotionValue, useTransform, useAnimation, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 
@@ -492,16 +492,108 @@ function Simulador() {
 
 
 // ─── 3D Brand Carousel ───────────────────────────────────────────────────────
+const Cylinder3D = memo(function Cylinder3D({
+  brands,
+  isMobile,
+  onClickBrand,
+}: {
+  brands: { nome: string; qty: number }[];
+  isMobile: boolean;
+  onClickBrand: (marca: string) => void;
+}) {
+  const controls = useAnimation();
+  const rotation = useMotionValue(0);
+  const transform = useTransform(rotation, (v) => `rotate3d(0, 1, 0, ${v}deg)`);
+  const isDragging = useRef(false);
+  const autoRef = useRef<number>(0);
+
+  const cylinderWidth = isMobile ? 1100 : 1800;
+  const faceCount = brands.length;
+  const faceWidth = cylinderWidth / faceCount;
+  const radius = cylinderWidth / (2 * Math.PI);
+
+  // Auto-rotate
+  useEffect(() => {
+    const step = () => {
+      if (!isDragging.current) {
+        rotation.set(rotation.get() - 0.12);
+      }
+      autoRef.current = requestAnimationFrame(step);
+    };
+    autoRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(autoRef.current);
+  }, [rotation]);
+
+  return (
+    <div
+      className="flex items-center justify-center"
+      style={{
+        height: isMobile ? 350 : 500,
+        perspective: "1000px",
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
+    >
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0}
+        className="relative flex origin-center cursor-grab justify-center active:cursor-grabbing"
+        style={{
+          transform,
+          rotateY: rotation,
+          width: cylinderWidth,
+          height: isMobile ? 200 : 260,
+          transformStyle: "preserve-3d",
+        }}
+        onDragStart={() => { isDragging.current = true; }}
+        onDrag={(_, info) => {
+          rotation.set(rotation.get() + info.offset.x * 0.05);
+        }}
+        onDragEnd={(_, info) => {
+          isDragging.current = false;
+          controls.start({
+            rotateY: rotation.get() + info.velocity.x * 0.05,
+            transition: { type: "spring", stiffness: 100, damping: 30, mass: 0.1 },
+          });
+        }}
+        animate={controls}
+      >
+        {brands.map((b, i) => (
+          <motion.div
+            key={b.nome}
+            className="absolute flex origin-center items-center justify-center rounded-xl p-2"
+            style={{
+              width: `${faceWidth}px`,
+              height: "100%",
+              transform: `rotateY(${i * (360 / faceCount)}deg) translateZ(${radius}px)`,
+            }}
+            onClick={() => onClickBrand(b.nome)}
+          >
+            <div className="pointer-events-none w-full rounded-xl bg-white shadow-lg aspect-square flex flex-col items-center justify-center gap-3 p-4">
+              <BrandLogo marca={b.nome} size={isMobile ? 56 : 80} />
+              <div className="text-center">
+                <p className="font-barlow-condensed font-bold text-sm md:text-base text-atria-text-dark leading-tight">
+                  {b.nome}
+                </p>
+                <p className="font-inter text-[10px] md:text-xs text-atria-text-gray mt-0.5">
+                  {b.qty} {b.qty === 1 ? "veículo" : "veículos"}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+  );
+});
+
 function BrandCarousel() {
   const [brands, setBrands] = useState<{ nome: string; qty: number }[]>([]);
   const [isMobile, setIsMobile] = useState(false);
-  const dragX = useMotionValue(0);
-  const autoAngle = useRef(0);
-  const autoRef = useRef<number>(0);
-  const isDragging = useRef(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => setIsMobile(window.innerWidth < 640);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -518,31 +610,7 @@ function BrandCarousel() {
     });
   }, []);
 
-  // Auto-rotate
-  useEffect(() => {
-    if (brands.length === 0) return;
-    const step = () => {
-      if (!isDragging.current) {
-        autoAngle.current -= 0.15;
-        dragX.set(autoAngle.current);
-      }
-      autoRef.current = requestAnimationFrame(step);
-    };
-    autoRef.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(autoRef.current);
-  }, [brands.length, dragX]);
-
-  const faceCount = brands.length;
-  const cylinderWidth = isMobile ? 1100 : 1800;
-  const radius = cylinderWidth / (2 * Math.PI);
-  const faceAngle = faceCount > 0 ? 360 / faceCount : 0;
-
-  const rotation = useSpring(
-    useTransform(dragX, (v) => v),
-    { stiffness: 100, damping: 30, mass: 0.1 }
-  );
-
-  const handleNavigate = useCallback((marca: string) => {
+  const handleClick = useCallback((marca: string) => {
     window.location.href = `/estoque?marca=${encodeURIComponent(marca)}`;
   }, []);
 
@@ -551,7 +619,7 @@ function BrandCarousel() {
   return (
     <section className="py-16 bg-gradient-to-b from-[#001A8C] to-[#000D47] overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-2">Navegue</p>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase">
             Escolha por Marca
@@ -561,71 +629,7 @@ function BrandCarousel() {
           </p>
         </div>
 
-        <div
-          className="relative mx-auto"
-          style={{
-            height: isMobile ? 300 : 400,
-            perspective: 1000,
-          }}
-        >
-          <motion.div
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0}
-            onDragStart={() => { isDragging.current = true; }}
-            onDrag={(_, info) => {
-              autoAngle.current += info.delta.x * 0.3;
-              dragX.set(autoAngle.current);
-            }}
-            onDragEnd={() => {
-              isDragging.current = false;
-            }}
-            className="absolute inset-0 cursor-grab active:cursor-grabbing"
-            style={{ touchAction: "pan-y" }}
-          >
-            <motion.div
-              className="relative w-full h-full"
-              style={{
-                transformStyle: "preserve-3d",
-                rotateY: rotation,
-                translateZ: -radius,
-              }}
-            >
-              {brands.map((b, i) => {
-                const angle = i * faceAngle;
-                return (
-                  <div
-                    key={b.nome}
-                    className="absolute left-1/2 top-1/2"
-                    style={{
-                      width: isMobile ? 120 : 160,
-                      height: isMobile ? 140 : 180,
-                      marginLeft: isMobile ? -60 : -80,
-                      marginTop: isMobile ? -70 : -90,
-                      transformStyle: "preserve-3d",
-                      transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
-                    }}
-                  >
-                    <button
-                      onClick={() => handleNavigate(b.nome)}
-                      className="w-full h-full bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow flex flex-col items-center justify-center gap-3 p-4 border border-white/20"
-                    >
-                      <BrandLogo marca={b.nome} size={isMobile ? 56 : 80} />
-                      <div className="text-center">
-                        <p className="font-barlow-condensed font-bold text-sm md:text-base text-atria-text-dark leading-tight">
-                          {b.nome}
-                        </p>
-                        <p className="font-inter text-[10px] md:text-xs text-atria-text-gray mt-0.5">
-                          {b.qty} {b.qty === 1 ? "veículo" : "veículos"}
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-                );
-              })}
-            </motion.div>
-          </motion.div>
-        </div>
+        <Cylinder3D brands={brands} isMobile={isMobile} onClickBrand={handleClick} />
       </div>
     </section>
   );
