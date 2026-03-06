@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback, memo, lazy, Suspense } from "react";
-import { motion, useInView, useMotionValue, useTransform, useAnimation, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 
@@ -492,112 +493,8 @@ function Simulador() {
 
 
 // ─── 3D Brand Carousel ───────────────────────────────────────────────────────
-const Cylinder3D = memo(function Cylinder3D({
-  brands,
-  isMobile,
-  onClickBrand,
-}: {
-  brands: { nome: string; qty: number }[];
-  isMobile: boolean;
-  onClickBrand: (marca: string) => void;
-}) {
-  const controls = useAnimation();
-  const rotation = useMotionValue(0);
-  const transform = useTransform(rotation, (v) => `rotate3d(0, 1, 0, ${v}deg)`);
-  const isDragging = useRef(false);
-  const autoRef = useRef<number>(0);
-
-  const cylinderWidth = isMobile ? 1100 : 1800;
-  const faceCount = brands.length;
-  const faceWidth = cylinderWidth / faceCount;
-  const radius = cylinderWidth / (2 * Math.PI);
-
-  // Auto-rotate
-  useEffect(() => {
-    const step = () => {
-      if (!isDragging.current) {
-        rotation.set(rotation.get() - 0.12);
-      }
-      autoRef.current = requestAnimationFrame(step);
-    };
-    autoRef.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(autoRef.current);
-  }, [rotation]);
-
-  return (
-    <div
-      className="flex items-center justify-center"
-      style={{
-        height: isMobile ? 350 : 500,
-        perspective: "1000px",
-        transformStyle: "preserve-3d",
-        willChange: "transform",
-      }}
-    >
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0}
-        className="relative flex origin-center cursor-grab justify-center active:cursor-grabbing"
-        style={{
-          transform,
-          rotateY: rotation,
-          width: cylinderWidth,
-          height: isMobile ? 200 : 260,
-          transformStyle: "preserve-3d",
-        }}
-        onDragStart={() => { isDragging.current = true; }}
-        onDrag={(_, info) => {
-          rotation.set(rotation.get() + info.offset.x * 0.05);
-        }}
-        onDragEnd={(_, info) => {
-          isDragging.current = false;
-          controls.start({
-            rotateY: rotation.get() + info.velocity.x * 0.05,
-            transition: { type: "spring", stiffness: 100, damping: 30, mass: 0.1 },
-          });
-        }}
-        animate={controls}
-      >
-        {brands.map((b, i) => (
-          <motion.div
-            key={b.nome}
-            className="absolute flex origin-center items-center justify-center rounded-xl p-2"
-            style={{
-              width: `${faceWidth}px`,
-              height: "100%",
-              transform: `rotateY(${i * (360 / faceCount)}deg) translateZ(${radius}px)`,
-            }}
-            onClick={() => onClickBrand(b.nome)}
-          >
-            <div className="pointer-events-none w-full rounded-xl bg-white shadow-lg aspect-square flex flex-col items-center justify-center gap-3 p-4">
-              <BrandLogo marca={b.nome} size={isMobile ? 56 : 80} />
-              <div className="text-center">
-                <p className="font-barlow-condensed font-bold text-sm md:text-base text-atria-text-dark leading-tight">
-                  {b.nome}
-                </p>
-                <p className="font-inter text-[10px] md:text-xs text-atria-text-gray mt-0.5">
-                  {b.qty} {b.qty === 1 ? "veículo" : "veículos"}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
-  );
-});
-
 function BrandCarousel() {
-  const [brands, setBrands] = useState<{ nome: string; qty: number }[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  const [cards, setCards] = useState<CarouselCard[]>([]);
 
   useEffect(() => {
     getVehicles().then((vehicles) => {
@@ -605,16 +502,20 @@ function BrandCarousel() {
       vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
       const sorted = Object.entries(counts)
         .sort((a, b) => b[1] - a[1])
-        .map(([nome, qty]) => ({ nome, qty }));
-      setBrands(sorted);
+        .map(([brand, count]) => ({
+          brand,
+          count,
+          svg: <BrandLogo marca={brand} size={64} />,
+        }));
+      setCards(sorted);
     });
   }, []);
 
-  const handleClick = useCallback((marca: string) => {
-    window.location.href = `/estoque?marca=${encodeURIComponent(marca)}`;
+  const handleClick = useCallback((brand: string) => {
+    window.location.href = `/estoque?marca=${encodeURIComponent(brand)}`;
   }, []);
 
-  if (brands.length === 0) return null;
+  if (cards.length === 0) return null;
 
   return (
     <section className="py-16 bg-gradient-to-b from-[#001A8C] to-[#000D47] overflow-hidden">
@@ -629,7 +530,12 @@ function BrandCarousel() {
           </p>
         </div>
 
-        <Cylinder3D brands={brands} isMobile={isMobile} onClickBrand={handleClick} />
+        <div className="h-[350px] md:h-[500px] w-full">
+          <Carousel
+            handleClick={handleClick}
+            cards={cards}
+          />
+        </div>
       </div>
     </section>
   );
