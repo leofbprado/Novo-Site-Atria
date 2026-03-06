@@ -1,0 +1,223 @@
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "./firebase";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface VeiculoAdmin {
+  autoconf_id: number;
+  marca: string;
+  modelo: string;
+  versao: string;
+  ano_fabricacao: number;
+  ano_modelo: number;
+  km: number;
+  preco: number;
+  cor: string;
+  cambio: string;
+  combustivel: string;
+  tipo: string;
+  placa_final: string;
+  foto_principal: string;
+  fotos: string[];
+  acessorios: string[];
+  observacao: string;
+  portas: number;
+  // Admin fields
+  status: "rascunho" | "publicado";
+  tags: string[];
+  descricao_ia: string;
+  slug: string;
+  data_importacao: Timestamp | null;
+  data_publicacao: Timestamp | null;
+}
+
+const COLLECTION = "veiculos_admin";
+const CONFIG_COLLECTION = "config";
+
+// ── Guard ────────────────────────────────────────────────────────────────────
+
+function requireDb() {
+  if (!db) throw new Error("Firebase nao configurado. Adicione VITE_FIREBASE_* ao .env");
+  return db;
+}
+
+// ── Slug helper ──────────────────────────────────────────────────────────────
+
+function makeSlug(v: { marca: string; modelo: string; ano_fabricacao: number; autoconf_id: number }) {
+  const base = `${v.marca}-${v.modelo}-${v.ano_fabricacao}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  return `${base}-${v.autoconf_id}`;
+}
+
+// ── CRUD ─────────────────────────────────────────────────────────────────────
+
+export async function getAllAdminVeiculos(
+  statusFilter?: "rascunho" | "publicado"
+): Promise<VeiculoAdmin[]> {
+  const firestore = requireDb();
+  const constraints = [];
+  if (statusFilter) constraints.push(where("status", "==", statusFilter));
+  constraints.push(orderBy("data_importacao", "desc"));
+
+  const snap = await getDocs(query(collection(firestore, COLLECTION), ...constraints));
+  return snap.docs.map((d) => ({ ...d.data() } as VeiculoAdmin));
+}
+
+export async function getAdminVeiculo(autoconfId: number): Promise<VeiculoAdmin | null> {
+  const firestore = requireDb();
+  const docRef = doc(firestore, COLLECTION, String(autoconfId));
+  const snap = await getDoc(docRef);
+  return snap.exists() ? (snap.data() as VeiculoAdmin) : null;
+}
+
+export async function upsertVeiculoFromAutoConf(
+  data: Record<string, unknown>,
+  fotos: string[],
+  acessorios: string[]
+): Promise<"created" | "updated"> {
+  const firestore = requireDb();
+  const id = data.id as number;
+  const docRef = doc(firestore, COLLECTION, String(id));
+  const existing = await getDoc(docRef);
+
+  const baseFields = {
+    autoconf_id: id,
+    marca: (data.marca as string) || "",
+    modelo: (data.modelo as string) || "",
+    versao: (data.versao as string) || "",
+    ano_fabricacao: (data.ano_fabricacao as number) || 0,
+    ano_modelo: (data.ano_modelo as number) || 0,
+    km: (data.km as number) || 0,
+    preco: (data.preco as number) || 0,
+    cor: (data.cor as string) || "",
+    cambio: (data.cambio as string) || "",
+    combustivel: (data.combustivel as string) || "",
+    tipo: (data.tipo as string) || "",
+    placa_final: (data.final_placa as string) || (data.placa_final as string) || "",
+    foto_principal: (data.foto_principal as string) || "",
+    fotos,
+    acessorios,
+    observacao: (data.observacao as string) || "",
+    portas: (data.portas as number) || 0,
+  };
+
+  if (existing.exists()) {
+    // Update AutoConf fields but preserve admin fields
+    await updateDoc(docRef, baseFields);
+    return "updated";
+  } else {
+    // New vehicle — create with admin defaults
+    const slug = makeSlug({
+      marca: baseFields.marca,
+      modelo: baseFields.modelo,
+      ano_fabricacao: baseFields.ano_fabricacao,
+      autoconf_id: id,
+    });
+    await setDoc(docRef, {
+      ...baseFields,
+      status: "rascunho",
+      tags: [],
+      descricao_ia: "",
+      slug,
+      data_importacao: serverTimestamp(),
+      data_publicacao: null,
+    });
+    return "created";
+  }
+}
+
+export async function updateVeiculoTags(autoconfId: number, tags: string[]): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { tags });
+}
+
+export async function updateVeiculoDescricao(autoconfId: number, descricao_ia: string): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { descricao_ia });
+}
+
+export async function publishVeiculo(autoconfId: number): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), {
+    status: "publicado",
+    data_publicacao: serverTimestamp(),
+  });
+}
+
+export async function unpublishVeiculo(autoconfId: number): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), {
+    status: "rascunho",
+    data_publicacao: null,
+  });
+}
+
+// ── Config (OpenAI key etc) ──────────────────────────────────────────────────
+
+export async function getAdminConfig(): Promise<{ openai_key: string }> {
+  const firestore = requireDb();
+  const snap = await getDoc(doc(firestore, CONFIG_COLLECTION, "admin"));
+  if (snap.exists()) return snap.data() as { openai_key: string };
+  return { openai_key: "" };
+}
+
+export async function saveAdminConfig(config: { openai_key: string }): Promise<void> {
+  const firestore = requireDb();
+  await setDoc(doc(firestore, CONFIG_COLLECTION, "admin"), config, { merge: true });
+}
+
+// ── Public queries (for the website) ─────────────────────────────────────────
+
+export async function getPublishedVeiculos(): Promise<VeiculoAdmin[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(
+      collection(firestore, COLLECTION),
+      where("status", "==", "publicado"),
+      orderBy("data_importacao", "desc")
+    )
+  );
+  return snap.docs.map((d) => ({ ...d.data() } as VeiculoAdmin));
+}
+
+export async function getFeaturedPublishedVeiculos(): Promise<VeiculoAdmin[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(
+      collection(firestore, COLLECTION),
+      where("status", "==", "publicado"),
+      where("tags", "array-contains", "destaque"),
+      orderBy("data_importacao", "desc")
+    )
+  );
+  return snap.docs.map((d) => ({ ...d.data() } as VeiculoAdmin));
+}
+
+export async function getPublishedVeiculoBySlug(slug: string): Promise<VeiculoAdmin | null> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(
+      collection(firestore, COLLECTION),
+      where("slug", "==", slug),
+      where("status", "==", "publicado")
+    )
+  );
+  if (snap.empty) return null;
+  return snap.docs[0].data() as VeiculoAdmin;
+}
