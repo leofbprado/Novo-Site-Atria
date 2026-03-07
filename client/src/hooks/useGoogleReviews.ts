@@ -60,20 +60,23 @@ const FALLBACK_REVIEWS: GoogleReview[] = [
 ];
 
 // ── Fetch reviews from Google Places API (New) ──────────────────────────────
+// Uses header-based auth (X-Goog-Api-Key) which supports browser CORS
 async function fetchPlaceReviews(
   placeId: string,
   loja: string,
   apiKey: string
-): Promise<GoogleReview[]> {
-  const url = `https://places.googleapis.com/v1/places/${placeId}?fields=reviews,rating,userRatingCount&key=${apiKey}`;
+): Promise<{ reviews: GoogleReview[]; rating: number; totalCount: number }> {
+  const url = `https://places.googleapis.com/v1/places/${placeId}`;
   const res = await fetch(url, {
-    headers: { "X-Goog-FieldMask": "reviews,rating,userRatingCount" },
+    headers: {
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "reviews,rating,userRatingCount",
+    },
   });
-  if (!res.ok) return [];
+  if (!res.ok) return { reviews: [], rating: 0, totalCount: 0 };
   const data = await res.json();
-  if (!data.reviews) return [];
 
-  return data.reviews.map((r: any) => ({
+  const reviews: GoogleReview[] = (data.reviews || []).map((r: any) => ({
     authorName: r.authorAttribution?.displayName || "Cliente",
     authorPhoto: r.authorAttribution?.photoUri || "",
     rating: r.rating ?? 0,
@@ -82,6 +85,12 @@ async function fetchPlaceReviews(
     publishTime: r.publishTime || "",
     loja,
   }));
+
+  return {
+    reviews,
+    rating: data.rating ?? 0,
+    totalCount: data.userRatingCount ?? 0,
+  };
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
@@ -125,7 +134,7 @@ export function useGoogleReviews() {
           PLACES.map((p) => fetchPlaceReviews(p.id, p.loja, apiKey))
         );
 
-        const allReviews = results.flat();
+        const allReviews = results.flatMap((r) => r.reviews);
         if (allReviews.length === 0) {
           setReviews(FALLBACK_REVIEWS);
           setLoading(false);
@@ -161,17 +170,15 @@ export function useGoogleReviews() {
             if (!selected.includes(r)) selected.push(r);
           }
         }
-        // Trim to 6
         const final = selected.slice(0, 6);
 
-        // Calculate average from ALL reviews (not just 5-star)
-        const avgRating =
-          allReviews.length > 0
-            ? allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length
-            : 4.8;
-
-        // Also fetch total count from API responses
-        const totalCount = allReviews.length;
+        // Use API-provided rating and total count (weighted average across stores)
+        const validStores = results.filter((r) => r.rating > 0);
+        const avgRating = validStores.length > 0
+          ? validStores.reduce((s, r) => s + r.rating * r.totalCount, 0) /
+            validStores.reduce((s, r) => s + r.totalCount, 0)
+          : 4.8;
+        const totalCount = results.reduce((s, r) => s + r.totalCount, 0);
 
         // Cache
         const cacheData: CachedData = {
