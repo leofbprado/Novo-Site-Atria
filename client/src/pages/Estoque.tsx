@@ -81,9 +81,9 @@ interface FilterState {
 }
 
 const DEFAULT_RANGES = {
-  preco: [0, 500000] as [number, number],
-  ano: [2018, 2025] as [number, number],
-  km: [0, 150000] as [number, number],
+  preco: [0, 1000000] as [number, number],
+  ano: [2005, 2026] as [number, number],
+  km: [0, 300000] as [number, number],
 };
 
 const EMPTY_FILTERS: FilterState = {
@@ -747,6 +747,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
             {titulo}
           </h3>
         </a>
+                    {v.versao && <p className="font-inter text-sm text-atria-text-gray mb-1">{v.versao}</p>}
         <p className="font-inter text-sm text-atria-text-gray line-clamp-1 mb-3">{v.descricao}</p>
         <ul className="flex gap-3 flex-wrap mb-3" role="list">
           {[fmtKm(v.km), v.cambio, v.combustivel, v.portas ? `${v.portas} portas` : null]
@@ -884,9 +885,9 @@ export default function Estoque() {
       if (filters.marcas.length && !filters.marcas.includes(v.marca)) return false;
       if ((filters.modelos ?? []).length && !(filters.modelos ?? []).includes(v.modelo)) return false;
       if (filters.tipos.length && !filters.tipos.includes(v.tipo ?? "")) return false;
-      if (v.preco < filters.preco[0] || v.preco > filters.preco[1]) return false;
-      if (v.ano < filters.ano[0] || v.ano > filters.ano[1]) return false;
-      if (v.km < filters.km[0] || v.km > filters.km[1]) return false;
+      if (v.preco > 0 && (v.preco < filters.preco[0] || v.preco > filters.preco[1])) return false;
+      if (v.ano > 0 && (v.ano < filters.ano[0] || v.ano > filters.ano[1])) return false;
+      if (v.km >= 0 && (v.km < filters.km[0] || v.km > filters.km[1])) return false;
       if (filters.combustivel.length && !filters.combustivel.includes(v.combustivel)) return false;
       if (filters.cambio.length && !filters.cambio.includes(v.cambio)) return false;
       const q = filters.busca.toLowerCase();
@@ -901,7 +902,12 @@ export default function Estoque() {
       case "km_desc": res = [...res].sort((a, b) => b.km - a.km); break;
       case "ano_desc": res = [...res].sort((a, b) => b.ano - a.ano); break;
       case "ano_asc": res = [...res].sort((a, b) => a.ano - b.ano); break;
-      default: res = [...res].sort((a, b) => +b.createdAt - +a.createdAt); break;
+      default: res = [...res].sort((a, b) => {
+        const aHas = a.fotos.length > 0 ? 1 : 0;
+        const bHas = b.fotos.length > 0 ? 1 : 0;
+        if (bHas !== aHas) return bHas - aHas;
+        return +b.createdAt - +a.createdAt;
+      }); break;
     }
     return res;
   }, [all, filters]);
