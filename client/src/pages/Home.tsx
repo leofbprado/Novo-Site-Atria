@@ -3,6 +3,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
+import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -973,39 +974,180 @@ function BrandLogo({ marca }: { marca: string }) {
   );
 }
 
-// ─── Depoimentos ─────────────────────────────────────────────────────────────
-const DEPOIMENTOS = [
-  { nome: "Carlos Mendonça", cargo: "Empresário", texto: "Comprei meu BMW X5 na Átria e a experiência foi incrível. Transparência total, sem surpresas. Recomendo demais!", nota: 5, foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" },
-  { nome: "Ana Paula Ribeiro", cargo: "Médica", texto: "Processo de financiamento super ágil. Em 3 dias estava com o carro. Equipe muito atenciosa e profissional.", nota: 5, foto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" },
-  { nome: "Roberto Alves", cargo: "Engenheiro", texto: "Já é minha segunda compra na Átria. Voltei porque confio no trabalho deles. Preço justo e qualidade garantida.", nota: 5, foto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face" },
-];
+// ─── Depoimentos (Google Reviews) ────────────────────────────────────────────
+
+const GOOGLE_ICON = (
+  <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+);
+
+const AVATAR_COLORS = ["#4285F4", "#34A853", "#FBBC05", "#EA4335", "#5F6368", "#1A73E8"];
+
+function ReviewAvatar({ name, photoUrl }: { name: string; photoUrl: string }) {
+  const [err, setErr] = useState(false);
+  const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const color = AVATAR_COLORS[name.length % AVATAR_COLORS.length];
+
+  if (photoUrl && !err) {
+    return (
+      <img
+        src={photoUrl}
+        alt={name}
+        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+        loading="lazy"
+        onError={() => setErr(true)}
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
+  return (
+    <div
+      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-inter font-bold text-sm"
+      style={{ backgroundColor: color }}
+    >
+      {initials}
+    </div>
+  );
+}
+
+function isRecent(publishTime: string): boolean {
+  if (!publishTime) return false;
+  const diff = Date.now() - new Date(publishTime).getTime();
+  return diff < 60 * 24 * 60 * 60 * 1000; // 60 days
+}
+
+function ReviewCard({ r }: { r: import("@/hooks/useGoogleReviews").GoogleReview }) {
+  const [expanded, setExpanded] = useState(false);
+  const shouldTruncate = r.text.length > 200;
+  const displayText = shouldTruncate && !expanded ? r.text.slice(0, 200) + "..." : r.text;
+  const recent = isRecent(r.publishTime);
+
+  return (
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col min-w-[280px] sm:min-w-0 snap-start">
+      {/* Google logo + store badge */}
+      <div className="flex items-center justify-between mb-3">
+        {GOOGLE_ICON}
+        <span className="font-inter text-[10px] font-semibold text-atria-text-gray bg-atria-gray-light rounded-full px-2 py-0.5 uppercase tracking-wider">
+          {r.loja}
+        </span>
+      </div>
+
+      {/* Author */}
+      <div className="flex items-center gap-3 mb-3">
+        <ReviewAvatar name={r.authorName} photoUrl={r.authorPhoto} />
+        <div className="min-w-0">
+          <p className="font-inter font-semibold text-sm text-atria-text-dark truncate">{r.authorName}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="font-inter text-xs text-atria-text-gray">{r.relativeTime}</span>
+            {recent && (
+              <span className="font-inter text-[9px] font-bold text-green-600 bg-green-50 rounded px-1.5 py-px uppercase">Nova</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Stars */}
+      <div className="flex gap-0.5 mb-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star key={i} size={14} className={i < r.rating ? "text-[#FBBC05] fill-[#FBBC05]" : "text-gray-200 fill-gray-200"} />
+        ))}
+      </div>
+
+      {/* Text */}
+      <p className="font-inter text-sm text-atria-text-gray leading-relaxed flex-1">
+        {displayText}
+        {shouldTruncate && !expanded && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="text-atria-navy font-semibold ml-1 hover:underline"
+          >
+            Ler mais
+          </button>
+        )}
+      </p>
+    </div>
+  );
+}
 
 function Depoimentos() {
+  const { reviews, averageRating, totalReviews, loading, isReal } = useGoogleReviews();
+
   return (
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        {/* Header */}
+        <div className="text-center mb-10">
           <p className="section-label mb-2">Depoimentos</p>
           <h2 className="section-title">O que Nossos Clientes Dizem</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {DEPOIMENTOS.map((d) => (
-            <div key={d.nome} className="bg-white rounded-xl p-7 shadow-sm">
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: d.nota }).map((_, i) => (
-                  <Star key={i} size={16} className="text-atria-yellow fill-atria-yellow" />
-                ))}
-              </div>
-              <p className="font-inter text-atria-text-gray text-sm leading-relaxed mb-5">"{d.texto}"</p>
-              <div className="flex items-center gap-3">
-                <img src={d.foto} alt={d.nome} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
-                <div>
-                  <p className="font-inter font-semibold text-sm text-atria-text-dark">{d.nome}</p>
-                  <p className="font-inter text-xs text-atria-text-gray">{d.cargo}</p>
-                </div>
-              </div>
+          {/* Rating summary */}
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <div className="flex gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} size={18} className={i < Math.round(averageRating) ? "text-[#FBBC05] fill-[#FBBC05]" : "text-gray-200 fill-gray-200"} />
+              ))}
             </div>
-          ))}
+            <span className="font-inter font-bold text-lg text-atria-text-dark">{averageRating}</span>
+            {isReal && totalReviews > 0 && (
+              <span className="font-inter text-sm text-atria-text-gray">
+                ({totalReviews} avaliações no Google)
+              </span>
+            )}
+            {!isReal && (
+              <span className="font-inter text-sm text-atria-text-gray">
+                estrelas no Google
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Reviews */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-xl p-5 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-20 mb-4" />
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="flex-1 space-y-1.5"><div className="h-3 bg-gray-200 rounded w-3/4" /><div className="h-2 bg-gray-200 rounded w-1/2" /></div>
+                </div>
+                <div className="h-3 bg-gray-200 rounded w-24 mb-3" />
+                <div className="space-y-1.5"><div className="h-3 bg-gray-200 rounded" /><div className="h-3 bg-gray-200 rounded w-5/6" /></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Mobile: horizontal scroll. Desktop: grid */}
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 md:hidden">
+              {reviews.map((r, i) => (
+                <div key={i} className="w-[85vw] max-w-[320px] flex-shrink-0">
+                  <ReviewCard r={r} />
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {reviews.slice(0, 6).map((r, i) => (
+                <ReviewCard key={i} r={r} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* CTA: Ver todas no Google */}
+        <div className="text-center mt-8">
+          <a
+            href="https://www.google.com/maps/search/Atria+Veiculos+Campinas"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 font-inter text-sm font-semibold text-atria-navy hover:underline"
+          >
+            {GOOGLE_ICON}
+            Ver todas as avaliações no Google
+          </a>
         </div>
       </div>
     </section>
