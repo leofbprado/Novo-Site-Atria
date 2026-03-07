@@ -563,11 +563,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
       const dados = Array.isArray(res.dados) ? res.dados : [];
       let created = 0, updated = 0;
       for (const v of dados) {
-        let fotos: string[] = [], acessorios: string[] = [];
+        let fotos: unknown[] = [], acessorios: unknown[] = [];
         try {
           const detail = await fetchAutoConfVeiculo(v.id);
           if (detail.dados) { fotos = detail.dados.fotos || []; acessorios = detail.dados.acessorios || []; }
-        } catch { fotos = v.foto_principal ? [v.foto_principal] : []; }
+        } catch { fotos = v.foto ? [v.foto] : []; }
         const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
         if (result === "created") created++; else updated++;
       }
@@ -588,13 +588,14 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
       for (let i = 0; i < total; i++) {
         setImportProgress(`Importando ${i + 1}/${total}...`);
         const v = dados[i];
-        let fotos: string[] = [], acessorios: string[] = [];
+        let fotos: unknown[] = [], acessorios: unknown[] = [];
         try {
           const detail = await fetchAutoConfVeiculo(v.id);
           if (detail.dados) { fotos = detail.dados.fotos || []; acessorios = detail.dados.acessorios || []; }
-        } catch { fotos = v.foto_principal ? [v.foto_principal] : []; }
+        } catch { fotos = v.foto ? [v.foto] : []; }
         await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
-        imported.push({ id: v.id, data: v, acessorios });
+        const accNames = acessorios.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
+        imported.push({ id: v.id, data: v, acessorios: accNames });
       }
 
       if (openaiKey) {
@@ -603,10 +604,10 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
           try {
             const v = imported[i].data;
             const desc = await generateDescription(openaiKey, {
-              marca: v.marca, modelo: v.modelo, versao: v.versao,
-              ano_fabricacao: v.ano_fabricacao, ano_modelo: v.ano_modelo,
-              km: v.km, cor: v.cor, cambio: v.cambio,
-              combustivel: v.combustivel, acessorios: imported[i].acessorios,
+              marca: v.marca_nome, modelo: v.modelopai_nome, versao: v.modelo_nome,
+              ano_fabricacao: Number(v.anofabricacao), ano_modelo: Number(v.anomodelo),
+              km: v.km, cor: v.cor_nome, cambio: v.cambio_nome,
+              combustivel: v.combustivel_nome, acessorios: imported[i].acessorios,
             });
             await updateVeiculoDescricao(imported[i].id, desc);
           } catch { /* skip */ }

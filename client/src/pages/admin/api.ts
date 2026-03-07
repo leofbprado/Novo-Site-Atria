@@ -14,26 +14,27 @@ export function adminLogin(user: string, pass: string): Promise<boolean> {
 
 export interface AutoConfVeiculo {
   id: number;
-  marca: string;
-  modelo: string;
-  versao: string;
-  ano_fabricacao: number;
-  ano_modelo: number;
+  // Real AutoConf API field names
+  marca_nome: string;
+  modelopai_nome: string;
+  modelo_nome: string;
+  anofabricacao: string;  // "2019" — string, not number
+  anomodelo: string;      // "2019" — string, not number
   km: number;
-  preco: number;
-  cor: string;
-  cambio: string;
-  combustivel: string;
-  tipo: string;
-  placa_final: string;
-  foto_principal: string;
-  destaque: boolean;
-  status: string;
-  fotos?: string[];
-  acessorios?: string[];
-  observacao?: string;
-  portas?: number;
-  final_placa?: string;
+  valorvenda: string;     // "50990.00" — string, not number
+  cor_nome: string;
+  cambio_nome: string;
+  combustivel_nome: string;
+  carroceria_nome: string;
+  tipo_nome: string;
+  placa: string;
+  foto: string;
+  portas: number;
+  fotos?: Array<{ url: string; photo_url?: string | null }>;
+  acessorios?: Array<{ nome: string; id: number; categoria: string }>;
+  acessorios_destaque?: Array<{ nome: string; id: number; categoria: string }>;
+  descricao?: string;
+  tags?: string[];
   [key: string]: unknown;
 }
 

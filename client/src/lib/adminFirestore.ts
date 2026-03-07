@@ -88,33 +88,49 @@ export async function getAdminVeiculo(autoconfId: number): Promise<VeiculoAdmin 
 
 export async function upsertVeiculoFromAutoConf(
   data: Record<string, unknown>,
-  fotos: string[],
-  acessorios: string[]
+  fotos: unknown[],
+  acessorios: unknown[]
 ): Promise<"created" | "updated"> {
   const firestore = requireDb();
   const id = data.id as number;
   const docRef = doc(firestore, COLLECTION, String(id));
   const existing = await getDoc(docRef);
 
+  // Map AutoConf field names to our schema
+  // AutoConf returns: fotos as [{url:"..."}], acessorios as [{nome:"..."}]
+  const fotosList = fotos.map((f: any) => (typeof f === "string" ? f : f?.url || "")).filter(Boolean);
+  const acessoriosList = acessorios.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
+
+  // AutoConf API fields:
+  //   marca_nome     = "Chevrolet"
+  //   modelopai_nome = "ONIX"                                    ← modelo
+  //   modelo_nome    = "ONIX HATCH Joy 1.0 8V Flex 5p Mec."     ← versao completa
+  //   anofabricacao  = "2019" (string!)
+  //   anomodelo      = "2019" (string!)
+  //   valorvenda     = "50990.00" (string!)
+  //   carroceria_nome = "Hatch"  (tipo real — tipo_nome é sempre "Carros")
+  //   foto           = url da foto principal
+  //   fotos          = [{url: "..."}]
+  //   acessorios     = [{nome: "..."}]
   const baseFields = {
     autoconf_id: id,
-    marca: (data.marca as string) || "",
-    modelo: (data.modelo as string) || "",
-    versao: (data.versao as string) || "",
-    ano_fabricacao: (data.ano_fabricacao as number) || 0,
-    ano_modelo: (data.ano_modelo as number) || 0,
-    km: (data.km as number) || 0,
-    preco: (data.preco as number) || 0,
-    cor: (data.cor as string) || "",
-    cambio: (data.cambio as string) || "",
-    combustivel: (data.combustivel as string) || "",
-    tipo: (data.tipo as string) || "",
-    placa_final: (data.final_placa as string) || (data.placa_final as string) || "",
-    foto_principal: (data.foto_principal as string) || "",
-    fotos,
-    acessorios,
-    observacao: (data.observacao as string) || "",
-    portas: (data.portas as number) || 0,
+    marca: (data.marca_nome as string) || (data.marca as string) || "",
+    modelo: (data.modelopai_nome as string) || (data.modelo as string) || "",
+    versao: (data.modelo_nome as string) || (data.versao as string) || "",
+    ano_fabricacao: Number(data.anofabricacao) || Number(data.ano_fabricacao) || 0,
+    ano_modelo: Number(data.anomodelo) || Number(data.ano_modelo) || 0,
+    km: Number(data.km) || 0,
+    preco: parseFloat(String(data.valorvenda || data.preco || 0)) || 0,
+    cor: (data.cor_nome as string) || (data.cor as string) || "",
+    cambio: (data.cambio_nome as string) || (data.cambio as string) || "",
+    combustivel: (data.combustivel_nome as string) || (data.combustivel as string) || "",
+    tipo: (data.carroceria_nome as string) || (data.tipo_nome as string) || (data.tipo as string) || "",
+    placa_final: (data.placa as string) || (data.final_placa as string) || (data.placa_final as string) || "",
+    foto_principal: (data.foto as string) || (data.foto_principal as string) || (fotosList[0] || ""),
+    fotos: fotosList.length ? fotosList : (data.foto ? [data.foto as string] : []),
+    acessorios: acessoriosList,
+    observacao: (data.descricao as string) || (data.observacao as string) || "",
+    portas: Number(data.portas) || 0,
   };
 
   if (existing.exists()) {
