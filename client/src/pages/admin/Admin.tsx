@@ -59,14 +59,19 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (adminLogin(user, pass)) {
-      sessionStorage.setItem("admin_auth", "1");
-      onLogin();
-    } else {
-      setError("Usuario ou senha invalidos");
+    try {
+      const ok = await adminLogin(user, pass);
+      if (ok) {
+        sessionStorage.setItem("admin_auth", "1");
+        onLogin();
+      } else {
+        setError("Usuario ou senha invalidos");
+      }
+    } catch {
+      setError("Erro ao conectar com o servidor");
     }
   };
 

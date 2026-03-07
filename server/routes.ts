@@ -97,14 +97,18 @@ async function fetchGoogleReviews() {
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASS = process.env.ADMIN_PASS || "atria2024";
 
-async function autoconfPost(endpoint: string, body: Record<string, unknown>) {
+async function autoconfPost(endpoint: string, body: Record<string, unknown> = {}) {
+  const params = new URLSearchParams();
+  params.set("token", AUTOCONF_TOKEN);
+  for (const [k, v] of Object.entries(body)) {
+    if (v !== undefined && v !== null) params.set(k, String(v));
+  }
   const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${AUTOCONF_BEARER}`,
     },
-    body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
+    body: params,
   });
   const text = await res.text();
   if (!res.ok) {

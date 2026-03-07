@@ -1,35 +1,13 @@
-// Admin API client — AutoConf direct + OpenAI direct
+// Admin API client — calls server-side proxies (no credentials in browser)
 
-// Admin credentials (client-side)
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "atria2024";
-
-// AutoConf credentials
-const AUTOCONF_API = "https://api.autoconf.com.br";
-const AUTOCONF_BEARER = "5mHbswJ9CEHh18iHhEnkl8nZdVXXq0bNPYh1t9CqyNNqhp5NxlD8s68oCghqMbagDSsUOvqyXSsNp0Q7Euv7hSYEmHahQOlwfaHNgDvjqIaGTu7aXeIWwG8Y8HNxsrvfgqOjLqAFjwJ5JhZ8ZRA6zvBBxHXSNCb5SXKICvLzvr0mWuYDycTuQKCspl1mVCvkyoXdAp1ZGP1u8sbGScrkONASHrEAjl9QXb0klFuDgk8f1kgL5oabZqubnoqaHfyL";
-const AUTOCONF_TOKEN = "N0y5JfzY5nTQcNGOQ5D5G0dPXSnG2ngseaALptDS";
-
-async function autoconfPost(endpoint: string, body: Record<string, unknown>) {
-  const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
+export function adminLogin(user: string, pass: string): Promise<boolean> {
+  return fetch("/api/admin/login", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${AUTOCONF_BEARER}`,
-    },
-    body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(`AutoConf ${res.status}: ${text || "empty response"}`);
-  }
-  if (!text) {
-    throw new Error("AutoConf returned empty response");
-  }
-  return JSON.parse(text);
-}
-
-export function adminLogin(user: string, pass: string): boolean {
-  return user === ADMIN_USER && pass === ADMIN_PASS;
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user, pass }),
+  })
+    .then((r) => r.json())
+    .then((d) => d.ok === true);
 }
 
 // ── AutoConf types ───────────────────────────────────────────────────────────
@@ -70,20 +48,49 @@ export interface AutoConfResponse {
   };
 }
 
-// ── AutoConf API calls (direct from browser) ────────────────────────────────
+// ── AutoConf API calls (via server proxy) ────────────────────────────────────
 
 export async function fetchAutoConfVeiculos(params?: {
   pagina?: number;
   registros_por_pagina?: number;
 }): Promise<AutoConfResponse> {
-  return autoconfPost("/api/v1/veiculos", params || {});
+  const res = await fetch("/api/autoconf/veiculos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params || {}),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Server error ${res.status}`);
+  }
+  const raw = await res.json();
+  return {
+    sucesso: true,
+    dados: raw.veiculos || [],
+    paginacao: {
+      pagina_atual: raw.pagina_atual || 1,
+      total_paginas: raw.ultima_pagina || 1,
+      total_registros: raw.count || 0,
+      registros_por_pagina: Number(raw.registros_por_pagina) || 18,
+    },
+  };
 }
 
 export async function fetchAutoConfVeiculo(id: number): Promise<{
   sucesso: boolean;
   dados: AutoConfVeiculo;
 }> {
-  return autoconfPost("/api/v1/veiculo", { id });
+  const res = await fetch("/api/autoconf/veiculo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Server error ${res.status}`);
+  }
+  const raw = await res.json();
+  return { sucesso: true, dados: raw };
 }
 
 // ── OpenAI ───────────────────────────────────────────────────────────────────

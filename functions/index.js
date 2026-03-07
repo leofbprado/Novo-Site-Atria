@@ -1,17 +1,21 @@
 const { onRequest } = require("firebase-functions/v2/https");
 
-const AUTOCONF_API = "https://api.autoconf.com.br";
-const AUTOCONF_BEARER = "5mHbswJ9CEHh18iHhEnkl8nZdVXXq0bNPYh1t9CqyNNqhp5NxlD8s68oCghqMbagDSsUOvqyXSsNp0Q7Euv7hSYEmHahQOlwfaHNgDvjqIaGTu7aXeIWwG8Y8HNxsrvfgqOjLqAFjwJ5JhZ8ZRA6zvBBxHXSNCb5SXKICvLzvr0mWuYDycTuQKCspl1mVCvkyoXdAp1ZGP1u8sbGScrkONASHrEAjl9QXb0klFuDgk8f1kgL5oabZqubnoqaHfyL";
-const AUTOCONF_TOKEN = "N0y5JfzY5nTQcNGOQ5D5G0dPXSnG2ngseaALptDS";
+const AUTOCONF_API = process.env.AUTOCONF_API_URL || "https://api.autoconf.com.br";
+const AUTOCONF_BEARER = process.env.AUTOCONF_BEARER || "";
+const AUTOCONF_TOKEN = process.env.AUTOCONF_TOKEN || "";
 
-async function autoconfPost(endpoint, body) {
+async function autoconfPost(endpoint, body = {}) {
+  const params = new URLSearchParams();
+  params.set("token", AUTOCONF_TOKEN);
+  for (const [k, v] of Object.entries(body)) {
+    if (v !== undefined && v !== null) params.set(k, String(v));
+  }
   const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${AUTOCONF_BEARER}`,
     },
-    body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
+    body: params,
   });
   const text = await res.text();
   if (!res.ok) {
