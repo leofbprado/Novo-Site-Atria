@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, X, Car, ChevronDown, CheckCircle } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -14,10 +14,13 @@ const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"];
 const CAMBIOS = ["Automática", "Manual", "CVT"];
 
 const SORT_OPTIONS = [
-  { label: "Mais recente", key: "recente" },
+  { label: "Relevância", key: "recente" },
   { label: "Menor preço", key: "preco_asc" },
   { label: "Maior preço", key: "preco_desc" },
   { label: "Menor km", key: "km_asc" },
+  { label: "Maior km", key: "km_desc" },
+  { label: "Mais novo", key: "ano_desc" },
+  { label: "Mais velho", key: "ano_asc" },
 ] as const;
 type SortKey = typeof SORT_OPTIONS[number]["key"];
 
@@ -833,6 +836,7 @@ export default function Estoque() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sortSheetOpen, setSortSheetOpen] = useState(false);
 
   useEffect(() => {
     getVehicles().then((v) => { setAll(v); setLoading(false); });
@@ -880,6 +884,9 @@ export default function Estoque() {
       case "preco_asc": res = [...res].sort((a, b) => a.preco - b.preco); break;
       case "preco_desc": res = [...res].sort((a, b) => b.preco - a.preco); break;
       case "km_asc": res = [...res].sort((a, b) => a.km - b.km); break;
+      case "km_desc": res = [...res].sort((a, b) => b.km - a.km); break;
+      case "ano_desc": res = [...res].sort((a, b) => b.ano - a.ano); break;
+      case "ano_asc": res = [...res].sort((a, b) => a.ano - b.ano); break;
       default: res = [...res].sort((a, b) => +b.createdAt - +a.createdAt); break;
     }
     return res;
@@ -920,7 +927,7 @@ export default function Estoque() {
           </div>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-atria-gray-medium rounded-lg font-inter text-sm font-semibold text-atria-text-dark whitespace-nowrap"
+            className="hidden sm:flex lg:hidden items-center gap-2 px-4 py-2.5 border border-atria-gray-medium rounded-lg font-inter text-sm font-semibold text-atria-text-dark whitespace-nowrap"
             aria-label="Abrir filtros"
           >
             <SlidersHorizontal size={15} />
@@ -944,7 +951,7 @@ export default function Estoque() {
       </div>
 
       {/* Layout: Sidebar + Grid */}
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 pb-20 md:pb-0">
         <div className="flex gap-0 lg:gap-8 items-start py-6">
 
           {/* Desktop Sidebar */}
@@ -975,13 +982,6 @@ export default function Estoque() {
               <span className="font-inter text-sm text-atria-text-gray">
                 {filtered.length} veículo{filtered.length !== 1 ? "s" : ""}
               </span>
-              <select
-                value={filters.sort}
-                onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value as SortKey }))}
-                className="border border-atria-gray-medium rounded-lg px-3 py-2 font-inter text-sm outline-none bg-white"
-              >
-                {SORT_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
-              </select>
             </div>
 
             {loading ? (
@@ -1015,6 +1015,97 @@ export default function Estoque() {
           </main>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-atria-gray-medium shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+        <div className="flex items-stretch">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 font-inter text-sm font-semibold text-atria-text-dark border-r border-atria-gray-medium active:bg-atria-gray-light transition-colors"
+          >
+            <SlidersHorizontal size={16} />
+            Filtros
+            {hasFilters && <span className="w-2 h-2 rounded-full bg-atria-navy" />}
+          </button>
+          <button
+            onClick={() => setSortSheetOpen(true)}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 font-inter text-sm font-semibold text-atria-text-dark active:bg-atria-gray-light transition-colors"
+          >
+            <ArrowUpDown size={16} />
+            Ordenar por
+          </button>
+        </div>
+      </div>
+
+      {/* Sort Bottom Sheet (mobile) */}
+      <AnimatePresence>
+        {sortSheetOpen && (
+          <>
+            <motion.div
+              key="sort-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 md:hidden"
+              onClick={() => setSortSheetOpen(false)}
+            />
+            <motion.div
+              key="sort-sheet"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl md:hidden max-h-[80vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark">Ordenar por</h3>
+                <button
+                  onClick={() => setSortSheetOpen(false)}
+                  className="text-atria-text-gray hover:text-atria-text-dark transition-colors"
+                  aria-label="Fechar"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="px-5 pb-6 space-y-1">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => {
+                      setFilters((f) => ({ ...f, sort: opt.key }));
+                      setSortSheetOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-colors ${
+                      filters.sort === opt.key
+                        ? "bg-atria-navy/5"
+                        : "hover:bg-atria-gray-light"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        filters.sort === opt.key
+                          ? "border-atria-navy"
+                          : "border-atria-gray-medium"
+                      }`}
+                    >
+                      {filters.sort === opt.key && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-atria-navy" />
+                      )}
+                    </div>
+                    <span className={`font-inter text-sm ${
+                      filters.sort === opt.key
+                        ? "font-semibold text-atria-navy"
+                        : "text-atria-text-dark"
+                    }`}>
+                      {opt.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Drawer */}
       <AnimatePresence>
