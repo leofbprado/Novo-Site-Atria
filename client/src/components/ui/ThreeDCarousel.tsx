@@ -44,7 +44,8 @@ const Carousel = memo(function Carousel({
 }) {
   const controls = useAnimation();
   const isScreenSizeSm = useMediaQuery("(max-width: 640px)");
-  const cylinderWidth = isScreenSizeSm ? 1100 : 1800;
+  const isScreenSizeMd = useMediaQuery("(max-width: 768px)");
+  const cylinderWidth = isScreenSizeSm ? 600 : isScreenSizeMd ? 1000 : 1800;
   const faceCount = cards.length;
   const faceWidth = cylinderWidth / faceCount;
   const radius = cylinderWidth / (2 * Math.PI);
@@ -73,7 +74,7 @@ const Carousel = memo(function Carousel({
     <div
       className="flex h-full items-center justify-center"
       style={{
-        perspective: "1000px",
+        perspective: isScreenSizeSm ? "600px" : "1000px",
         transformStyle: "preserve-3d",
         willChange: "transform",
       }}
@@ -119,14 +120,14 @@ const Carousel = memo(function Carousel({
             }}
             onClick={() => handleClick(card.brand, i)}
           >
-            <div className="pointer-events-none w-full rounded-xl bg-white shadow-lg aspect-square flex flex-col items-center justify-center gap-2 p-4">
-              <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+            <div className="pointer-events-none w-full rounded-xl bg-white shadow-lg aspect-square flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-4">
+              <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center [&_svg]:w-full [&_svg]:h-full">
                 {card.svg}
               </div>
-              <span className="font-barlow-condensed font-bold text-sm md:text-base text-gray-800 leading-tight text-center">
+              <span className="font-barlow-condensed font-bold text-[11px] sm:text-sm md:text-base text-gray-800 leading-tight text-center">
                 {card.brand}
               </span>
-              <span className="font-inter text-[10px] md:text-xs text-gray-500">
+              <span className="font-inter text-[8px] sm:text-[10px] md:text-xs text-gray-500">
                 {card.count} {card.count === 1 ? "veiculo" : "veiculos"}
               </span>
             </div>

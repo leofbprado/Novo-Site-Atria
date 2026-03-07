@@ -505,7 +505,7 @@ function BrandCarousel() {
         .map(([brand, count]) => ({
           brand,
           count,
-          svg: <BrandLogo marca={brand} size={64} />,
+          svg: <BrandLogo marca={brand} size={40} />,
         }));
       setCards(sorted);
     });
@@ -518,7 +518,7 @@ function BrandCarousel() {
   if (cards.length === 0) return null;
 
   return (
-    <section className="py-16 bg-gradient-to-b from-[#001A8C] to-[#000D47] overflow-hidden">
+    <section className="py-10 sm:py-16 bg-gradient-to-b from-[#001A8C] to-[#000D47] overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
           <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-2">Navegue</p>
@@ -530,7 +530,7 @@ function BrandCarousel() {
           </p>
         </div>
 
-        <div className="h-[350px] md:h-[500px] w-full">
+        <div className="h-[220px] sm:h-[350px] md:h-[500px] w-full">
           <Carousel
             handleClick={handleClick}
             cards={cards}
