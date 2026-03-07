@@ -505,7 +505,7 @@ function BrandCarousel() {
         .map(([brand, count]) => ({
           brand,
           count,
-          svg: <BrandLogo marca={brand} size={40} />,
+          svg: <BrandLogo marca={brand} />,
         }));
       setCards(sorted);
     });
@@ -933,93 +933,42 @@ function Stats() {
   );
 }
 
-// ─── Brand SVG Logos ─────────────────────────────────────────────────────────
-function BrandLogo({ marca, size = 40 }: { marca: string; size?: number }) {
-  const s = size;
-  const logos: Record<string, JSX.Element> = {
-    "Chevrolet": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><path d="M4 20h12l2-6h12l2 6h12v8H32l-2 6H18l-2-6H4z" fill="#D4A843" stroke="#C8972A" strokeWidth="1.5"/></svg>
-    ),
-    "Toyota": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><ellipse cx="24" cy="24" rx="20" ry="14" fill="none" stroke="#CC0000" strokeWidth="2.5"/><ellipse cx="24" cy="24" rx="12" ry="8" fill="none" stroke="#CC0000" strokeWidth="2"/><ellipse cx="24" cy="24" rx="5" ry="14" fill="none" stroke="#CC0000" strokeWidth="2"/></svg>
-    ),
-    "Honda": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="20" fill="#CC0000">H</text><rect x="4" y="10" width="40" height="28" rx="4" fill="none" stroke="#CC0000" strokeWidth="2"/></svg>
-    ),
-    "Volkswagen": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#001E50" strokeWidth="2.5"/><text x="24" y="20" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="16" fill="#001E50">V</text><text x="24" y="36" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="16" fill="#001E50">W</text></svg>
-    ),
-    "Hyundai": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><ellipse cx="24" cy="24" rx="20" ry="16" fill="none" stroke="#003580" strokeWidth="2.5"/><text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="18" fontStyle="italic" fill="#003580">H</text></svg>
-    ),
-    "BMW": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#262626" strokeWidth="2.5"/><path d="M24 4A20 20 0 0 1 44 24H24V4z" fill="#0066B1"/><path d="M24 24A20 20 0 0 1 4 24H24z" fill="#0066B1"/><path d="M24 24A20 20 0 0 1 24 44V24z" fill="white"/><path d="M24 4A20 20 0 0 0 4 24H24V4z" fill="white"/></svg>
-    ),
-    "Mercedes-Benz": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#333" strokeWidth="2.5"/><circle cx="24" cy="24" r="3" fill="#333"/><line x1="24" y1="24" x2="24" y2="6" stroke="#333" strokeWidth="2.5"/><line x1="24" y1="24" x2="8" y2="36" stroke="#333" strokeWidth="2.5"/><line x1="24" y1="24" x2="40" y2="36" stroke="#333" strokeWidth="2.5"/></svg>
-    ),
-    "Audi": (
-      <svg viewBox="0 0 64 32" width={s * 1.5} height={s * 0.75}><circle cx="12" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/><circle cx="24" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/><circle cx="36" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/><circle cx="48" cy="16" r="10" fill="none" stroke="#333" strokeWidth="2"/></svg>
-    ),
-    "Jeep": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="14" letterSpacing="1" fill="#3A5A20">JEEP</text><rect x="4" y="14" width="40" height="20" rx="3" fill="none" stroke="#3A5A20" strokeWidth="2"/></svg>
-    ),
-    "Ford": (
-      <svg viewBox="0 0 48 32" width={s * 1.2} height={s * 0.8}><ellipse cx="24" cy="16" rx="22" ry="14" fill="#003399" stroke="#003399" strokeWidth="1"/><text x="24" y="22" textAnchor="middle" fontFamily="serif" fontWeight="700" fontSize="16" fontStyle="italic" fill="white">Ford</text></svg>
-    ),
-    "Fiat": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="#96172E" stroke="#96172E" strokeWidth="1"/><text x="24" y="22" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="10" fill="white">FIAT</text><line x1="8" y1="28" x2="40" y2="28" stroke="white" strokeWidth="1.5"/></svg>
-    ),
-    "Nissan": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#C3002F" strokeWidth="2.5"/><rect x="4" y="19" width="40" height="10" fill="white" stroke="#C3002F" strokeWidth="1.5"/><text x="24" y="27" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="9" fill="#C3002F">NISSAN</text></svg>
-    ),
-    "Caoa Chery": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#9B1B30" strokeWidth="2.5"/><text x="24" y="28" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="9" fill="#9B1B30">CHERY</text></svg>
-    ),
-    "GWM": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#1A1A1A" strokeWidth="2.5"/><text x="24" y="29" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="11" fill="#1A1A1A">GWM</text></svg>
-    ),
-    "Kia": (
-      <svg viewBox="0 0 48 32" width={s * 1.2} height={s * 0.8}><text x="24" y="26" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="22" fill="#05141F">KIA</text></svg>
-    ),
-    "Volvo": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#003057" strokeWidth="2.5"/><line x1="24" y1="4" x2="38" y2="28" stroke="#003057" strokeWidth="2.5"/><text x="24" y="34" textAnchor="middle" fontFamily="Arial" fontWeight="800" fontSize="10" fill="#003057">VOLVO</text></svg>
-    ),
-    "Renault": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><polygon points="24,4 40,44 8,44" fill="none" stroke="#FFCC00" strokeWidth="2.5" strokeLinejoin="round"/><polygon points="24,12 34,38 14,38" fill="none" stroke="#FFCC00" strokeWidth="1.5" strokeLinejoin="round"/></svg>
-    ),
-    "Peugeot": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><rect x="14" y="4" width="20" height="40" rx="10" fill="none" stroke="#1A1A1A" strokeWidth="2.5"/><text x="24" y="28" textAnchor="middle" fontFamily="serif" fontWeight="700" fontSize="10" fill="#1A1A1A">PGT</text></svg>
-    ),
-    "Citroën": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><path d="M24 8L8 20l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/><path d="M24 20L8 32l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/></svg>
-    ),
-    "Citroen": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><path d="M24 8L8 20l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/><path d="M24 20L8 32l16 8" fill="none" stroke="#AC1220" strokeWidth="3" strokeLinejoin="round"/></svg>
-    ),
-    "Mitsubishi": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><polygon points="24,4 18,14 30,14" fill="#CC0000"/><polygon points="14,18 8,28 20,28" fill="#CC0000"/><polygon points="34,18 28,28 40,28" fill="#CC0000"/></svg>
-    ),
-    "Land Rover": (
-      <svg viewBox="0 0 56 32" width={s * 1.4} height={s * 0.7}><ellipse cx="28" cy="16" rx="26" ry="14" fill="#005A2B" stroke="#005A2B" strokeWidth="1"/><text x="28" y="14" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="6" fill="white">LAND</text><text x="28" y="22" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="6" fill="white">ROVER</text></svg>
-    ),
-    "Porsche": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><rect x="6" y="6" width="36" height="36" rx="4" fill="none" stroke="#A6192E" strokeWidth="2.5"/><text x="24" y="28" textAnchor="middle" fontFamily="serif" fontWeight="700" fontSize="9" fill="#A6192E">PORSCHE</text></svg>
-    ),
-    "Mini": (
-      <svg viewBox="0 0 48 48" width={s} height={s}><circle cx="24" cy="24" r="20" fill="none" stroke="#1A1A1A" strokeWidth="2.5"/><text x="24" y="29" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="11" fill="#1A1A1A">MINI</text></svg>
-    ),
-  };
+// ─── Brand Logos (CDN SVGs) ──────────────────────────────────────────────────
+const BRAND_LOGO_URLS: Record<string, string> = {
+  "chevrolet": "https://cdn.worldvectorlogo.com/logos/chevrolet-6.svg",
+  "volkswagen": "https://cdn.worldvectorlogo.com/logos/volkswagen-2.svg",
+  "ford": "https://cdn.worldvectorlogo.com/logos/ford-6.svg",
+  "toyota": "https://cdn.worldvectorlogo.com/logos/toyota-2.svg",
+  "honda": "https://cdn.worldvectorlogo.com/logos/honda-5.svg",
+  "hyundai": "https://cdn.worldvectorlogo.com/logos/hyundai-motor-company.svg",
+  "bmw": "https://cdn.worldvectorlogo.com/logos/bmw-2.svg",
+  "audi": "https://cdn.worldvectorlogo.com/logos/audi-11.svg",
+  "mercedes-benz": "https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg",
+  "fiat": "https://cdn.worldvectorlogo.com/logos/fiat-2.svg",
+  "nissan": "https://cdn.worldvectorlogo.com/logos/nissan-6.svg",
+  "jeep": "https://cdn.worldvectorlogo.com/logos/jeep-1.svg",
+  "renault": "https://cdn.worldvectorlogo.com/logos/renault-1.svg",
+  "kia": "https://cdn.worldvectorlogo.com/logos/kia-1.svg",
+  "peugeot": "https://cdn.worldvectorlogo.com/logos/peugeot-9.svg",
+  "citroën": "https://cdn.worldvectorlogo.com/logos/citroen-2009.svg",
+  "citroen": "https://cdn.worldvectorlogo.com/logos/citroen-2009.svg",
+  "mitsubishi": "https://cdn.worldvectorlogo.com/logos/mitsubishi-motors-2.svg",
+  "volvo": "https://cdn.worldvectorlogo.com/logos/volvo-2.svg",
+  "porsche": "https://cdn.worldvectorlogo.com/logos/porsche-4.svg",
+  "land rover": "https://cdn.worldvectorlogo.com/logos/land-rover-1.svg",
+};
 
-  const key = Object.keys(logos).find((k) => k.toLowerCase() === marca.toLowerCase()) ?? marca;
-  if (logos[key]) return logos[key];
-
-  // Fallback: initials
-  const initials = marca.split(/[\s-]+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+function BrandLogo({ marca }: { marca: string }) {
+  const url = BRAND_LOGO_URLS[marca.toLowerCase()];
+  if (url) {
+    return <img src={url} alt={marca} className="w-full h-full object-contain" loading="lazy" />;
+  }
+  // Fallback: initials in a circle
+  const initials = marca.split(/[\s-]+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase();
   return (
-    <svg viewBox="0 0 48 48" width={s} height={s}>
+    <svg viewBox="0 0 48 48" className="w-full h-full">
       <circle cx="24" cy="24" r="20" fill="none" stroke="#6B7280" strokeWidth="2"/>
-      <text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="16" fill="#6B7280">{initials}</text>
+      <text x="24" y="30" textAnchor="middle" fontFamily="Arial" fontWeight="700" fontSize="14" fill="#6B7280">{initials}</text>
     </svg>
   );
 }

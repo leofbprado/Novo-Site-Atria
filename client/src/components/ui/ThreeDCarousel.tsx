@@ -45,10 +45,13 @@ const Carousel = memo(function Carousel({
   const controls = useAnimation();
   const isScreenSizeSm = useMediaQuery("(max-width: 640px)");
   const isScreenSizeMd = useMediaQuery("(max-width: 768px)");
-  const cylinderWidth = isScreenSizeSm ? 600 : isScreenSizeMd ? 1000 : 1800;
+
+  // Each card gets a minimum face width; cylinder scales with card count
+  const faceWidth = isScreenSizeSm ? 90 : isScreenSizeMd ? 120 : 140;
   const faceCount = cards.length;
-  const faceWidth = cylinderWidth / faceCount;
+  const cylinderWidth = faceWidth * faceCount;
   const radius = cylinderWidth / (2 * Math.PI);
+
   const rotation = useMotionValue(0);
   const transform = useTransform(
     rotation,
@@ -74,7 +77,7 @@ const Carousel = memo(function Carousel({
     <div
       className="flex h-full items-center justify-center"
       style={{
-        perspective: isScreenSizeSm ? "600px" : "1000px",
+        perspective: isScreenSizeSm ? "500px" : "1000px",
         transformStyle: "preserve-3d",
         willChange: "transform",
       }}
@@ -113,21 +116,21 @@ const Carousel = memo(function Carousel({
         {cards.map((card, i) => (
           <motion.div
             key={card.brand}
-            className="absolute flex h-full origin-center items-center justify-center p-2"
+            className="absolute flex h-full origin-center items-center justify-center"
             style={{
               width: `${faceWidth}px`,
               transform: `rotateY(${i * (360 / faceCount)}deg) translateZ(${radius}px)`,
             }}
             onClick={() => handleClick(card.brand, i)}
           >
-            <div className="pointer-events-none w-full rounded-xl bg-white shadow-lg aspect-square flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-4">
-              <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center [&_svg]:w-full [&_svg]:h-full">
+            <div className="pointer-events-none rounded-xl bg-white shadow-lg flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-3 w-[76px] h-[76px] sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px]">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center">
                 {card.svg}
               </div>
-              <span className="font-barlow-condensed font-bold text-[11px] sm:text-sm md:text-base text-gray-800 leading-tight text-center">
+              <span className="font-barlow-condensed font-bold text-[9px] sm:text-xs md:text-sm text-gray-800 leading-tight text-center truncate w-full">
                 {card.brand}
               </span>
-              <span className="font-inter text-[8px] sm:text-[10px] md:text-xs text-gray-500">
+              <span className="font-inter text-[7px] sm:text-[9px] md:text-[11px] text-gray-500 leading-none">
                 {card.count} {card.count === 1 ? "veiculo" : "veiculos"}
               </span>
             </div>
