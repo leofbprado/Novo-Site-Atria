@@ -1,24 +1,31 @@
-// Admin API client — AutoConf via server proxy + OpenAI direct
+// Admin API client — AutoConf direct + OpenAI direct
 
 // Admin credentials (client-side)
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "atria2024";
 
-// Uses /api/autoconf/* proxy routes:
-// - Dev: Express server proxy (server/routes.ts)
-// - Prod: Firebase Hosting rewrites to Cloud Function (firebase.json)
-async function proxyPost(path: string, body: Record<string, unknown>) {
-  const url = `/api/autoconf/${path}`;
-  const res = await fetch(url, {
+// AutoConf credentials
+const AUTOCONF_API = "https://api.autoconf.com.br";
+const AUTOCONF_BEARER = "5mHbswJ9CEHh18iHhEnkl8nZdVXXq0bNPYh1t9CqyNNqhp5NxlD8s68oCghqMbagDSsUOvqyXSsNp0Q7Euv7hSYEmHahQOlwfaHNgDvjqIaGTu7aXeIWwG8Y8HNxsrvfgqOjLqAFjwJ5JhZ8ZRA6zvBBxHXSNCb5SXKICvLzvr0mWuYDycTuQKCspl1mVCvkyoXdAp1ZGP1u8sbGScrkONASHrEAjl9QXb0klFuDgk8f1kgL5oabZqubnoqaHfyL";
+const AUTOCONF_TOKEN = "N0y5JfzY5nTQcNGOQ5D5G0dPXSnG2ngseaALptDS";
+
+async function autoconfPost(endpoint: string, body: Record<string, unknown>) {
+  const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${AUTOCONF_BEARER}`,
+    },
+    body: JSON.stringify({ token: AUTOCONF_TOKEN, ...body }),
   });
+  const text = await res.text();
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Proxy error ${res.status}: ${text}`);
+    throw new Error(`AutoConf ${res.status}: ${text || "empty response"}`);
   }
-  return res.json();
+  if (!text) {
+    throw new Error("AutoConf returned empty response");
+  }
+  return JSON.parse(text);
 }
 
 export function adminLogin(user: string, pass: string): boolean {
@@ -63,20 +70,20 @@ export interface AutoConfResponse {
   };
 }
 
-// ── AutoConf API calls (via proxy) ──────────────────────────────────────────
+// ── AutoConf API calls (direct from browser) ────────────────────────────────
 
 export async function fetchAutoConfVeiculos(params?: {
   pagina?: number;
   registros_por_pagina?: number;
 }): Promise<AutoConfResponse> {
-  return proxyPost("veiculos", params || {});
+  return autoconfPost("/api/v1/veiculos", params || {});
 }
 
 export async function fetchAutoConfVeiculo(id: number): Promise<{
   sucesso: boolean;
   dados: AutoConfVeiculo;
 }> {
-  return proxyPost("veiculo", { id });
+  return autoconfPost("/api/v1/veiculo", { id });
 }
 
 // ── OpenAI ───────────────────────────────────────────────────────────────────
