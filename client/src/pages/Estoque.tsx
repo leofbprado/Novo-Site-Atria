@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
@@ -837,6 +837,20 @@ export default function Estoque() {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
+  const [showPill, setShowPill] = useState(false);
+  const topBarRef = useRef<HTMLDivElement>(null);
+
+  // Show floating pill when top bar scrolls out of view
+  useEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowPill(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     getVehicles().then((v) => { setAll(v); setLoading(false); });
@@ -912,7 +926,7 @@ export default function Estoque() {
       </header>
 
       {/* Top bar */}
-      <div className="sticky top-16 z-30 bg-white border-b border-atria-gray-medium shadow-sm">
+      <div ref={topBarRef} className="sticky top-16 z-30 bg-white border-b border-atria-gray-medium shadow-sm">
         <div className="container mx-auto px-4 py-2.5 flex items-center gap-3">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-atria-text-gray" />
@@ -927,7 +941,7 @@ export default function Estoque() {
           </div>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="hidden sm:flex lg:hidden items-center gap-2 px-4 py-2.5 border border-atria-gray-medium rounded-lg font-inter text-sm font-semibold text-atria-text-dark whitespace-nowrap"
+            className="flex lg:hidden items-center gap-2 px-4 py-2.5 border border-atria-gray-medium rounded-lg font-inter text-sm font-semibold text-atria-text-dark whitespace-nowrap"
             aria-label="Abrir filtros"
           >
             <SlidersHorizontal size={15} />
@@ -951,7 +965,7 @@ export default function Estoque() {
       </div>
 
       {/* Layout: Sidebar + Grid */}
-      <div className="container mx-auto px-4 pb-20 md:pb-0">
+      <div className="container mx-auto px-4">
         <div className="flex gap-0 lg:gap-8 items-start py-6">
 
           {/* Desktop Sidebar */}
@@ -1016,23 +1030,31 @@ export default function Estoque() {
         </div>
       </div>
 
-      {/* Mobile Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-atria-gray-medium shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
-        <div className="flex items-stretch">
+      {/* Mobile Floating Pill */}
+      <div
+        className="fixed z-[9999] md:hidden left-1/2 -translate-x-1/2 transition-all duration-300"
+        style={{
+          bottom: showPill ? "20px" : "-60px",
+          opacity: showPill ? 1 : 0,
+          pointerEvents: showPill ? "auto" : "none",
+        }}
+      >
+        <div className="flex items-center bg-atria-navy rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.25)] px-2 py-1.5 gap-1">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 font-inter text-sm font-semibold text-atria-text-dark border-r border-atria-gray-medium active:bg-atria-gray-light transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full font-inter text-sm font-semibold text-white active:bg-white/10 transition-colors"
           >
-            <SlidersHorizontal size={16} />
+            <SlidersHorizontal size={14} />
             Filtros
-            {hasFilters && <span className="w-2 h-2 rounded-full bg-atria-navy" />}
+            {hasFilters && <span className="w-2 h-2 rounded-full bg-atria-gold" />}
           </button>
+          <div className="w-px h-5 bg-white/30" />
           <button
             onClick={() => setSortSheetOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 font-inter text-sm font-semibold text-atria-text-dark active:bg-atria-gray-light transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full font-inter text-sm font-semibold text-white active:bg-white/10 transition-colors"
           >
-            <ArrowUpDown size={16} />
-            Ordenar por
+            <ArrowUpDown size={14} />
+            Ordenar
           </button>
         </div>
       </div>
