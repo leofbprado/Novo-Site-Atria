@@ -46,6 +46,17 @@ export interface VeiculoAdmin {
 const COLLECTION = "veiculos_admin";
 const CONFIG_COLLECTION = "config";
 
+// ── Normalization helpers (handle legacy data where fotos/acessorios are objects) ─
+function normalizeFotos(fotos: unknown): string[] {
+  if (!Array.isArray(fotos)) return [];
+  return fotos.map((f: any) => (typeof f === "string" ? f : f?.url || "")).filter(Boolean);
+}
+
+function normalizeAcessorios(acessorios: unknown): string[] {
+  if (!Array.isArray(acessorios)) return [];
+  return acessorios.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
+}
+
 // ── Guard ────────────────────────────────────────────────────────────────────
 
 function requireDb() {
@@ -67,6 +78,15 @@ function makeSlug(v: { marca: string; modelo: string; ano_fabricacao: number; au
 
 // ── CRUD ─────────────────────────────────────────────────────────────────────
 
+function normalizeVeiculoAdmin(raw: Record<string, unknown>): VeiculoAdmin {
+  return {
+    ...raw,
+    fotos: normalizeFotos(raw.fotos),
+    acessorios: normalizeAcessorios(raw.acessorios),
+    foto_principal: (raw.foto_principal as string) || normalizeFotos(raw.fotos)[0] || "",
+  } as VeiculoAdmin;
+}
+
 export async function getAllAdminVeiculos(
   statusFilter?: "rascunho" | "publicado"
 ): Promise<VeiculoAdmin[]> {
@@ -76,14 +96,14 @@ export async function getAllAdminVeiculos(
   constraints.push(orderBy("data_importacao", "desc"));
 
   const snap = await getDocs(query(collection(firestore, COLLECTION), ...constraints));
-  return snap.docs.map((d) => ({ ...d.data() } as VeiculoAdmin));
+  return snap.docs.map((d) => normalizeVeiculoAdmin(d.data()));
 }
 
 export async function getAdminVeiculo(autoconfId: number): Promise<VeiculoAdmin | null> {
   const firestore = requireDb();
   const docRef = doc(firestore, COLLECTION, String(autoconfId));
   const snap = await getDoc(docRef);
-  return snap.exists() ? (snap.data() as VeiculoAdmin) : null;
+  return snap.exists() ? normalizeVeiculoAdmin(snap.data()) : null;
 }
 
 export async function upsertVeiculoFromAutoConf(
@@ -98,8 +118,8 @@ export async function upsertVeiculoFromAutoConf(
 
   // Map AutoConf field names to our schema
   // AutoConf returns: fotos as [{url:"..."}], acessorios as [{nome:"..."}]
-  const fotosList = fotos.map((f: any) => (typeof f === "string" ? f : f?.url || "")).filter(Boolean);
-  const acessoriosList = acessorios.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
+  const fotosList = normalizeFotos(fotos);
+  const acessoriosList = normalizeAcessorios(acessorios);
 
   // AutoConf API fields:
   //   marca_nome     = "Chevrolet"
@@ -270,7 +290,7 @@ export async function getPublishedVeiculos(): Promise<VeiculoAdmin[]> {
       orderBy("data_importacao", "desc")
     )
   );
-  return snap.docs.map((d) => ({ ...d.data() } as VeiculoAdmin));
+  return snap.docs.map((d) => normalizeVeiculoAdmin(d.data()));
 }
 
 export async function getFeaturedPublishedVeiculos(): Promise<VeiculoAdmin[]> {
@@ -283,7 +303,7 @@ export async function getFeaturedPublishedVeiculos(): Promise<VeiculoAdmin[]> {
       orderBy("data_importacao", "desc")
     )
   );
-  return snap.docs.map((d) => ({ ...d.data() } as VeiculoAdmin));
+  return snap.docs.map((d) => normalizeVeiculoAdmin(d.data()));
 }
 
 export async function getPublishedVeiculoBySlug(slug: string): Promise<VeiculoAdmin | null> {
@@ -296,5 +316,5 @@ export async function getPublishedVeiculoBySlug(slug: string): Promise<VeiculoAd
     )
   );
   if (snap.empty) return null;
-  return snap.docs[0].data() as VeiculoAdmin;
+  return normalizeVeiculoAdmin(snap.docs[0].data());
 }

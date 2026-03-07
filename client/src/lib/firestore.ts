@@ -54,25 +54,37 @@ export interface Vehicle {
 }
 
 // ── Convert VeiculoAdmin → Vehicle ──────────────────────────────────────────
+// Handle legacy data where fotos may be [{url:"..."}] objects instead of strings
+function normalizeFotos(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((f: any) => (typeof f === "string" ? f : f?.url || "")).filter(Boolean);
+}
+function normalizeAcessorios(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
+}
+
 function adminToVehicle(v: VeiculoAdmin): Vehicle {
+  const fotos = normalizeFotos(v.fotos);
+  const fotoPrincipal = v.foto_principal || fotos[0] || "";
   return {
     id: String(v.autoconf_id),
-    marca: v.marca,
-    modelo: v.modelo,
-    versao: v.versao,
-    tipo: v.tipo,
-    portas: v.portas,
-    ano: v.ano_fabricacao,
-    preco: v.preco,
-    km: v.km,
-    cor: v.cor,
-    cambio: v.cambio as Vehicle["cambio"],
-    combustivel: v.combustivel as Vehicle["combustivel"],
-    fotos: v.fotos?.length ? v.fotos : v.foto_principal ? [v.foto_principal] : [],
+    marca: v.marca || "",
+    modelo: v.modelo || "",
+    versao: v.versao || "",
+    tipo: v.tipo || "",
+    portas: v.portas || 0,
+    ano: v.ano_fabricacao || 0,
+    preco: v.preco || 0,
+    km: v.km || 0,
+    cor: v.cor || "",
+    cambio: (v.cambio || "Manual") as Vehicle["cambio"],
+    combustivel: (v.combustivel || "Flex") as Vehicle["combustivel"],
+    fotos: fotos.length ? fotos : fotoPrincipal ? [fotoPrincipal] : [],
     descricao: v.descricao_ia || v.observacao || "",
-    opcionais: v.acessorios,
+    opcionais: normalizeAcessorios(v.acessorios),
     destaque: (v.tags || []).includes("destaque"),
-    slug: v.slug,
+    slug: v.slug || "",
     createdAt: v.data_importacao?.toDate?.() || new Date(),
   };
 }
