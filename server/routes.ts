@@ -5,6 +5,95 @@ import { storage } from "./storage";
 const AUTOCONF_API = process.env.AUTOCONF_API_URL || "https://api.autoconf.com.br";
 const AUTOCONF_BEARER = process.env.AUTOCONF_BEARER || "";
 const AUTOCONF_TOKEN = process.env.AUTOCONF_TOKEN || "";
+const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || "";
+
+// ── Google Reviews in-memory cache ──────────────────────────────────────────
+const PLACES = [
+  { id: "ChIJHfOghtjOyJQRdL4Zsnxwsis", loja: "Abolição" },
+  { id: "ChIJL6nIwhrGyJQRVjPLf7OBAsU", loja: "Guanabara" },
+  { id: "ChIJ1yAZp0TJyJQR_81hXZHa3j8", loja: "Campos Elíseos" },
+];
+const REVIEWS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+let reviewsCache: { ts: number; data: any } | null = null;
+
+async function fetchGoogleReviews() {
+  const results = await Promise.all(
+    PLACES.map(async (place) => {
+      try {
+        const res = await fetch(
+          `https://places.googleapis.com/v1/places/${place.id}`,
+          {
+            headers: {
+              "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+              "X-Goog-FieldMask": "reviews,rating,userRatingCount",
+            },
+          }
+        );
+        if (!res.ok) return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
+        const data = await res.json();
+        const reviews = (data.reviews || []).map((r: any) => ({
+          authorName: r.authorAttribution?.displayName || "Cliente",
+          authorPhoto: r.authorAttribution?.photoUri || "",
+          rating: r.rating ?? 0,
+          text: r.text?.text || r.originalText?.text || "",
+          relativeTime: r.relativePublishTimeDescription || "",
+          publishTime: r.publishTime || "",
+          loja: place.loja,
+        }));
+        return {
+          reviews,
+          rating: data.rating ?? 0,
+          totalCount: data.userRatingCount ?? 0,
+          loja: place.loja,
+        };
+      } catch {
+        return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
+      }
+    })
+  );
+
+  const allReviews = results.flatMap((r) => r.reviews);
+  const fiveStars = allReviews.filter((r: any) => r.rating === 5);
+
+  fiveStars.sort((a: any, b: any) => {
+    if (a.publishTime && b.publishTime) {
+      return new Date(b.publishTime).getTime() - new Date(a.publishTime).getTime();
+    }
+    return 0;
+  });
+
+  // Pick up to 6 reviews, 2 per store
+  const selected: any[] = [];
+  const byStore = new Map<string, any[]>();
+  for (const r of fiveStars) {
+    if (!byStore.has(r.loja)) byStore.set(r.loja, []);
+    byStore.get(r.loja)!.push(r);
+  }
+  for (const [, storeReviews] of byStore) {
+    selected.push(...storeReviews.slice(0, 2));
+  }
+  if (selected.length < 6) {
+    for (const r of fiveStars) {
+      if (selected.length >= 6) break;
+      if (!selected.includes(r)) selected.push(r);
+    }
+  }
+  const finalReviews = selected.slice(0, 6);
+
+  const validStores = results.filter((r) => r.rating > 0);
+  const avgRating =
+    validStores.length > 0
+      ? validStores.reduce((s, r) => s + r.rating * r.totalCount, 0) /
+        validStores.reduce((s, r) => s + r.totalCount, 0)
+      : 4.8;
+  const totalReviews = results.reduce((s, r) => s + r.totalCount, 0);
+
+  return {
+    reviews: finalReviews,
+    averageRating: Math.round(avgRating * 10) / 10,
+    totalReviews,
+  };
+}
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASS = process.env.ADMIN_PASS || "atria2024";
 
@@ -94,6 +183,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/openai-key", (req: Request, res: Response) => {
     openaiKey = req.body.key || "";
     res.json({ ok: true });
+  });
+
+  // ── Google Reviews proxy ─────────────────────────────────────────────────
+  app.get("/api/google-reviews", async (_req: Request, res: Response) => {
+    if (!GOOGLE_PLACES_API_KEY) {
+      return res.json({ reviews: [], averageRating: 4.8, totalReviews: 0 });
+    }
+
+    // Return cached data if fresh
+    if (reviewsCache && Date.now() - reviewsCache.ts < REVIEWS_CACHE_TTL) {
+      return res.json(reviewsCache.data);
+    }
+
+    try {
+      const data = await fetchGoogleReviews();
+      reviewsCache = { ts: Date.now(), data };
+      res.json(data);
+    } catch (e: any) {
+      // Return stale cache if available, otherwise empty
+      if (reviewsCache) {
+        return res.json(reviewsCache.data);
+      }
+      res.json({ reviews: [], averageRating: 4.8, totalReviews: 0 });
+    }
   });
 
   const httpServer = createServer(app);
