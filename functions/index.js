@@ -13,7 +13,7 @@ async function autoconfPost(endpoint, body = {}) {
   const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${AUTOCONF_BEARER}`,
+      Authorization: AUTOCONF_BEARER,
     },
     body: params,
   });
@@ -38,7 +38,7 @@ exports.autoconf = onRequest({ region: "southamerica-east1" }, async (req, res) 
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
 
   try {
-    const path = req.path.replace(/^\//, "");
+    const path = req.path.replace(/^\/*(api\/autoconf\/?)?/, "");
 
     if (path === "veiculos") {
       const data = await autoconfPost("/api/v1/veiculos", req.body || {});

@@ -106,7 +106,7 @@ async function autoconfPost(endpoint: string, body: Record<string, unknown> = {}
   const res = await fetch(`${AUTOCONF_API}${endpoint}`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${AUTOCONF_BEARER}`,
+      Authorization: AUTOCONF_BEARER,
     },
     body: params,
   });
