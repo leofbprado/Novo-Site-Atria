@@ -79,11 +79,30 @@ function makeSlug(v: { marca: string; modelo: string; ano_fabricacao: number; au
 // ── CRUD ─────────────────────────────────────────────────────────────────────
 
 function normalizeVeiculoAdmin(raw: Record<string, unknown>): VeiculoAdmin {
+  const fotos = normalizeFotos(raw.fotos);
   return {
     ...raw,
-    fotos: normalizeFotos(raw.fotos),
+    marca: (raw.marca as string) || "",
+    modelo: (raw.modelo as string) || "",
+    versao: (raw.versao as string) || "",
+    ano_fabricacao: Number(raw.ano_fabricacao) || 0,
+    ano_modelo: Number(raw.ano_modelo) || 0,
+    km: Number(raw.km) || 0,
+    preco: Number(raw.preco) || 0,
+    cor: (raw.cor as string) || "",
+    cambio: (raw.cambio as string) || "",
+    combustivel: (raw.combustivel as string) || "",
+    tipo: (raw.tipo as string) || "",
+    placa_final: (raw.placa_final as string) || "",
+    observacao: (raw.observacao as string) || "",
+    portas: Number(raw.portas) || 0,
+    status: (raw.status as string) || "rascunho",
+    tags: Array.isArray(raw.tags) ? raw.tags : [],
+    descricao_ia: (raw.descricao_ia as string) || "",
+    slug: (raw.slug as string) || "",
+    fotos,
     acessorios: normalizeAcessorios(raw.acessorios),
-    foto_principal: (raw.foto_principal as string) || normalizeFotos(raw.fotos)[0] || "",
+    foto_principal: (raw.foto_principal as string) || fotos[0] || "",
   } as VeiculoAdmin;
 }
 
