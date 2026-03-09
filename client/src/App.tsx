@@ -13,6 +13,7 @@ import Home from "@/pages/Home";
 // Lazy-loaded pages (below the fold / separate routes)
 const Estoque = lazy(() => import("@/pages/Estoque"));
 const VehicleDetail = lazy(() => import("@/pages/VehicleDetail"));
+const VendaSeuCarro = lazy(() => import("@/pages/VendaSeuCarro"));
 const Financiamento = lazy(() => import("@/pages/Financiamento"));
 const Sobre = lazy(() => import("@/pages/Sobre"));
 const Admin = lazy(() => import("@/pages/admin/Admin"));
@@ -40,6 +41,11 @@ function Router() {
         <Route path="/veiculo/:slug" component={() => (
           <Layout>
             <VehicleDetail />
+          </Layout>
+        )} />
+        <Route path="/venda-seu-carro" component={() => (
+          <Layout>
+            <VendaSeuCarro />
           </Layout>
         )} />
         <Route path="/financiamento" component={() => (

@@ -8,6 +8,7 @@ const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
 const NAV_LINKS = [
   { label: "Início", href: "/" },
   { label: "Estoque", href: "/estoque" },
+  { label: "Venda seu Carro", href: "/venda-seu-carro" },
   { label: "Financiamento", href: "/financiamento" },
   { label: "Sobre", href: "/sobre" },
   { label: "Contato", href: "#contato" },
