@@ -1,119 +1,237 @@
-// Base URL for Cloudinary brands folder with standardized transformations
-const CLOUDINARY_BASE = "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754490892/atria-veiculos/brands/atria-veiculos/brands";
+const L = "/images/brands";
 
 export const BRAND_REGISTRY = [
+  // ── Marcas com SVG local ─────────────────────────────────────────────────
   {
     name: "Volkswagen",
     slug: "volkswagen",
-    logo: `${CLOUDINARY_BASE}/volkswagen.png`,
-    synonyms: ["vw", "volkwagen", "volks", "volks wagen"]
+    logo: `${L}/volkswagen.svg`,
+    synonyms: ["vw", "volkwagen", "volks", "volks wagen"],
   },
   {
     name: "Chevrolet",
-    slug: "chevrolet", 
-    logo: `${CLOUDINARY_BASE}/chevrolet.png`,
-    synonyms: ["gm", "chevy", "chevro", "chevrolet brasil"]
+    slug: "chevrolet",
+    logo: `${L}/chevrolet.svg`,
+    synonyms: ["gm", "chevy", "chevro", "chevrolet brasil"],
   },
   {
     name: "Fiat",
     slug: "fiat",
-    logo: `${CLOUDINARY_BASE}/fiat.png`,
-    synonyms: []
+    logo: `${L}/fiat.svg`,
+    synonyms: [],
   },
   {
     name: "Ford",
     slug: "ford",
-    logo: `${CLOUDINARY_BASE}/ford.png`,
-    synonyms: []
+    logo: `${L}/ford.svg`,
+    synonyms: [],
   },
   {
     name: "Toyota",
     slug: "toyota",
-    logo: `${CLOUDINARY_BASE}/toyota.png`,
-    synonyms: []
+    logo: `${L}/toyota.svg`,
+    synonyms: [],
   },
   {
     name: "Honda",
     slug: "honda",
-    logo: `${CLOUDINARY_BASE}/honda.png`,
-    synonyms: []
+    logo: `${L}/honda.svg`,
+    synonyms: [],
   },
   {
     name: "Hyundai",
     slug: "hyundai",
-    logo: `${CLOUDINARY_BASE}/hyundai.png`,
-    synonyms: []
+    logo: `${L}/hyundai.svg`,
+    synonyms: [],
   },
   {
     name: "Jeep",
     slug: "jeep",
-    logo: `${CLOUDINARY_BASE}/jeep.png`,
-    synonyms: []
+    logo: `${L}/jeep.svg`,
+    synonyms: [],
   },
   {
     name: "Renault",
     slug: "renault",
-    logo: `${CLOUDINARY_BASE}/renault.png`,
-    synonyms: []
+    logo: `${L}/renault.svg`,
+    synonyms: [],
   },
   {
     name: "Peugeot",
     slug: "peugeot",
-    logo: `${CLOUDINARY_BASE}/peugeot.png`,
-    synonyms: []
+    logo: `${L}/peugeot.svg`,
+    synonyms: [],
   },
   {
     name: "Citroën",
     slug: "citroen",
-    logo: `${CLOUDINARY_BASE}/citroen.png`,
-    synonyms: ["citroen"]
+    logo: `${L}/citroen.svg`,
+    synonyms: ["citroen"],
   },
   {
     name: "Nissan",
     slug: "nissan",
-    logo: `https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754405165/atria-site/images/brands/nissan.png`,
-    synonyms: []
+    logo: `${L}/nissan.svg`,
+    synonyms: [],
   },
   {
     name: "KIA",
     slug: "kia",
-    logo: `${CLOUDINARY_BASE}/kia.png`,
-    synonyms: []
+    logo: `${L}/kia.svg`,
+    synonyms: [],
   },
   {
     name: "Suzuki",
     slug: "suzuki",
-    logo: `https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754405170/atria-site/images/brands/suzuki.png`,
-    synonyms: []
+    logo: `${L}/suzuki.svg`,
+    synonyms: [],
   },
   {
-    name: "Mini",
-    slug: "mini",
-    logo: `https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754405162/atria-site/images/brands/mini.png`,
-    synonyms: ["mini cooper"]
+    name: "Mitsubishi",
+    slug: "mitsubishi",
+    logo: `${L}/mitsubishi.svg`,
+    synonyms: [],
   },
   {
-    name: "Volvo",
-    slug: "volvo",
-    logo: `${CLOUDINARY_BASE}/volvo.png`,
-    synonyms: []
+    name: "BYD",
+    slug: "byd",
+    logo: `${L}/byd.svg`,
+    synonyms: [],
+  },
+  {
+    name: "GWM",
+    slug: "gwm",
+    logo: `${L}/gwm.svg`,
+    synonyms: ["great wall", "great wall motors", "haval"],
+  },
+  {
+    name: "MG",
+    slug: "mg",
+    logo: `${L}/mg.svg`,
+    synonyms: ["morris garages"],
+  },
+  {
+    name: "Changan",
+    slug: "changan",
+    logo: `${L}/changan.svg`,
+    synonyms: [],
   },
   {
     name: "JAC",
     slug: "jac",
-    logo: `${CLOUDINARY_BASE}/jac.png`,
-    synonyms: ["jac motors"]
-  },
-  {
-    name: "Lifan",
-    slug: "lifan",
-    logo: `https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754405251/atria-veiculos/images/brands/lifan-logo.png`,
-    synonyms: []
+    logo: `${L}/jac-motors.svg`,
+    synonyms: ["jac motors"],
   },
   {
     name: "CAOA Chery",
     slug: "caoa-chery",
-    logo: `https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754490899/atria-veiculos/brands/atria-veiculos/brands/caoa-chery.png`,
-    synonyms: ["chery", "caoa", "caoa chery"]
-  }
+    logo: `${L}/caoa-chery.svg`,
+    synonyms: ["caoa", "caoa chery"],
+  },
+  {
+    name: "Chery",
+    slug: "chery",
+    logo: `${L}/caoa-chery.svg`,
+    synonyms: [],
+  },
+  {
+    name: "Jetour",
+    slug: "jetour",
+    logo: `${L}/jetour.svg`,
+    synonyms: [],
+  },
+  {
+    name: "Jaecoo",
+    slug: "jaecoo",
+    logo: `${L}/jaecoo.svg`,
+    synonyms: [],
+  },
+  {
+    name: "Omoda",
+    slug: "omoda",
+    logo: `${L}/omoda.svg`,
+    synonyms: [],
+  },
+  {
+    name: "GAC",
+    slug: "gac",
+    logo: `${L}/gac.svg`,
+    synonyms: ["gac motors"],
+  },
+  {
+    name: "Avatr",
+    slug: "avatr",
+    logo: `${L}/avatr.svg`,
+    synonyms: [],
+  },
+  {
+    name: "Denza",
+    slug: "denza",
+    logo: `${L}/denza.svg`,
+    synonyms: [],
+  },
+  {
+    name: "Xpeng",
+    slug: "xpeng",
+    logo: `${L}/xpeng.svg`,
+    synonyms: [],
+  },
+  {
+    name: "Zeekr",
+    slug: "zeekr",
+    logo: `${L}/zeekr.svg`,
+    synonyms: [],
+  },
+
+  // ── Marcas com PNG local ─────────────────────────────────────────────────
+  {
+    name: "Audi",
+    slug: "audi",
+    logo: `${L}/audi.png`,
+    synonyms: [],
+  },
+  {
+    name: "Mercedes-Benz",
+    slug: "mercedes-benz",
+    logo: `${L}/mercedes-benz.png`,
+    synonyms: ["mercedes", "benz", "mb", "mercedes benz"],
+  },
+  {
+    name: "Mini",
+    slug: "mini",
+    logo: `${L}/mini.png`,
+    synonyms: ["mini cooper"],
+  },
+  {
+    name: "Volvo",
+    slug: "volvo",
+    logo: `${L}/volvo.png`,
+    synonyms: [],
+  },
+
+  // ── Sem arquivo local ainda (fallback Cloudinary) ────────────────────────
+  {
+    name: "BMW",
+    slug: "bmw",
+    logo: "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754490888/atria-veiculos/brands/atria-veiculos/brands/bmw.png",
+    synonyms: [],
+  },
+  {
+    name: "Lifan",
+    slug: "lifan",
+    logo: "https://res.cloudinary.com/dyngqkiyl/image/upload/f_auto,q_auto,w_100,h_100,c_fit/v1754405251/atria-veiculos/images/brands/lifan-logo.png",
+    synonyms: [],
+  },
+  {
+    name: "RAM",
+    slug: "ram",
+    logo: null,
+    synonyms: ["ram trucks", "dodge ram"],
+  },
+  {
+    name: "Haval",
+    slug: "haval",
+    logo: `${L}/gwm.svg`,
+    synonyms: [],
+  },
 ];

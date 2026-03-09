@@ -130,9 +130,6 @@ const Carousel = memo(function Carousel({
               <span className="font-barlow-condensed font-bold text-[9px] sm:text-xs md:text-sm text-gray-800 leading-tight text-center truncate w-full">
                 {card.brand}
               </span>
-              <span className="font-inter text-[7px] sm:text-[9px] md:text-[11px] text-gray-500 leading-none">
-                {card.count} {card.count === 1 ? "veiculo" : "veiculos"}
-              </span>
             </div>
           </motion.div>
         ))}

@@ -33,9 +33,15 @@ export default function BrandLogo({ brand, size = 24, title, className = "" }) {
     );
   }
 
+  // Só adiciona params de transformação para URLs do Cloudinary
+  const isCloudinary = url.includes("cloudinary.com");
+  const finalUrl = isCloudinary
+    ? `${url}${url.includes("?") ? "&" : "?"}h=${size}&w=${size}&c=fit&f=auto&q=auto`
+    : url;
+
   return (
     <img
-      src={`${url}${url.includes("?") ? "&" : "?"}h=${size}&w=${size}&c=fit&f=auto&q=auto`}
+      src={finalUrl}
       alt={label}
       title={title || label}
       className={`brand-logo ${className}`}
