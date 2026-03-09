@@ -1,5 +1,6 @@
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
+import { getAuth, Auth } from "firebase/auth";
 
 const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 
@@ -7,6 +8,7 @@ const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 // and firestore.ts will fall back to mock data.
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
+let auth: Auth | null = null;
 
 if (apiKey) {
   app = initializeApp({
@@ -18,7 +20,8 @@ if (apiKey) {
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
   });
   db = getFirestore(app);
+  auth = getAuth(app);
 }
 
-export { app, db };
+export { app, db, auth };
 export default app;

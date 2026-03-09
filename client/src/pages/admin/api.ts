@@ -1,15 +1,5 @@
 // Admin API client — calls server-side proxies (no credentials in browser)
 
-export function adminLogin(user: string, pass: string): Promise<boolean> {
-  return fetch("/api/admin/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user, pass }),
-  })
-    .then((r) => r.json())
-    .then((d) => d.ok === true);
-}
-
 // ── AutoConf types ───────────────────────────────────────────────────────────
 
 export interface AutoConfVeiculo {

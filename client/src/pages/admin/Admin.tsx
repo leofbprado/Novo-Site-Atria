@@ -7,12 +7,12 @@ import {
   Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu,
 } from "lucide-react";
 import {
-  adminLogin,
   fetchAutoConfVeiculos,
   fetchAutoConfVeiculo,
   generateDescription,
   type AutoConfVeiculo,
 } from "./api";
+import { useAuth } from "@/lib/auth";
 import {
   getAllAdminVeiculos,
   upsertVeiculoFromAutoConf,
@@ -54,24 +54,30 @@ const fmtDate = (ts: { toDate?: () => Date } | null) => {
 };
 
 // ── Login ────────────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [user, setUser] = useState("");
+function LoginScreen() {
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     try {
-      const ok = await adminLogin(user, pass);
-      if (ok) {
-        sessionStorage.setItem("admin_auth", "1");
-        onLogin();
+      await login(email, pass);
+    } catch (err: any) {
+      const code = err?.code || "";
+      if (code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password") {
+        setError("E-mail ou senha inválidos");
+      } else if (code === "auth/too-many-requests") {
+        setError("Muitas tentativas. Tente novamente em alguns minutos.");
       } else {
-        setError("Usuario ou senha invalidos");
+        setError("Erro ao autenticar. Verifique suas credenciais.");
       }
-    } catch {
-      setError("Erro ao conectar com o servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,8 +96,8 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
         <h1 className="text-lg font-semibold text-white mb-0.5 text-center">Painel Administrativo</h1>
         <p className="text-slate-500 text-sm text-center mb-8">Acesso restrito</p>
 
-        <label className="block text-slate-400 text-xs uppercase tracking-wider mb-1.5 font-medium">Usuario</label>
-        <input type="text" value={user} onChange={(e) => setUser(e.target.value)} placeholder="admin"
+        <label className="block text-slate-400 text-xs uppercase tracking-wider mb-1.5 font-medium">E-mail</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@atriaveiculos.com.br"
           className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition mb-4 placeholder:text-white/20" autoFocus />
 
         <label className="block text-slate-400 text-xs uppercase tracking-wider mb-1.5 font-medium">Senha</label>
@@ -106,8 +112,9 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </motion.div>
         )}
 
-        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg transition-all text-sm">
-          Entrar
+        <button type="submit" disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-all text-sm">
+          {loading ? "Entrando..." : "Entrar"}
         </button>
       </motion.form>
     </div>
@@ -1110,8 +1117,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     getAdminConfig().then((c) => setOpenaiKey(c.openai_key || "")).catch(() => {});
   }, []);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("admin_auth");
+  const { logout } = useAuth();
+  const handleLogout = async () => {
+    await logout();
     onLogout();
   };
 
@@ -1151,7 +1159,16 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
-  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
-  return <Dashboard onLogout={() => setAuthed(false)} />;
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Spinner size={28} />
+      </div>
+    );
+  }
+
+  if (!user) return <LoginScreen />;
+  return <Dashboard onLogout={() => {}} />;
 }
