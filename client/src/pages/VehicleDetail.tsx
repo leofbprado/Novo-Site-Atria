@@ -8,6 +8,7 @@ import {
   Cog, Users, TrendingDown,
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
 const WA_NUMBER = "5519996525211";
@@ -433,6 +434,52 @@ function FichaTecnica({ v }: { v: Vehicle }) {
   );
 }
 
+// ---- Dados Técnicos (accordion, only if data exists) -----------------------
+const TECH_SPEC_LABELS: { key: string; label: string; unit: string }[] = [
+  { key: "potenciaCv", label: "Potência", unit: " cv" },
+  { key: "torqueKgfM", label: "Torque", unit: " kgf·m" },
+  { key: "comprimentoMm", label: "Comprimento", unit: " mm" },
+  { key: "larguraMm", label: "Largura", unit: " mm" },
+  { key: "alturaMm", label: "Altura", unit: " mm" },
+  { key: "entreEixosMm", label: "Entre-eixos", unit: " mm" },
+  { key: "pesoKg", label: "Peso", unit: " kg" },
+  { key: "portaMalasLitros", label: "Porta-malas", unit: " litros" },
+  { key: "tanqueLitros", label: "Tanque", unit: " litros" },
+  { key: "consumoCidadeKmL", label: "Consumo (cidade)", unit: " km/l" },
+  { key: "consumoEstradaKmL", label: "Consumo (estrada)", unit: " km/l" },
+];
+
+function DadosTecnicos({ v }: { v: Vehicle }) {
+  const specs = v.technical_specs;
+  if (!specs) return null;
+
+  const rows = TECH_SPEC_LABELS
+    .filter(({ key }) => (specs as any)[key] != null)
+    .map(({ key, label, unit }) => ({ label, value: `${(specs as any)[key].toLocaleString("pt-BR")}${unit}` }));
+
+  if (rows.length === 0) return null;
+
+  return (
+    <Accordion type="single" collapsible>
+      <AccordionItem value="dados-tecnicos" className="border rounded-lg px-4">
+        <AccordionTrigger className="font-barlow-condensed font-bold text-xl text-atria-text-dark uppercase tracking-wide hover:no-underline">
+          Dados Técnicos
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {rows.map((r) => (
+              <div key={r.label} className="flex justify-between border-b border-gray-100 pb-2">
+                <span className="font-inter text-sm text-atria-text-gray">{r.label}</span>
+                <span className="font-inter text-sm font-semibold text-atria-text-dark">{r.value}</span>
+              </div>
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
 // ---- Financing Section (Credere Plugin) -------------------------------------
 function FinancingSection({ v }: { v: Vehicle }) {
   return (
@@ -730,6 +777,9 @@ export default function VehicleDetail() {
 
             {/* Ficha Tecnica */}
             <FichaTecnica v={vehicle} />
+
+            {/* Dados Técnicos */}
+            <DadosTecnicos v={vehicle} />
 
             {/* Opcionais */}
             {vehicle.opcionais && vehicle.opcionais.length > 0 && (

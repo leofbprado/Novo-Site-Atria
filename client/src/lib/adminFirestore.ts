@@ -41,6 +41,11 @@ export interface VeiculoAdmin {
   slug: string;
   data_importacao: Timestamp | null;
   data_publicacao: Timestamp | null;
+  technical_specs?: Record<string, number>;
+  disclaimer?: string;
+  highlights?: string[];
+  bloco_final?: string;
+  descricao_final?: string;
 }
 
 const COLLECTION = "veiculos_admin";
@@ -205,6 +210,14 @@ export async function updateVeiculoTags(autoconfId: number, tags: string[]): Pro
 export async function updateVeiculoDescricao(autoconfId: number, descricao_ia: string): Promise<void> {
   const firestore = requireDb();
   await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { descricao_ia });
+}
+
+export async function updateVeiculoTechnicalSpecs(
+  autoconfId: number,
+  technical_specs: Record<string, string | number>,
+): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { technical_specs });
 }
 
 export async function publishVeiculo(autoconfId: number): Promise<void> {

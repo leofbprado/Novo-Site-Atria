@@ -18,6 +18,7 @@ import {
   upsertVeiculoFromAutoConf,
   updateVeiculoTags,
   updateVeiculoDescricao,
+  updateVeiculoTechnicalSpecs,
   publishVeiculo,
   unpublishVeiculo,
   getAdminConfig,
@@ -182,11 +183,25 @@ function EmptyState({ icon, title, description }: { icon: React.ReactNode; title
   );
 }
 
-// ── Vehicle Modal ────────────────────────────────────────────────────────────
-function VehicleModal({
-  vehicle, openaiKey, onClose, onUpdate,
+// ── Vehicle Detail Page (full-page, replaces modal) ─────────────────────────
+const SPEC_FIELDS = [
+  { key: "potenciaCv", label: "Potência (cv)", placeholder: "139" },
+  { key: "torqueKgfM", label: "Torque (kgf·m)", placeholder: "19.3" },
+  { key: "comprimentoMm", label: "Comprimento (mm)", placeholder: "4361" },
+  { key: "larguraMm", label: "Largura (mm)", placeholder: "1800" },
+  { key: "alturaMm", label: "Altura (mm)", placeholder: "1460" },
+  { key: "entreEixosMm", label: "Entre-eixos (mm)", placeholder: "2620" },
+  { key: "pesoKg", label: "Peso (kg)", placeholder: "1250" },
+  { key: "portaMalasLitros", label: "Porta-malas (L)", placeholder: "520" },
+  { key: "tanqueLitros", label: "Tanque (L)", placeholder: "50" },
+  { key: "consumoCidadeKmL", label: "Consumo urbano (km/l)", placeholder: "12.5" },
+  { key: "consumoEstradaKmL", label: "Consumo rodov. (km/l)", placeholder: "14.8" },
+];
+
+function VehicleDetailPage({
+  vehicle, openaiKey, onBack, onUpdate,
 }: {
-  vehicle: VeiculoAdmin; openaiKey: string; onClose: () => void; onUpdate: () => void;
+  vehicle: VeiculoAdmin; openaiKey: string; onBack: () => void; onUpdate: () => void;
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const [tags, setTags] = useState<string[]>(vehicle.tags || []);
@@ -196,6 +211,14 @@ function VehicleModal({
   const [aiError, setAiError] = useState("");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [specs, setSpecs] = useState<Record<string, string>>(
+    Object.fromEntries(
+      Object.entries(vehicle.technical_specs || {}).map(([k, v]) => [k, String(v ?? "")])
+    )
+  );
+  const [savingSpecs, setSavingSpecs] = useState(false);
+  const [disclaimer, setDisclaimer] = useState(vehicle.disclaimer || "");
+  const [highlights, setHighlights] = useState((vehicle.highlights || []).join("\n"));
 
   const handleAddTag = (tag: string) => {
     const t = tag.trim().toLowerCase();
@@ -231,48 +254,64 @@ function VehicleModal({
   const handleSaveDescricao = async () => {
     setSaving(true);
     await updateVeiculoDescricao(vehicle.autoconf_id, descricao);
-    setSaving(false); onUpdate();
+    setSaving(false);
+  };
+
+  const handleSaveSpecs = async () => {
+    setSavingSpecs(true);
+    const cleaned: Record<string, string | number> = {};
+    for (const [k, v] of Object.entries(specs)) {
+      if (v.trim()) cleaned[k] = v;
+    }
+    await updateVeiculoTechnicalSpecs(vehicle.autoconf_id, cleaned);
+    setSavingSpecs(false);
   };
 
   const handlePublish = async () => {
     setPublishing(true);
     if (vehicle.status === "publicado") await unpublishVeiculo(vehicle.autoconf_id);
     else await publishVeiculo(vehicle.autoconf_id);
-    setPublishing(false); onUpdate(); onClose();
+    setPublishing(false); onUpdate(); onBack();
   };
 
   const fotos = vehicle.fotos?.length ? vehicle.fotos : vehicle.foto_principal ? [vehicle.foto_principal] : [];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center p-4 pt-[5vh] overflow-y-auto" onClick={onClose}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.97 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 my-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+    <div className="space-y-6">
+      {/* Header with back button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack}
+            className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm font-medium transition">
+            <ChevronLeft size={18} /> Voltar ao estoque
+          </button>
+          <div className="h-6 w-px bg-slate-200" />
           <div>
-            <h2 className="text-lg font-bold text-slate-900">{vehicle.marca} {vehicle.modelo}</h2>
-            <p className="text-slate-500 text-sm">{vehicle.versao}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge status={vehicle.status} />
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition">
-              <X size={18} />
-            </button>
+            <h1 className="text-2xl font-bold text-slate-900">{vehicle.marca} {vehicle.modelo}</h1>
+            <p className="text-slate-500 text-sm">{vehicle.versao} &middot; ID: {vehicle.autoconf_id}</p>
           </div>
         </div>
+        <div className="flex items-center gap-3">
+          <Badge status={vehicle.status} />
+          <button onClick={handlePublish} disabled={publishing}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+              vehicle.status === "publicado"
+                ? "bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white"
+            } disabled:opacity-50`}>
+            {publishing ? <Spinner size={14} /> : vehicle.status === "publicado" ? <EyeOff size={14} /> : <Eye size={14} />}
+            {publishing ? "Processando..." : vehicle.status === "publicado" ? "Despublicar" : "Publicar"}
+          </button>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
-          {/* Left: Photos */}
-          <div className="lg:col-span-3 p-6 border-b lg:border-b-0 lg:border-r border-slate-100">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Column 1: Photos + Basic Info */}
+        <div className="xl:col-span-1 space-y-4">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             {fotos.length > 0 && (
-              <div className="space-y-3">
-                <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-100">
+              <div>
+                <div className="relative aspect-[16/10] bg-slate-100">
                   <img src={fotos[photoIdx]} alt="" className="w-full h-full object-cover" />
                   {fotos.length > 1 && (
                     <>
@@ -291,10 +330,10 @@ function VehicleModal({
                   </span>
                 </div>
                 {fotos.length > 1 && (
-                  <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  <div className="flex gap-1 p-2 overflow-x-auto">
                     {fotos.map((f, i) => (
                       <button key={i} onClick={() => setPhotoIdx(i)}
-                        className={`flex-shrink-0 w-16 h-11 rounded-lg overflow-hidden border-2 transition ${i === photoIdx ? "border-blue-500" : "border-transparent opacity-50 hover:opacity-80"}`}>
+                        className={`flex-shrink-0 w-14 h-10 rounded-md overflow-hidden border-2 transition ${i === photoIdx ? "border-blue-500" : "border-transparent opacity-50 hover:opacity-80"}`}>
                         <img src={f} alt="" className="w-full h-full object-cover" />
                       </button>
                     ))}
@@ -302,104 +341,163 @@ function VehicleModal({
                 )}
               </div>
             )}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-slate-900">{fmt(vehicle.preco)}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  ["Ano", `${vehicle.ano_fabricacao}/${vehicle.ano_modelo}`],
+                  ["KM", fmtKm(vehicle.km)],
+                  ["Cambio", vehicle.cambio],
+                  ["Combustivel", vehicle.combustivel],
+                  ["Cor", vehicle.cor],
+                  ["Portas", String(vehicle.portas || "-")],
+                ].map(([l, v]) => (
+                  <div key={String(l)} className="bg-slate-50 rounded-lg px-3 py-2">
+                    <p className="text-slate-400 text-[10px] uppercase tracking-wider">{l}</p>
+                    <p className="text-slate-800 text-sm font-medium">{String(v)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
-            {/* Specs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-              {[
-                ["Ano", `${vehicle.ano_fabricacao}/${vehicle.ano_modelo}`],
-                ["KM", fmtKm(vehicle.km)],
-                ["Cambio", vehicle.cambio],
-                ["Combustivel", vehicle.combustivel],
-              ].map(([l, v]) => (
-                <div key={String(l)} className="bg-slate-50 rounded-lg px-3 py-2">
-                  <p className="text-slate-400 text-[10px] uppercase tracking-wider">{l}</p>
-                  <p className="text-slate-800 text-sm font-medium">{String(v)}</p>
+          {/* Tags */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Tags</label>
+            <div className="flex flex-wrap gap-1.5 mb-2.5">
+              {tags.map((tag) => <TagChip key={tag} tag={tag} onRemove={() => handleRemoveTag(tag)} />)}
+              {tags.length === 0 && <span className="text-slate-400 text-xs">Nenhuma tag</span>}
+            </div>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {PRESET_TAGS.filter((t) => !tags.includes(t)).map((tag) => (
+                <button key={tag} onClick={() => handleAddTag(tag)}
+                  className="px-2 py-0.5 rounded-full text-[11px] border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition">
+                  + {tag}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag(newTag))}
+                placeholder="Tag customizada..."
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
+              <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim()}
+                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 px-3 py-1.5 rounded-lg text-xs text-slate-700 transition font-medium">
+                <Tag size={12} />
+              </button>
+            </div>
+          </div>
+
+          {/* Accessories */}
+          {vehicle.acessorios && vehicle.acessorios.length > 0 && (
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">
+                Acessorios ({vehicle.acessorios.length})
+              </label>
+              <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
+                {vehicle.acessorios.map((a) => (
+                  <span key={a} className="bg-slate-50 text-slate-600 text-[11px] px-2 py-0.5 rounded-full border border-slate-100">{a}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Column 2: Description + Highlights + Disclaimer */}
+        <div className="xl:col-span-1 space-y-4">
+          {/* AI Description */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium">Descricao IA</label>
+              <button onClick={handleGenerateAI} disabled={generating}
+                className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
+                {generating ? <><Spinner size={12} /> Gerando...</> : <><Sparkles size={12} /> Gerar com IA</>}
+              </button>
+            </div>
+            {aiError && <p className="text-red-500 text-xs mb-2 flex items-center gap-1"><AlertCircle size={11} /> {aiError}</p>}
+            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={6}
+              placeholder="Descricao do veiculo..."
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
+            <button onClick={handleSaveDescricao} disabled={saving}
+              className="mt-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs px-4 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
+              {saving ? <Spinner size={12} /> : <Save size={12} />}
+              {saving ? "Salvando..." : "Salvar descricao"}
+            </button>
+          </div>
+
+          {/* Highlights */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-3">
+              Highlights (um por linha)
+            </label>
+            <textarea value={highlights} onChange={(e) => setHighlights(e.target.value)} rows={4}
+              placeholder={"IPVA 2025 pago\nUnico dono\nRevisoes em dia"}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
+            {highlights && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {highlights.split("\n").filter(Boolean).map((h, i) => (
+                  <span key={i} className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full border border-emerald-200">{h}</span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Disclaimer */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-3">
+              Disclaimer
+            </label>
+            <textarea value={disclaimer} onChange={(e) => setDisclaimer(e.target.value)} rows={3}
+              placeholder="Valores sujeitos a alteracao sem aviso previo..."
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
+          </div>
+        </div>
+
+        {/* Column 3: Technical Specs */}
+        <div className="xl:col-span-1 space-y-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-3">
+              Especificações Técnicas
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {SPEC_FIELDS.map(({ key, label, placeholder }) => (
+                <div key={key}>
+                  <label className="text-slate-500 text-[11px] block mb-1">{label}</label>
+                  <input
+                    type="text"
+                    value={specs[key] || ""}
+                    onChange={(e) => setSpecs((prev) => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10"
+                  />
                 </div>
               ))}
             </div>
-
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-              <p className="text-2xl font-bold text-slate-900">{fmt(vehicle.preco)}</p>
-              <p className="text-slate-400 text-xs">ID: {vehicle.autoconf_id}</p>
-            </div>
-          </div>
-
-          {/* Right: Tags + Description + Actions */}
-          <div className="lg:col-span-2 p-6 space-y-5">
-            {/* Tags */}
-            <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Tags</label>
-              <div className="flex flex-wrap gap-1.5 mb-2.5">
-                {tags.map((tag) => <TagChip key={tag} tag={tag} onRemove={() => handleRemoveTag(tag)} />)}
-                {tags.length === 0 && <span className="text-slate-400 text-xs">Nenhuma tag</span>}
-              </div>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {PRESET_TAGS.filter((t) => !tags.includes(t)).map((tag) => (
-                  <button key={tag} onClick={() => handleAddTag(tag)}
-                    className="px-2 py-0.5 rounded-full text-[11px] border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition">
-                    + {tag}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1.5">
-                <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag(newTag))}
-                  placeholder="Tag customizada..."
-                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
-                <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim()}
-                  className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 px-3 py-1.5 rounded-lg text-xs text-slate-700 transition font-medium">
-                  <Tag size={12} />
-                </button>
-              </div>
-            </div>
-
-            {/* AI Description */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-slate-500 text-xs uppercase tracking-wider font-medium">Descricao</label>
-                <button onClick={handleGenerateAI} disabled={generating}
-                  className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
-                  {generating ? <><Spinner size={12} /> Gerando...</> : <><Sparkles size={12} /> Gerar com IA</>}
-                </button>
-              </div>
-              {aiError && <p className="text-red-500 text-xs mb-1.5 flex items-center gap-1"><AlertCircle size={11} /> {aiError}</p>}
-              <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={4}
-                placeholder="Descricao do veiculo..."
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
-              <button onClick={handleSaveDescricao} disabled={saving}
-                className="mt-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs px-4 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
-                {saving ? <Spinner size={12} /> : <Save size={12} />}
-                {saving ? "Salvando..." : "Salvar"}
-              </button>
-            </div>
-
-            {/* Accessories */}
-            {vehicle.acessorios && vehicle.acessorios.length > 0 && (
-              <div>
-                <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">
-                  Acessorios ({vehicle.acessorios.length})
-                </label>
-                <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto">
-                  {vehicle.acessorios.map((a) => (
-                    <span key={a} className="bg-slate-50 text-slate-600 text-[11px] px-2 py-0.5 rounded-full border border-slate-100">{a}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Publish action */}
-            <button onClick={handlePublish} disabled={publishing}
-              className={`w-full py-2.5 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 ${
-                vehicle.status === "publicado"
-                  ? "bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200"
-                  : "bg-emerald-600 hover:bg-emerald-500 text-white"
-              } disabled:opacity-50`}>
-              {publishing ? <Spinner size={14} /> : vehicle.status === "publicado" ? <EyeOff size={14} /> : <Eye size={14} />}
-              {publishing ? "Processando..." : vehicle.status === "publicado" ? "Despublicar" : "Publicar no site"}
+            <button onClick={handleSaveSpecs} disabled={savingSpecs}
+              className="mt-4 w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition font-medium flex items-center justify-center gap-2">
+              {savingSpecs ? <Spinner size={14} /> : <Save size={14} />}
+              {savingSpecs ? "Salvando..." : "Salvar especificações"}
             </button>
           </div>
+
+          {/* Quick preview of existing values */}
+          {Object.values(specs).some((v) => v) && (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2">Preview</p>
+              <div className="space-y-1">
+                {SPEC_FIELDS.filter(({ key }) => specs[key]).map(({ key, label }) => (
+                  <div key={key} className="flex justify-between text-sm">
+                    <span className="text-slate-500">{label.replace(/\s*\(.*\)/, "")}</span>
+                    <span className="text-slate-800 font-medium">{specs[key]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -633,7 +731,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
     setImportingAll(false);
   };
 
-  return (
+  const listView = (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -780,19 +878,22 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
         </div>
       )}
 
-      {/* Modal */}
-      <AnimatePresence>
-        {selectedVehicle && (
-          <VehicleModal
-            vehicle={selectedVehicle}
-            openaiKey={openaiKey}
-            onClose={() => setSelectedVehicle(null)}
-            onUpdate={() => { loadVehicles(); setSelectedVehicle(null); }}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
+
+  // If a vehicle is selected, show full detail page instead of list
+  if (selectedVehicle) {
+    return (
+      <VehicleDetailPage
+        vehicle={selectedVehicle}
+        openaiKey={openaiKey}
+        onBack={() => setSelectedVehicle(null)}
+        onUpdate={() => { loadVehicles(); setSelectedVehicle(null); }}
+      />
+    );
+  }
+
+  return listView;
 }
 
 // ── Leads Page ───────────────────────────────────────────────────────────────

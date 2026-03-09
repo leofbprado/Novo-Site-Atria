@@ -51,6 +51,7 @@ export interface Vehicle {
   destaque: boolean;
   slug: string;
   createdAt: Date;
+  technical_specs?: Record<string, number>;
 }
 
 // ── Convert VeiculoAdmin → Vehicle ──────────────────────────────────────────
@@ -86,6 +87,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     destaque: (v.tags || []).includes("destaque"),
     slug: v.slug || "",
     createdAt: v.data_importacao?.toDate?.() || new Date(),
+    ...(v.technical_specs ? { technical_specs: v.technical_specs } : {}),
   };
 }
 
