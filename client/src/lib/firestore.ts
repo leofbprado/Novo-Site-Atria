@@ -52,6 +52,9 @@ export interface Vehicle {
   slug: string;
   createdAt: Date;
   technical_specs?: Record<string, number>;
+  disclaimer?: string;
+  highlights?: string[];
+  bloco_final?: string;
 }
 
 // ── Convert VeiculoAdmin → Vehicle ──────────────────────────────────────────
@@ -88,6 +91,9 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     slug: v.slug || "",
     createdAt: v.data_importacao?.toDate?.() || new Date(),
     ...(v.technical_specs ? { technical_specs: v.technical_specs } : {}),
+    ...(v.disclaimer ? { disclaimer: v.disclaimer } : {}),
+    ...(v.highlights?.length ? { highlights: v.highlights } : {}),
+    ...(v.bloco_final ? { bloco_final: v.bloco_final } : {}),
   };
 }
 

@@ -791,6 +791,18 @@ export default function VehicleDetail() {
               </section>
             )}
 
+            {/* Disclaimer */}
+            {(vehicle.bloco_final || vehicle.disclaimer) && (
+              <section className="bg-atria-gray-light border border-atria-gray-medium rounded-xl p-5 space-y-2">
+                {vehicle.bloco_final && (
+                  <p className="font-inter text-sm font-bold text-atria-text-dark">{vehicle.bloco_final}</p>
+                )}
+                {vehicle.disclaimer && (
+                  <p className="font-inter text-xs text-atria-text-gray leading-relaxed">{vehicle.disclaimer}</p>
+                )}
+              </section>
+            )}
+
             {/* Compact Lead Capture */}
             <CompactLeadCapture v={vehicle} />
 
