@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/codespace/**)",
+      "Read(//root/**)",
+      "Read(//home/**)",
+      "Bash(gh run list --limit 3)",
+      "Bash(npx tsc --noEmit --project client/tsconfig.json)",
+      "Bash(npm install firebase-admin --no-save)"
+    ]
+  }
+}
