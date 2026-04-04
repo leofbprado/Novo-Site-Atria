@@ -31,7 +31,7 @@ const LINKS = {
   ],
   atendimento: [
     { label: "WhatsApp", href: WA },
-    { label: "Contato", href: "#contato" },
+    { label: "Contato", href: "/sobre#contato" },
     { label: "Financiamento", href: "/financiamento" },
     { label: "Avaliação do Seu Carro", href: "/avaliacao" },
   ],

@@ -250,6 +250,24 @@ export async function saveAdminConfig(config: { openai_key: string }): Promise<v
   await setDoc(doc(firestore, CONFIG_COLLECTION, "admin"), config, { merge: true });
 }
 
+// ── Milestone Config ────────────────────────────────────────────────────────
+
+export interface MilestoneConfig {
+  dias: number[];
+}
+
+export async function getMilestoneConfig(): Promise<MilestoneConfig> {
+  const firestore = requireDb();
+  const snap = await getDoc(doc(firestore, CONFIG_COLLECTION, "milestones"));
+  if (snap.exists()) return snap.data() as MilestoneConfig;
+  return { dias: [7, 20, 40, 60] };
+}
+
+export async function saveMilestoneConfig(config: MilestoneConfig): Promise<void> {
+  const firestore = requireDb();
+  await setDoc(doc(firestore, CONFIG_COLLECTION, "milestones"), config, { merge: true });
+}
+
 // ── Leads ───────────────────────────────────────────────────────────────────
 
 export interface LeadAdmin {

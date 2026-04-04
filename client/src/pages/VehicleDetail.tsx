@@ -23,16 +23,25 @@ function calcParcela(preco: number, entradaPct: number, meses: number): number {
 }
 
 // ---- SEO --------------------------------------------------------------------
+import { useSEO } from "@/hooks/useSEO";
+import { SITE_URL } from "@/lib/constants";
+import { trackVehicleEvent } from "@/lib/vehicleAnalytics";
+
 function useVehicleSEO(v: Vehicle | null) {
+  useSEO({
+    title: v
+      ? `Comprar ${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} Usado Seminovo em Campinas SP | Átria Veículos`
+      : "Veículo | Átria Veículos",
+    description: v
+      ? `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} com ${fmtKm(v.km)} por ${fmt(v.preco)}. Financiamento facilitado, garantia e procedência verificada. Átria Veículos Campinas.`
+      : "Veículo seminovo na Átria Veículos em Campinas SP.",
+    path: v ? `/veiculo/${v.slug}` : "/estoque",
+    ogImage: v?.fotos?.[0],
+    ogType: "product",
+  });
+
   useEffect(() => {
     if (!v) return;
-    const title = `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} | Atria Veiculos`;
-    document.title = title;
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", `${v.marca} ${v.modelo} ${v.ano}, ${fmtKm(v.km)}, ${fmt(v.preco)}. ${v.descricao.slice(0, 120)}`);
-    const ogImg = document.querySelector('meta[property="og:image"]');
-    if (ogImg && v.fotos[0]) ogImg.setAttribute("content", v.fotos[0]);
-
     const old = document.getElementById("schema-vehicle");
     if (old) old.remove();
     const schema = {
@@ -43,6 +52,11 @@ function useVehicleSEO(v: Vehicle | null) {
       "model": v.modelo,
       "vehicleModelDate": String(v.ano),
       "color": v.cor,
+      "vehicleTransmission": v.cambio,
+      "fuelType": v.combustivel,
+      "numberOfDoors": v.portas,
+      "itemCondition": "https://schema.org/UsedCondition",
+      "url": `${SITE_URL}/veiculo/${v.slug}`,
       "mileageFromOdometer": { "@type": "QuantitativeValue", "value": v.km, "unitCode": "KMT" },
       "image": v.fotos,
       "description": v.descricao,
@@ -51,7 +65,11 @@ function useVehicleSEO(v: Vehicle | null) {
         "price": v.preco,
         "priceCurrency": "BRL",
         "availability": "https://schema.org/InStock",
-        "seller": { "@type": "AutoDealer", "name": "Atria Veiculos" },
+        "seller": {
+          "@type": "AutoDealer",
+          "name": "Átria Veículos",
+          "url": SITE_URL,
+        },
       },
     };
     const s = document.createElement("script");
@@ -86,10 +104,10 @@ function generateBadges(v: Vehicle): AIBadge[] {
     badges.push({ icon: <TrendingDown size={14} />, label: "Baixa km" });
   }
   if (versaoLower.includes("4x4") || opcionaisLower.includes("4x4") || descLower.includes("4x4")) {
-    badges.push({ icon: <Mountain size={14} />, label: "Tracao integral" });
+    badges.push({ icon: <Mountain size={14} />, label: "Tração integral" });
   }
   if (v.cambio === "Autom\u00e1tica" || v.cambio === "CVT") {
-    badges.push({ icon: <Cog size={14} />, label: "Cambio automatico" });
+    badges.push({ icon: <Cog size={14} />, label: "Câmbio automático" });
   }
   if (descLower.includes("7 lugares") || opcionaisLower.includes("7 lugares")) {
     badges.push({ icon: <Users size={14} />, label: "7 lugares" });
@@ -98,7 +116,7 @@ function generateBadges(v: Vehicle): AIBadge[] {
     badges.push({ icon: <Calendar size={14} />, label: "Seminovo recente" });
   }
   if (v.tipo === "SUV" || v.tipo === "Pickup") {
-    badges.push({ icon: <Car size={14} />, label: "Versatil" });
+    badges.push({ icon: <Car size={14} />, label: "Versátil" });
   }
 
   return badges.slice(0, 3);
@@ -151,7 +169,7 @@ function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
             <button
               onClick={() => navigate(1)}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-              aria-label="Proxima foto"
+              aria-label="Próxima foto"
             >
               <ChevronRight size={20} />
             </button>
@@ -188,7 +206,7 @@ const CATEGORIAS_OPCIONAIS = [
   { label: "Conforto", keywords: ["ar-condicionado", "direcao", "vidros", "travas", "banco", "teto solar", "volante", "retrovisor", "piloto", "ventilado", "aquecido"] },
   { label: "Seguranca", keywords: ["airbag", "abs", "sensor de estacion", "camera", "freio", "estabilidade", "isofix", "lane", "safety", "cmbs", "lka", "pcs", "frenagem"] },
   { label: "Multimidia", keywords: ["tela", "bluetooth", "usb", "apple carplay", "android auto", "som", "mylink", "uconnect", "mmi", "mbux", "sync", "discover", "carplay"] },
-  { label: "Exterior", keywords: ["farol", "rodas", "spoiler", "pintura", "escape", "tracao", "bloqueio"] },
+  { label: "Exterior", keywords: ["farol", "rodas", "spoiler", "pintura", "escape", "tração", "bloqueio"] },
 ];
 
 function categorizarOpcionais(opcionais: string[]): Record<string, string[]> {
@@ -275,9 +293,11 @@ function PricePanel({ v }: { v: Vehicle }) {
 
   const handleAgendar = async () => {
     await saveLead({ source: "vehicle-agendar", whatsapp: "", query: titulo, dados: { slug: v.slug, preco: v.preco } });
+    trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
+    trackVehicleEvent(v.slug, "lead").catch(() => {});
     setAgendarDone(true);
     setTimeout(() => {
-      window.open(waLink(`Ola! Gostaria de agendar uma visita para ver o ${titulo} ${v.ano} (${fmt(v.preco)}). Qual a disponibilidade?`), "_blank");
+      window.open(waLink(`Olá! Gostaria de agendar uma visita para ver o ${titulo} ${v.ano} (${fmt(v.preco)}). Qual a disponibilidade?`), "_blank");
     }, 300);
   };
 
@@ -309,9 +329,10 @@ function PricePanel({ v }: { v: Vehicle }) {
 
         {/* WhatsApp CTA */}
         <a
-          href={waLink(`Ola! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Atria Veiculos e tenho interesse! Codigo: ${v.slug}`)}
+          href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Átria Veículos e tenho interesse! Código: ${v.slug}`)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {})}
           className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-colors flex items-center justify-center gap-2 block text-center shadow-lg shadow-green-500/20"
         >
           <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -339,7 +360,7 @@ function PricePanel({ v }: { v: Vehicle }) {
 
         {/* Scroll to financing */}
         <button
-          onClick={() => document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" })}
+          onClick={() => { trackVehicleEvent(v.slug, "clique_financiamento").catch(() => {}); document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" }); }}
           className="w-full font-inter text-sm text-atria-navy hover:text-atria-navy-dark underline underline-offset-2 transition-colors py-1"
         >
           Simular financiamento com CPF
@@ -348,7 +369,7 @@ function PricePanel({ v }: { v: Vehicle }) {
         {/* Trust seals */}
         <div className="border-t border-atria-gray-medium pt-4 space-y-2.5">
           {[
-            { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veiculo inspecionado com laudo" },
+            { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veículo inspecionado com laudo" },
             { icon: <Star size={16} className="text-atria-yellow" />, text: "Garantia de 90 dias" },
             { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
             { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
@@ -390,8 +411,8 @@ function FichaTecnica({ v }: { v: Vehicle }) {
   }
 
   function cambioSubtext(): string | null {
-    if (v.cambio === "Autom\u00e1tica") return "Conforto no transito urbano";
-    if (v.cambio === "CVT") return "Transicoes suaves, economia otimizada";
+    if (v.cambio === "Autom\u00e1tica") return "Conforto no trânsito urbano";
+    if (v.cambio === "CVT") return "Transições suaves, economia otimizada";
     return null;
   }
 
@@ -405,7 +426,7 @@ function FichaTecnica({ v }: { v: Vehicle }) {
   const specs = [
     { icon: <Fuel size={16} />, label: "Motor", value: motorFallback, sub: motorSubtext() },
     { icon: <Gauge size={16} />, label: "Quilometragem", value: fmtKm(v.km), sub: kmSubtext() },
-    { icon: <Settings size={16} />, label: "Cambio", value: v.cambio, sub: cambioSubtext() },
+    { icon: <Settings size={16} />, label: "Câmbio", value: v.cambio, sub: cambioSubtext() },
     { icon: <Fuel size={16} />, label: "Combustivel", value: v.combustivel, sub: combustivelSubtext() },
     { icon: <Palette size={16} />, label: "Cor", value: v.cor, sub: null },
     { icon: <DoorOpen size={16} />, label: "Portas", value: v.portas ? `${v.portas} portas` : "-", sub: null },
@@ -518,6 +539,7 @@ function CompactLeadCapture({ v }: { v: Vehicle }) {
       query: titulo,
       dados: { email: form.email, slug: v.slug, preco: v.preco },
     });
+    trackVehicleEvent(v.slug, "lead").catch(() => {});
     setSent(true);
   };
 
@@ -534,7 +556,7 @@ function CompactLeadCapture({ v }: { v: Vehicle }) {
     <div className="bg-[#F0F4FF] border border-[#D0DCFF] rounded-xl px-5 py-4">
       <div className="flex items-center gap-2 mb-2">
         <Gauge size={18} className="text-[#001A8C]" />
-        <span className="font-inter font-semibold text-sm text-atria-text-dark">Compare este veiculo</span>
+        <span className="font-inter font-semibold text-sm text-atria-text-dark">Compare este veículo</span>
         <span className="font-inter text-xs text-atria-text-gray ml-1">- Receba um comparativo com concorrentes diretos por email</span>
       </div>
       <form onSubmit={handleSubmit} className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
@@ -607,9 +629,10 @@ function MobileStickyBar({ v }: { v: Vehicle }) {
         <p className="font-barlow-condensed font-black text-xl text-atria-navy leading-tight">{fmt(v.preco)}</p>
       </div>
       <a
-        href={waLink(`Ola! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Atria. Tenho interesse!`)}
+        href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Átria. Tenho interesse!`)}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {})}
         className="bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase px-5 py-3 rounded-xl transition-colors whitespace-nowrap"
       >
         QUERO ESSE
@@ -643,7 +666,7 @@ function StoreLocations() {
         ))}
       </div>
       <a
-        href={waLink("Ola! Gostaria de agendar uma visita presencial na loja. Qual a disponibilidade?")}
+        href={waLink("Olá! Gostaria de agendar uma visita presencial na loja. Qual a disponibilidade?")}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-6 inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-xl transition-colors"
@@ -674,6 +697,12 @@ export default function VehicleDetail() {
 
   useVehicleSEO(vehicle);
 
+  // Track pageview
+  useEffect(() => {
+    if (!vehicle) return;
+    trackVehicleEvent(vehicle.slug, "pageview").catch(() => {});
+  }, [vehicle?.slug]);
+
   // Load Credere widget script after vehicle data is in the DOM
   useEffect(() => {
     if (!vehicle) return;
@@ -701,7 +730,7 @@ export default function VehicleDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Carregando veiculo">
+      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Carregando veículo">
         <div className="w-10 h-10 rounded-full border-4 border-atria-gray-medium border-t-atria-navy animate-spin" />
       </div>
     );
@@ -711,8 +740,8 @@ export default function VehicleDetail() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
         <Car size={56} className="text-atria-gray-medium" />
-        <h1 className="font-barlow-condensed font-black text-3xl text-atria-text-dark">Veiculo nao encontrado</h1>
-        <p className="font-inter text-atria-text-gray">Este veiculo pode ter sido vendido ou o link esta incorreto.</p>
+        <h1 className="font-barlow-condensed font-black text-3xl text-atria-text-dark">Veículo não encontrado</h1>
+        <p className="font-inter text-atria-text-gray">Este veículo pode ter sido vendido ou o link está incorreto.</p>
         <a href="/estoque" className="btn-navy rounded-xl mt-2">Ver estoque completo</a>
       </div>
     );
@@ -828,7 +857,7 @@ export default function VehicleDetail() {
             className="mt-16"
           >
             <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase mb-6">
-              Voce tambem pode gostar
+              Você também pode gostar
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {similar.map((v) => <SimilarCard key={v.id} v={v} />)}
@@ -844,9 +873,9 @@ export default function VehicleDetail() {
         {/* Bottom CTA */}
         <section className="mt-12 bg-atria-navy rounded-2xl p-8 text-center text-white">
           <h2 className="font-barlow-condensed font-black text-3xl mb-2">Nao encontrou o que procura?</h2>
-          <p className="font-inter text-white/70 mb-5">Nossa equipe encontra o veiculo ideal para voce.</p>
+          <p className="font-inter text-white/70 mb-5">Nossa equipe encontra o veículo ideal para você.</p>
           <a
-            href={waLink("Ola! Nao encontrei o veiculo que procuro no estoque. Podem me ajudar?")}
+            href={waLink("Olá! Não encontrei o veículo que procuro no estoque. Podem me ajudar?")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"

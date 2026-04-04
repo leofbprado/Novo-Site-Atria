@@ -11,11 +11,11 @@ const NAV_LINKS = [
   { label: "Venda seu Carro", href: "/venda-seu-carro" },
   { label: "Financiamento", href: "/financiamento" },
   { label: "Sobre", href: "/sobre" },
-  { label: "Contato", href: "#contato" },
+  { label: "Contato", href: "/sobre#contato" },
 ];
 
 const WHATSAPP =
-  "https://wa.me/5519999999999?text=Olá!%20Vim%20pelo%20site%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20veículos.";
+  "https://wa.me/5519996525211?text=Olá!%20Vim%20pelo%20site%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20veículos.";
 
 function WaIcon({ size = 18 }: { size?: number }) {
   return (
@@ -57,7 +57,7 @@ export function Header() {
               className="text-white text-xs font-inter flex items-center gap-1.5 hover:text-atria-yellow transition-colors"
             >
               <Phone size={11} />
-              (19) 99999-9999
+              (19) 99652-5211
             </a>
           </div>
         </div>

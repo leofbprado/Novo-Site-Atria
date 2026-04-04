@@ -119,11 +119,17 @@ function isFilterActive(f: FilterState): boolean {
 type ActiveChip = { label: string; onRemove: () => void };
 
 // ─── Schema SEO ───────────────────────────────────────────────────────────────
+import { useSEO } from "@/hooks/useSEO";
+import { SITE_URL } from "@/lib/constants";
+
 function usePageSEO(vehicles: Vehicle[]) {
+  useSEO({
+    title: "Estoque de Carros Usados e Seminovos em Campinas SP | Átria Veículos",
+    description: "Confira nosso estoque de veículos seminovos em Campinas. SUVs, sedãs, hatches e picapes das melhores marcas com financiamento facilitado.",
+    path: "/estoque",
+  });
+
   useEffect(() => {
-    document.title = "Estoque de Veículos Seminovos | Átria Veículos - Campinas";
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Confira nosso estoque de veículos seminovos em Campinas. SUVs, sedans, hatches e picapes das melhores marcas com financiamento facilitado.");
     if (!vehicles.length) return;
     const old = document.getElementById("schema-estoque");
     if (old) old.remove();
@@ -141,7 +147,7 @@ function usePageSEO(vehicles: Vehicle[]) {
           "model": v.modelo, "vehicleModelDate": String(v.ano),
           "mileageFromOdometer": { "@type": "QuantitativeValue", "value": v.km, "unitCode": "KMT" },
           "offers": { "@type": "Offer", "price": v.preco, "priceCurrency": "BRL", "availability": "https://schema.org/InStock" },
-          "url": `https://novo-site-atria.web.app/veiculo/${v.slug}`,
+          "url": `https://www.atriaveiculos.com/veiculo/${v.slug}`,
         },
       })),
     };
@@ -923,7 +929,7 @@ export default function Estoque() {
         <div className="container mx-auto px-4">
           <p className="section-label mb-2">Campinas, SP</p>
           <h1 className="font-barlow-condensed font-black text-5xl md:text-6xl uppercase text-white leading-none">
-            Nosso Estoque
+            Estoque de Seminovos em Campinas
           </h1>
           <p className="font-inter text-white/60 mt-2">
             {loading ? "Carregando…" : `${all.length} veículos disponíveis`}

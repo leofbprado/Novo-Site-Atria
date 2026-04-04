@@ -26,10 +26,14 @@ import {
   getAllLeads,
   updateLeadStatus,
   getAllWhatsAppClicks,
+  getMilestoneConfig,
+  saveMilestoneConfig,
   type VeiculoAdmin,
   type LeadAdmin,
   type WhatsAppClick,
+  type MilestoneConfig,
 } from "@/lib/adminFirestore";
+import { getAllVehicleAnalytics, type VehicleAnalytics } from "@/lib/vehicleAnalytics";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
@@ -44,6 +48,27 @@ const TAG_COLORS: Record<string, string> = {
 const DEFAULT_TAG_COLOR = "bg-sky-100 text-sky-800 border-sky-200";
 
 type Page = "dashboard" | "estoque" | "leads" | "whatsapp" | "config";
+
+// ── Performance helpers ─────────────────────────────────────────────────────
+type ThermoLevel = "quente" | "morno" | "frio";
+
+function calcThermometer(
+  viewsPerDay: number, contatosPerDay: number,
+  avgViews: number, avgContatos: number,
+): ThermoLevel {
+  const rate = viewsPerDay + contatosPerDay * 3;
+  const avg = avgViews + avgContatos * 3;
+  if (avg === 0) return "morno";
+  if (rate > avg * 1.2) return "quente";
+  if (rate < avg * 0.8) return "frio";
+  return "morno";
+}
+
+const THERMO: Record<ThermoLevel, { emoji: string; label: string; cls: string }> = {
+  quente: { emoji: "\uD83D\uDFE2", label: "Quente", cls: "text-emerald-600 bg-emerald-50 border-emerald-200" },
+  morno: { emoji: "\uD83D\uDFE1", label: "Morno", cls: "text-amber-600 bg-amber-50 border-amber-200" },
+  frio: { emoji: "\uD83D\uDD34", label: "Frio", cls: "text-red-600 bg-red-50 border-red-200" },
+};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -631,11 +656,13 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
 }
 
 // ── Estoque Page ─────────────────────────────────────────────────────────────
-function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
+function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, milestoneConfig }: {
   vehicles: VeiculoAdmin[]; loadVehicles: () => void; openaiKey: string;
+  analytics: Map<string, VehicleAnalytics>; milestoneConfig: MilestoneConfig;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | "rascunho" | "publicado">("");
+  const [perfSort, setPerfSort] = useState<"" | "coldest" | "stalled" | "views_no_contact" | "milestone">("");
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
@@ -653,10 +680,41 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
     });
   }, [vehicles, statusFilter, searchTerm]);
 
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
-  const paginated = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  // Performance data
+  const now = Date.now();
+  const withPerf = useMemo(() => filtered.map((v) => {
+    const a = analytics.get(v.slug);
+    const pubDate = v.data_publicacao?.toDate?.();
+    const dias = pubDate ? Math.max(1, Math.floor((now - pubDate.getTime()) / 86400000)) : 0;
+    const views = a?.pageviews ?? 0;
+    const contatos = (a?.cliques_whatsapp ?? 0) + (a?.cliques_telefone ?? 0) + (a?.leads ?? 0);
+    const viewsDay = dias > 0 ? views / dias : 0;
+    const contatosDay = dias > 0 ? contatos / dias : 0;
+    const milestone = milestoneConfig.dias.find((d) => dias >= d && dias < d + 3) ?? null;
+    return { ...v, dias, views, contatos, viewsDay, contatosDay, milestone };
+  }), [filtered, analytics, milestoneConfig, now]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter]);
+  const { avgV, avgC } = useMemo(() => {
+    const pub = withPerf.filter((v) => v.status === "publicado" && v.dias > 0);
+    if (!pub.length) return { avgV: 0, avgC: 0 };
+    return { avgV: pub.reduce((s, v) => s + v.viewsDay, 0) / pub.length, avgC: pub.reduce((s, v) => s + v.contatosDay, 0) / pub.length };
+  }, [withPerf]);
+
+  const sorted = useMemo(() => {
+    const arr = [...withPerf];
+    switch (perfSort) {
+      case "coldest": return arr.sort((a, b) => (a.viewsDay + a.contatosDay) - (b.viewsDay + b.contatosDay));
+      case "stalled": return arr.sort((a, b) => b.dias - a.dias);
+      case "views_no_contact": return arr.sort((a, b) => { const rA = a.views > 0 ? a.contatos / a.views : 1; const rB = b.views > 0 ? b.contatos / b.views : 1; return rA - rB; });
+      case "milestone": return arr.filter((v) => v.milestone !== null);
+      default: return arr;
+    }
+  }, [withPerf, perfSort]);
+
+  const totalPages = Math.ceil(sorted.length / PER_PAGE);
+  const paginated = sorted.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, perfSort]);
 
   const publishedCount = vehicles.filter((v) => v.status === "publicado").length;
   const draftCount = vehicles.filter((v) => v.status === "rascunho").length;
@@ -787,6 +845,17 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
               <option value="publicado">Publicado</option>
             </select>
           </div>
+          <div className="flex items-center gap-2">
+            <TrendingUp size={14} className="text-slate-400" />
+            <select value={perfSort} onChange={(e) => setPerfSort(e.target.value as any)}
+              className="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none bg-white focus:border-blue-500">
+              <option value="">Performance</option>
+              <option value="coldest">Mais frios primeiro</option>
+              <option value="stalled">Mais dias parado</option>
+              <option value="views_no_contact">Views sem contato</option>
+              <option value="milestone">Em marco de revisão</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -809,10 +878,14 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Preco</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Tags</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Dias</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Views</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Contatos</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Temp.</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {paginated.map((v) => (
+                {paginated.map((v) => [
                   <tr key={v.autoconf_id} onClick={() => setSelectedVehicle(v)}
                     className="hover:bg-slate-50 cursor-pointer transition-colors">
                     <td className="px-4 py-3">
@@ -840,8 +913,36 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
                         {(v.tags || []).length > 3 && <span className="text-slate-400 text-[10px]">+{v.tags.length - 3}</span>}
                       </div>
                     </td>
+                    <td className="px-4 py-3 text-center hidden xl:table-cell">
+                      <span className="text-sm text-slate-600">{v.dias > 0 ? `${v.dias}d` : "-"}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center hidden xl:table-cell">
+                      <span className="text-sm text-slate-600">{v.views || "-"}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center hidden xl:table-cell">
+                      <span className="text-sm text-slate-600">{v.contatos || "-"}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center hidden xl:table-cell">
+                      {v.dias > 0 ? (() => { const lv = calcThermometer(v.viewsDay, v.contatosDay, avgV, avgC); const t = THERMO[lv]; return (
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${t.cls}`}>{t.emoji} {t.label}</span>
+                      ); })() : <span className="text-xs text-slate-300">-</span>}
+                    </td>
                   </tr>
-                ))}
+                  ,v.milestone ? (
+                    <tr key={`${v.autoconf_id}-ms`} className="bg-orange-50/50">
+                      <td colSpan={10} className="px-4 py-1.5">
+                        <div className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border ${
+                          calcThermometer(v.viewsDay, v.contatosDay, avgV, avgC) === "frio" ? "bg-red-50 text-red-700 border-red-200" :
+                          calcThermometer(v.viewsDay, v.contatosDay, avgV, avgC) === "quente" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                          "bg-amber-50 text-amber-700 border-amber-200"
+                        }`}>
+                          <AlertCircle size={12} />
+                          Marco {v.milestone}d: {v.views} views, {v.contatos} contatos — Revisar preço/anúncio
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null,
+                ])}
               </tbody>
             </table>
           </div>
@@ -850,7 +951,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey }: {
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
               <p className="text-sm text-slate-500">
-                {(currentPage - 1) * PER_PAGE + 1}-{Math.min(currentPage * PER_PAGE, filtered.length)} de {filtered.length}
+                {(currentPage - 1) * PER_PAGE + 1}-{Math.min(currentPage * PER_PAGE, sorted.length)} de {sorted.length}
               </p>
               <div className="flex gap-1">
                 <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
@@ -1078,10 +1179,26 @@ function WhatsAppPage() {
 }
 
 // ── Config Page ──────────────────────────────────────────────────────────────
-function ConfigPage({ openaiKey, setOpenaiKey }: { openaiKey: string; setOpenaiKey: (k: string) => void }) {
+function ConfigPage({ openaiKey, setOpenaiKey, milestoneConfig, setMilestoneConfig }: {
+  openaiKey: string; setOpenaiKey: (k: string) => void;
+  milestoneConfig: MilestoneConfig; setMilestoneConfig: (c: MilestoneConfig) => void;
+}) {
   const [keyInput, setKeyInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [milestoneDias, setMilestoneDias] = useState(milestoneConfig.dias.join(", "));
+  const [savingMs, setSavingMs] = useState(false);
+  const [savedMs, setSavedMs] = useState(false);
+
+  const handleSaveMilestones = async () => {
+    setSavingMs(true);
+    const dias = milestoneDias.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n) && n > 0).sort((a, b) => a - b);
+    await saveMilestoneConfig({ dias });
+    setMilestoneConfig({ dias });
+    setSavedMs(true);
+    setTimeout(() => setSavedMs(false), 3000);
+    setSavingMs(false);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -1181,6 +1298,35 @@ function ConfigPage({ openaiKey, setOpenaiKey }: { openaiKey: string; setOpenaiK
             </div>
           </div>
         </div>
+        {/* Milestones */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+              <AlertCircle size={18} className="text-orange-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Marcos de Revisão</h3>
+              <p className="text-slate-500 text-xs">Dias de publicação que disparam alertas de revisão no estoque</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <input type="text" value={milestoneDias} onChange={(e) => setMilestoneDias(e.target.value)}
+              placeholder="7, 20, 40, 60"
+              className="flex-1 border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
+            <button onClick={handleSaveMilestones} disabled={savingMs}
+              className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              {savingMs ? <Spinner size={14} /> : savedMs ? <CheckCircle2 size={14} /> : <Save size={14} />}
+              {savingMs ? "Salvando..." : savedMs ? "Salvo!" : "Salvar"}
+            </button>
+          </div>
+          <div className="flex gap-2 mt-3">
+            {milestoneConfig.dias.map((d) => (
+              <span key={d} className="bg-orange-50 text-orange-700 border border-orange-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                {d} dias
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1195,6 +1341,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openaiKey, setOpenaiKey] = useState("");
+  const [analytics, setAnalytics] = useState<Map<string, VehicleAnalytics>>(new Map());
+  const [milestoneConfig, setMilestoneConfig] = useState<MilestoneConfig>({ dias: [7, 20, 40, 60] });
 
   const loadVehicles = useCallback(async () => {
     setLoading(true); setError("");
@@ -1216,6 +1364,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   useEffect(() => {
     getAdminConfig().then((c) => setOpenaiKey(c.openai_key || "")).catch(() => {});
+    getAllVehicleAnalytics().then(setAnalytics).catch(() => {});
+    getMilestoneConfig().then(setMilestoneConfig).catch(() => {});
   }, []);
 
   const { logout } = useAuth();
@@ -1246,10 +1396,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           ) : (
             <>
               {page === "dashboard" && <DashboardPage vehicles={vehicles} leads={leads} />}
-              {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} />}
+              {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
-              {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} />}
+              {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
             </>
           )}
         </div>

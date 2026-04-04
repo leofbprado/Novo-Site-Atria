@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown, TrendingDown, Clock, CreditCard, Calendar,
@@ -10,12 +10,14 @@ const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
 
 // ---- SEO -------------------------------------------------------------------
-function useSEO() {
-  useEffect(() => {
-    document.title = "Financiamento | Atria Veiculos - Campinas SP";
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Financiamento facilitado para seminovos na Atria Veiculos. Taxas a partir de 0.99%/mes, aprovacao em 24h, ate 60x. Simule agora!");
-  }, []);
+import { useSEO } from "@/hooks/useSEO";
+
+function usePageSEO() {
+  useSEO({
+    title: "Financiamento de Seminovos em Campinas SP | Átria Veículos",
+    description: "Financiamento facilitado para seminovos na Átria Veículos. Taxas a partir de 0,99%/mês, aprovação em 24h, até 60x. Simule agora!",
+    path: "/financiamento",
+  });
 }
 
 // ---- Hero ------------------------------------------------------------------
@@ -34,7 +36,7 @@ function Hero() {
             Financiamento <span className="text-atria-yellow">Facilitado</span>
           </h1>
           <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            As melhores taxas do mercado com aprovacao em ate 24h
+            As melhores taxas do mercado com aprovação em até 24h
           </p>
         </motion.div>
       </div>
@@ -67,11 +69,11 @@ function Simulador() {
     await saveLead({
       source: "financiamento-simulador",
       whatsapp: "",
-      query: `Simulacao: parcela ${fmt(parcela)}, entrada ${fmt(entrada)}, prazo ${prazo}x, veiculo ${fmt(valorVeiculo)}`,
+      query: `Simulação: parcela ${fmt(parcela)}, entrada ${fmt(entrada)}, prazo ${prazo}x, veículo ${fmt(valorVeiculo)}`,
     });
     setShowLead(false);
     window.open(
-      waLink(`Ola! Fiz uma simulacao no site: parcela ${fmt(parcela)}, entrada ${fmt(entrada)}, ${prazo}x. Veiculo ate ${fmt(valorVeiculo)}. Quero saber mais!`),
+      waLink(`Olá! Fiz uma simulação no site: parcela ${fmt(parcela)}, entrada ${fmt(entrada)}, ${prazo}x. Veículo até ${fmt(valorVeiculo)}. Quero saber mais!`),
       "_blank"
     );
   };
@@ -85,7 +87,7 @@ function Simulador() {
             Quanto Cabe no Seu Bolso?
           </h2>
           <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
-            Ajuste os parametros e descubra o valor do veiculo ideal para voce.
+            Ajuste os parâmetros e descubra o valor do veículo ideal para você.
           </p>
         </div>
 
@@ -133,15 +135,15 @@ function Simulador() {
 
           <div className="bg-atria-navy rounded-xl p-8 flex flex-col justify-between text-white">
             <div>
-              <p className="font-inter text-white/60 text-sm uppercase tracking-widest mb-6">Resultado da simulacao</p>
+              <p className="font-inter text-white/60 text-sm uppercase tracking-widest mb-6">Resultado da simulação</p>
               <div className="space-y-5">
                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                  <span className="font-inter text-white/70">Veiculo estimado ate:</span>
+                  <span className="font-inter text-white/70">Veículo estimado até:</span>
                   <span className="font-barlow-condensed font-black text-4xl text-atria-yellow">{fmt(valorVeiculo)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">Parcela</span>
-                  <span className="font-semibold">{fmt(parcela)}/mes</span>
+                  <span className="font-semibold">{fmt(parcela)}/mês</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">Entrada</span>
@@ -168,7 +170,7 @@ function Simulador() {
                     Quero financiar!
                   </button>
                   <a href="/estoque" className="block text-center font-inter text-white/60 hover:text-white text-sm underline underline-offset-2">
-                    Ver veiculos nessa faixa
+                    Ver veículos nessa faixa
                   </a>
                 </motion.div>
               )}
@@ -179,7 +181,7 @@ function Simulador() {
                 <div className="absolute inset-0 bg-black/60" onClick={() => setShowLead(false)} />
                 <div className="relative bg-white rounded-2xl p-8 max-w-sm w-full text-atria-text-dark">
                   <h3 className="font-barlow-condensed font-black text-2xl mb-2">Falar com especialista</h3>
-                  <p className="font-inter text-sm text-atria-text-gray mb-4">Vamos encaminhar voce ao WhatsApp com os dados da simulacao.</p>
+                  <p className="font-inter text-sm text-atria-text-gray mb-4">Vamos encaminhar você ao WhatsApp com os dados da simulação.</p>
                   <button onClick={handleLead} className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase text-sm py-3 rounded-xl transition-colors">
                     Abrir WhatsApp
                   </button>
@@ -196,10 +198,10 @@ function Simulador() {
 // ---- Vantagens -------------------------------------------------------------
 function Vantagens() {
   const cards = [
-    { icon: <TrendingDown size={28} />, title: "Taxas a partir de 0.99%/mes", desc: "Trabalhamos com os melhores bancos para garantir taxas competitivas.", disclaimer: true },
-    { icon: <Clock size={28} />, title: "Aprovacao em 24h", desc: "Processo agil e desburocratizado. Resposta rapida para voce sair dirigindo." },
-    { icon: <CreditCard size={28} />, title: "Sem entrada minima", desc: "Flexibilidade para voce financiar da forma que melhor cabe no bolso." },
-    { icon: <Calendar size={28} />, title: "Ate 60x", desc: "Parcelas em ate 60 meses para diminuir o valor mensal ao maximo." },
+    { icon: <TrendingDown size={28} />, title: "Taxas a partir de 0,99%/mês", desc: "Trabalhamos com os melhores bancos para garantir taxas competitivas.", disclaimer: true },
+    { icon: <Clock size={28} />, title: "Aprovação em 24h", desc: "Processo ágil e desburocratizado. Resposta rápida para você sair dirigindo." },
+    { icon: <CreditCard size={28} />, title: "Sem entrada mínima", desc: "Flexibilidade para você financiar da forma que melhor cabe no bolso." },
+    { icon: <Calendar size={28} />, title: "Até 60x", desc: "Parcelas em até 60 meses para diminuir o valor mensal ao máximo." },
   ];
 
   return (
@@ -208,7 +210,7 @@ function Vantagens() {
         <div className="text-center mb-12">
           <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Vantagens</p>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Por que Financiar com a Atria?
+            Por que Financiar com a Átria?
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
@@ -226,7 +228,7 @@ function Vantagens() {
               <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark mb-2">{c.title}</h3>
               <p className="font-inter text-sm text-atria-text-gray">{c.desc}</p>
               {"disclaimer" in c && c.disclaimer && (
-                <p className="font-inter text-xs text-atria-text-gray/70 italic mt-2">* Taxas sujeitas a analise de credito. Consulte condicoes.</p>
+                <p className="font-inter text-xs text-atria-text-gray/70 italic mt-2">* Taxas sujeitas a análise de crédito. Consulte condições.</p>
               )}
             </motion.div>
           ))}
@@ -239,10 +241,10 @@ function Vantagens() {
 // ---- Como Funciona ---------------------------------------------------------
 function ComoFunciona() {
   const steps = [
-    { icon: <Car size={24} />, title: "Escolha o veiculo", desc: "Navegue pelo nosso estoque e encontre o carro ideal." },
+    { icon: <Car size={24} />, title: "Escolha o veículo", desc: "Navegue pelo nosso estoque e encontre o carro ideal." },
     { icon: <CreditCard size={24} />, title: "Simule online", desc: "Use o simulador acima ou fale com um consultor." },
-    { icon: <FileText size={24} />, title: "Envie documentos", desc: "RG, CPF, comprovante de renda e residencia." },
-    { icon: <CheckCircle size={24} />, title: "Aprovacao e retirada", desc: "Aprovado? Agende a retirada e saia dirigindo!" },
+    { icon: <FileText size={24} />, title: "Envie documentos", desc: "RG, CPF, comprovante de renda e residência." },
+    { icon: <CheckCircle size={24} />, title: "Aprovação e retirada", desc: "Aprovado? Agende a retirada e saia dirigindo!" },
   ];
 
   return (
@@ -340,11 +342,11 @@ function BancosParceiros() {
 
 // ---- FAQ -------------------------------------------------------------------
 const FAQS = [
-  { q: "Quais documentos preciso para financiar?", a: "RG/CNH, CPF, comprovante de residencia atualizado e comprovante de renda (holerite, extrato bancario ou declaracao de IR)." },
-  { q: "Consigo financiar com o nome negativado?", a: "Depende do caso. Trabalhamos com bancos que possuem linhas especiais. Faca uma simulacao e nosso consultor analisara as opcoes." },
-  { q: "Qual a taxa de juros?", a: "As taxas variam conforme o perfil de credito, valor de entrada e prazo. Atualmente temos taxas a partir de 0.99% ao mes." },
-  { q: "Posso usar meu carro como entrada?", a: "Sim! Avaliamos seu veiculo gratuitamente e o valor pode ser usado como parte do pagamento ou entrada do financiamento." },
-  { q: "Em quanto tempo sai a aprovacao?", a: "Geralmente em ate 24 horas uteis. Em alguns casos, pode ser aprovado no mesmo dia." },
+  { q: "Quais documentos preciso para financiar?", a: "RG/CNH, CPF, comprovante de residência atualizado e comprovante de renda (holerite, extrato bancário ou declaração de IR)." },
+  { q: "Consigo financiar com o nome negativado?", a: "Depende do caso. Trabalhamos com bancos que possuem linhas especiais. Faça uma simulação e nosso consultor analisará as opções." },
+  { q: "Qual a taxa de juros?", a: "As taxas variam conforme o perfil de crédito, valor de entrada e prazo. Atualmente temos taxas a partir de 0,99% ao mês." },
+  { q: "Posso usar meu carro como entrada?", a: "Sim! Avaliamos seu veículo gratuitamente e o valor pode ser usado como parte do pagamento ou entrada do financiamento." },
+  { q: "Em quanto tempo sai a aprovação?", a: "Geralmente em até 24 horas úteis. Em alguns casos, pode ser aprovado no mesmo dia." },
 ];
 
 function FAQSection() {
@@ -356,7 +358,7 @@ function FAQSection() {
         <div className="text-center mb-12">
           <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">FAQ</p>
           <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase">
-            Duvidas Frequentes
+            Dúvidas Frequentes
           </h2>
         </div>
         <div className="space-y-3">
@@ -400,12 +402,12 @@ function SimulacaoCPF() {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4 max-w-3xl text-center">
-        <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Simulacao com CPF</p>
+        <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Simulação com CPF</p>
         <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase mb-3">
-          Pre-aprovacao Online
+          Pré-aprovação Online
         </h2>
         <p className="font-inter text-sm text-atria-text-gray mb-6">
-          Para simulacao com CPF, escolha um veiculo do nosso estoque e use o simulador Credere na pagina do veiculo.
+          Para simulação com CPF, escolha um veículo do nosso estoque e use o simulador Credere na página do veículo.
         </p>
         <a
           href="/estoque"
@@ -430,11 +432,11 @@ function CTAFinal() {
           Fale com Nosso Especialista <span className="text-atria-yellow">em Financiamento</span>
         </h2>
         <p className="font-inter text-white/70 mb-8 max-w-lg mx-auto">
-          Tire suas duvidas e encontre a melhor condicao para o seu perfil.
+          Tire suas dúvidas e encontre a melhor condição para o seu perfil.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href={waLink("Ola! Tenho interesse em financiamento de veiculos. Podem me ajudar?")}
+            href={waLink("Olá! Tenho interesse em financiamento de veículos. Podem me ajudar?")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
@@ -453,7 +455,7 @@ function CTAFinal() {
 
 // ---- Page ------------------------------------------------------------------
 export default function Financiamento() {
-  useSEO();
+  usePageSEO();
 
   return (
     <>

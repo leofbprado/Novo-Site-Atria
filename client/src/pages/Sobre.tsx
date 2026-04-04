@@ -10,12 +10,14 @@ const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
 
 // ---- SEO -------------------------------------------------------------------
-function useSEO() {
-  useEffect(() => {
-    document.title = "Sobre | Atria Veiculos - Ha mais de 12 anos em Campinas SP";
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Atria Veiculos: ha mais de 12 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 10.000 veiculos vendidos. Confianca e transparencia.");
-  }, []);
+import { useSEO } from "@/hooks/useSEO";
+
+function usePageSEO() {
+  useSEO({
+    title: "Sobre a Átria Veículos | Loja de Seminovos em Campinas SP há 13 Anos",
+    description: "Átria Veículos: há mais de 13 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 10.000 veículos vendidos. Confiança e transparência.",
+    path: "/sobre",
+  });
 }
 
 // ---- Hero ------------------------------------------------------------------
@@ -29,12 +31,12 @@ function Hero() {
       <div className="absolute inset-0 bg-atria-navy/80" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Sobre Nos</p>
+          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Sobre Nós</p>
           <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
-            Sobre a <span className="text-atria-yellow">Atria Veiculos</span>
+            Sobre a <span className="text-atria-yellow">Átria Veículos</span>
           </h1>
           <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            Ha mais de 12 anos guiando voce na melhor escolha
+            Há mais de 13 anos guiando você na melhor escolha
           </p>
         </motion.div>
       </div>
@@ -53,25 +55,25 @@ function Historia() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Nossa Historia</p>
+          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Nossa História</p>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase mb-6">
-            De uma Loja a Referencia em Campinas
+            De uma Loja a Referência em Campinas
           </h2>
           <div className="font-inter text-atria-text-gray text-base leading-relaxed space-y-4 max-w-3xl mx-auto text-left md:text-center">
             <p>
-              Fundada em Campinas, a Atria Veiculos nasceu com o proposito de transformar a experiencia de compra de veiculos seminovos.
-              O que comecou como uma unica loja, com dedicacao e compromisso com o cliente, cresceu para se tornar uma das principais
-              revendas da regiao.
+              Fundada em Campinas, a Átria Veículos nasceu com o propósito de transformar a experiência de compra de veículos seminovos.
+              O que começou como uma única loja, com dedicação e compromisso com o cliente, cresceu para se tornar uma das principais
+              revendas da região.
             </p>
             <p>
-              Com mais de <strong className="text-atria-text-dark">12 anos de mercado</strong>, ja sao mais de{" "}
-              <strong className="text-atria-text-dark">10.000 veiculos vendidos</strong> e{" "}
+              Com mais de <strong className="text-atria-text-dark">13 anos de mercado</strong>, já são mais de{" "}
+              <strong className="text-atria-text-dark">10.000 veículos vendidos</strong> e{" "}
               <strong className="text-atria-text-dark">3 lojas para atendimento</strong> em Campinas:
-              Abolicao, Campos Eliseos e Guanabara.
+              Abolição, Campos Elíseos e Guanabara.
             </p>
             <p>
-              Nosso diferencial esta na transparencia: cada veiculo passa por rigorosa pericia veicular, com laudo e garantia.
-              Contamos ainda com um time de vendas online e servicos delivery, para que voce tenha total comodidade e seguranca na sua escolha.
+              Nosso diferencial está na transparência: cada veículo passa por rigorosa perícia veicular, com laudo e garantia.
+              Contamos ainda com um time de vendas online e serviços delivery, para que você tenha total comodidade e segurança na sua escolha.
             </p>
           </div>
         </motion.div>
@@ -85,22 +87,22 @@ function MissaoVisaoValores() {
   const missaoVisao = [
     {
       icon: <Target size={28} />,
-      title: "Missao",
-      desc: "Proporcionar a melhor experiencia de compra de produtos e servicos do ramo automobilistico, sendo motivo de orgulho para nossos clientes, colaboradores e parceiros.",
+      title: "Missão",
+      desc: "Proporcionar a melhor experiência de compra de produtos e serviços do ramo automobilístico, sendo motivo de orgulho para nossos clientes, colaboradores e parceiros.",
     },
     {
       icon: <Eye size={28} />,
-      title: "Visao",
-      desc: "Estar entre os principais grupos de concessionarias de veiculos em Campinas e regiao, sendo referencia em atendimento.",
+      title: "Visão",
+      desc: "Estar entre os principais grupos de concessionárias de veículos em Campinas e região, sendo referência em atendimento.",
     },
   ];
 
   const valores = [
-    { icon: <Heart size={22} />, title: "Etica", desc: "Agir com transparencia nas relacoes com colaboradores, clientes, parceiros e comunidade." },
-    { icon: <BookOpen size={22} />, title: "Conhecimento", desc: "Conquistar a confianca de todos atraves da busca incessante pela excelencia do conhecimento dos nossos produtos, servicos e negocio." },
-    { icon: <Lightbulb size={22} />, title: "Inovacao", desc: "Atuar com dinamismo e criatividade, sempre buscando eficiencia que agregue valor ao negocio." },
-    { icon: <ShieldCheck size={22} />, title: "Responsabilidade", desc: "Integridade, dedicacao, disciplina e comprometimento com o negocio, em base de resultados." },
-    { icon: <Users size={22} />, title: "Desenvolvimento Humano", desc: "Reconhecer a diversidade de nossos talentos atraves de iniciativas e liderancas, proporcionando oportunidades para desenvolvimento, treinamento e crescimento." },
+    { icon: <Heart size={22} />, title: "Ética", desc: "Agir com transparência nas relações com colaboradores, clientes, parceiros e comunidade." },
+    { icon: <BookOpen size={22} />, title: "Conhecimento", desc: "Conquistar a confiança de todos através da busca incessante pela excelência do conhecimento dos nossos produtos, serviços e negócio." },
+    { icon: <Lightbulb size={22} />, title: "Inovação", desc: "Atuar com dinamismo e criatividade, sempre buscando eficiência que agregue valor ao negócio." },
+    { icon: <ShieldCheck size={22} />, title: "Responsabilidade", desc: "Integridade, dedicação, disciplina e comprometimento com o negócio, em base de resultados." },
+    { icon: <Users size={22} />, title: "Desenvolvimento Humano", desc: "Reconhecer a diversidade de nossos talentos através de iniciativas e lideranças, proporcionando oportunidades para desenvolvimento, treinamento e crescimento." },
   ];
 
   return (
@@ -181,9 +183,9 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 
 function Numeros() {
   const stats = [
-    { icon: <Award size={24} />, label: "Anos no mercado", value: 12, suffix: "+" },
-    { icon: <Car size={24} />, label: "Veiculos vendidos", value: 10000, suffix: "+" },
-    { icon: <Store size={24} />, label: "Veiculos em estoque", value: 200, suffix: "+" },
+    { icon: <Award size={24} />, label: "Anos no mercado", value: 13, suffix: "+" },
+    { icon: <Car size={24} />, label: "Veículos vendidos", value: 10000, suffix: "+" },
+    { icon: <Store size={24} />, label: "Veículos em estoque", value: 200, suffix: "+" },
     { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 3, suffix: "" },
   ];
 
@@ -209,15 +211,15 @@ function Numeros() {
 // ---- Lojas -----------------------------------------------------------------
 const LOJAS = [
   {
-    nome: "Loja Abolicao",
-    endereco: "Rua Abolicao, 1500 - VL Joaquim Inacio",
+    nome: "Loja Abolição",
+    endereco: "Rua Abolição, 1500 - VL Joaquim Inácio",
     cidade: "Campinas-SP",
     cep: "CEP 13045-750",
     telefone: "(19) 3199-2552",
   },
   {
-    nome: "Loja Campos Eliseos",
-    endereco: "R. Domicio Pacheco e Silva, 1328 - Jd Campos Eliseos",
+    nome: "Loja Campos Elíseos",
+    endereco: "R. Domício Pacheco e Silva, 1328 - Jd Campos Elíseos",
     cidade: "Campinas-SP",
     cep: "CEP 13060-190",
     telefone: "(19) 3500-8271",
@@ -236,7 +238,7 @@ function NossasLojas() {
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Localizacao</p>
+          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Localização</p>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
             Nossas Lojas
           </h2>
@@ -287,11 +289,11 @@ function CTA() {
           Visite-nos
         </h2>
         <p className="font-inter text-white/70 mb-8 max-w-lg mx-auto">
-          Venha conhecer nossas lojas e encontrar o veiculo ideal para voce.
+          Venha conhecer nossas lojas e encontrar o veículo ideal para você.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href={waLink("Ola! Gostaria de agendar uma visita presencial na loja Atria.")}
+            href={waLink("Olá! Gostaria de agendar uma visita presencial na loja Átria.")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
@@ -311,7 +313,7 @@ function CTA() {
 
 // ---- Page ------------------------------------------------------------------
 export default function Sobre() {
-  useSEO();
+  usePageSEO();
 
   return (
     <>

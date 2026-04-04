@@ -4,6 +4,7 @@ import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
+import { useSEO } from "@/hooks/useSEO";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -84,7 +85,7 @@ function LeadModal({ title, subtitle, source, extraData, prefillMsg, onClose }: 
                 <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">WhatsApp</label>
                 <input
                   type="tel"
-                  placeholder="(19) 99999-9999"
+                  placeholder="(19) 99652-5211"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   required
@@ -197,7 +198,7 @@ function ExitIntentPopup() {
                 <form className="space-y-3" onSubmit={handleSubmit}>
                   <input
                     type="tel"
-                    placeholder="Seu WhatsApp: (19) 99999-9999"
+                    placeholder="Seu WhatsApp: (19) 99652-5211"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
                     required
@@ -249,9 +250,9 @@ function Hero() {
         >
           <p className="section-label mb-4 text-atria-yellow">Campinas • SP</p>
           <h1 className="font-barlow-condensed font-black text-5xl md:text-7xl uppercase text-white leading-none mb-4">
-            Encontre Seu
+            Carros Seminovos e
             <br />
-            <span className="text-atria-yellow">Próximo Carro</span>
+            <span className="text-atria-yellow">Usados em Campinas</span>
           </h1>
           <p className="font-inter text-white/70 text-lg mb-8 max-w-xl mx-auto">
             Mais de 200 veículos selecionados com garantia, procedência e as melhores condições de financiamento.
@@ -784,7 +785,7 @@ function VendaSeuCarro() {
                   </div>
                   <div>
                     <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Telefone / WhatsApp</label>
-                    <input type="tel" placeholder="(19) 99999-9999" value={form.telefone}
+                    <input type="tel" placeholder="(19) 99652-5211" value={form.telefone}
                       onChange={(e) => setForm({ ...form, telefone: e.target.value })}
                       required className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors" />
                   </div>
@@ -1255,8 +1256,8 @@ function FAQ() {
 
 // ─── Contato ──────────────────────────────────────────────────────────────────
 const LOJAS_CONTATO = [
-  { nome: "Loja Abolicao", endereco: "Rua Abolicao, 1500 - VL Joaquim Inacio, Campinas-SP", telefone: "(19) 3199-2552" },
-  { nome: "Loja Campos Eliseos", endereco: "R. Domicio Pacheco e Silva, 1328 - Jd Campos Eliseos, Campinas-SP", telefone: "(19) 3500-8271" },
+  { nome: "Loja Abolição", endereco: "Rua Abolição, 1500 - VL Joaquim Inácio, Campinas-SP", telefone: "(19) 3199-2552" },
+  { nome: "Loja Campos Elíseos", endereco: "R. Domício Pacheco e Silva, 1328 - Jd Campos Elíseos, Campinas-SP", telefone: "(19) 3500-8271" },
   { nome: "Loja Guanabara", endereco: "Av. Brasil, 1277 - Jd Guanabara, Campinas-SP", telefone: "(19) 3094-0015" },
 ];
 
@@ -1414,6 +1415,12 @@ function CTAFinal() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
+  useSEO({
+    title: "Átria Veículos | Carros Seminovos e Usados em Campinas SP",
+    description: "Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 13 anos de mercado. Mais de 200 veículos, 3 lojas e financiamento facilitado. BMW, Mercedes, Audi, Toyota e mais.",
+    path: "/",
+  });
+
   return (
     <>
       <ExitIntentPopup />

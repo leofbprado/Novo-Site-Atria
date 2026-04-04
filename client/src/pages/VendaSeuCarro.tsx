@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Car, DollarSign, Clock, Users, ShieldCheck, Camera,
@@ -11,12 +11,14 @@ const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
 
 // ---- SEO ----------------------------------------------------------------
-function useSEO() {
-  useEffect(() => {
-    document.title = "Venda seu Carro | Atria Veiculos Campinas";
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Venda seu carro em Campinas com a Atria Veiculos. Receba proposta de compra imediata ou venda por consignacao com apoio profissional.");
-  }, []);
+import { useSEO } from "@/hooks/useSEO";
+
+function usePageSEO() {
+  useSEO({
+    title: "Venda seu Carro Usado em Campinas SP | Compra Imediata | Átria Veículos",
+    description: "Venda seu carro em Campinas com a Átria Veículos. Receba proposta de compra imediata ou venda por consignação com apoio profissional.",
+    path: "/venda-seu-carro",
+  });
 }
 
 // ---- Hero ---------------------------------------------------------------
@@ -34,13 +36,13 @@ function Hero() {
           className="max-w-3xl mx-auto"
         >
           <span className="inline-block bg-atria-yellow/20 text-atria-yellow font-inter font-semibold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
-            Compra ou Consignacao
+            Compra ou Consignação
           </span>
           <h1 className="font-barlow-condensed font-black text-4xl md:text-5xl lg:text-6xl text-white leading-tight">
             Venda seu carro do jeito que fizer mais sentido
           </h1>
           <p className="font-inter text-lg text-white/70 mt-4 max-w-2xl mx-auto">
-            Receba proposta de compra imediata ou venda por consignacao com apoio da Atria.
+            Receba proposta de compra imediata ou venda por consignação com apoio da Átria.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <a
@@ -55,7 +57,7 @@ function Hero() {
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
             >
               <Handshake size={18} />
-              Quero vender por consignacao
+              Quero vender por consignação
             </a>
           </div>
         </motion.div>
@@ -68,10 +70,10 @@ function Hero() {
 function ComparisonTable() {
   const rows = [
     { label: "Melhor para", compra: "Quem quer rapidez", consignacao: "Quem quer melhor valor" },
-    { label: "Valor potencial", compra: "Menor (a Atria assume risco)", consignacao: "Maior (preco de mercado)" },
+    { label: "Valor potencial", compra: "Menor (a Átria assume risco)", consignacao: "Maior (preço de mercado)" },
     { label: "Prazo", compra: "Mais curto", consignacao: "Pode levar mais tempo" },
-    { label: "Quem cuida da venda", compra: "Atria compra direto", consignacao: "Atria vende para terceiro" },
-    { label: "Voce precisa fazer", compra: "Trazer o carro pra avaliacao", consignacao: "Trazer o carro pra avaliacao" },
+    { label: "Quem cuida da venda", compra: "Átria compra direto", consignacao: "Átria vende para terceiro" },
+    { label: "Você precisa fazer", compra: "Trazer o carro pra avaliação", consignacao: "Trazer o carro pra avaliação" },
   ];
 
   return (
@@ -84,9 +86,9 @@ function ComparisonTable() {
           className="text-center mb-10"
         >
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Compare as duas opcoes
+            Compare as duas opções
           </h2>
-          <p className="font-inter text-atria-text-gray mt-2">Escolha o que faz mais sentido pra voce.</p>
+          <p className="font-inter text-atria-text-gray mt-2">Escolha o que faz mais sentido pra você.</p>
         </motion.div>
 
         {/* Desktop table */}
@@ -110,7 +112,7 @@ function ComparisonTable() {
                   <th className="font-barlow-condensed font-bold text-lg text-atria-navy uppercase px-6 py-4 w-1/3 bg-blue-50">
                     <div className="flex items-center justify-center gap-2">
                       <Handshake size={20} />
-                      Consignacao
+                      Consignação
                     </div>
                   </th>
                 </tr>
@@ -132,7 +134,7 @@ function ComparisonTable() {
         <div className="md:hidden grid grid-cols-1 gap-4">
           {[
             { title: "Compra", icon: <DollarSign size={20} />, data: rows.map(r => ({ label: r.label, value: r.compra })), accent: false },
-            { title: "Consignacao", icon: <Handshake size={20} />, data: rows.map(r => ({ label: r.label, value: r.consignacao })), accent: true },
+            { title: "Consignação", icon: <Handshake size={20} />, data: rows.map(r => ({ label: r.label, value: r.consignacao })), accent: true },
           ].map((card) => (
             <motion.div
               key={card.title}
@@ -165,10 +167,10 @@ function ComparisonTable() {
           className="text-center mt-8"
         >
           <p className="font-inter text-atria-text-gray mb-4">
-            Nao sabe qual faz mais sentido? A gente avalia e te orienta.
+            Não sabe qual faz mais sentido? A gente avalia e te orienta.
           </p>
           <a
-            href={waLink("Ola! Quero vender meu carro mas nao sei se compra ou consignacao e melhor pra mim. Podem me orientar?")}
+            href={waLink("Olá! Quero vender meu carro mas não sei se compra ou consignação é melhor pra mim. Podem me orientar?")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-xl transition-colors"
@@ -184,18 +186,18 @@ function ComparisonTable() {
 
 // ---- Consignment Block --------------------------------------------------
 const BENEFITS = [
-  { icon: <DollarSign size={20} />, title: "Sem custo ate vender", desc: "Voce so paga comissao quando o carro for vendido." },
-  { icon: <Camera size={20} />, title: "Exposicao profissional", desc: "Seu carro aparece no site, redes sociais e portais como OLX e Webmotors." },
-  { icon: <TrendingUp size={20} />, title: "Avaliacao justa", desc: "Precificacao baseada em dados de mercado (FIPE + demanda real)." },
-  { icon: <ShieldCheck size={20} />, title: "Sem dor de cabeca", desc: "A Atria cuida de foto, anuncio, atendimento, test-drive, documentacao e entrega." },
-  { icon: <FileText size={20} />, title: "Contrato transparente", desc: "Prazo, valor minimo e comissao definidos antes de comecar." },
+  { icon: <DollarSign size={20} />, title: "Sem custo até vender", desc: "Você só paga comissão quando o carro for vendido." },
+  { icon: <Camera size={20} />, title: "Exposição profissional", desc: "Seu carro aparece no site, redes sociais e portais como OLX e Webmotors." },
+  { icon: <TrendingUp size={20} />, title: "Avaliação justa", desc: "Precificação baseada em dados de mercado (FIPE + demanda real)." },
+  { icon: <ShieldCheck size={20} />, title: "Sem dor de cabeça", desc: "A Átria cuida de foto, anúncio, atendimento, test-drive, documentação e entrega." },
+  { icon: <FileText size={20} />, title: "Contrato transparente", desc: "Prazo, valor mínimo e comissão definidos antes de começar." },
 ];
 
 const STEPS = [
-  { num: "1", title: "Peca uma avaliacao", desc: "Pelo formulario ou WhatsApp" },
-  { num: "2", title: "A Atria avalia o carro", desc: "E propoe as condicoes" },
-  { num: "3", title: "A Atria anuncia e cuida de tudo", desc: "Fotos, anuncios, atendimento" },
-  { num: "4", title: "Carro vendido", desc: "Voce recebe o valor combinado" },
+  { num: "1", title: "Peça uma avaliação", desc: "Pelo formulário ou WhatsApp" },
+  { num: "2", title: "A Átria avalia o carro", desc: "E propõe as condições" },
+  { num: "3", title: "A Átria anuncia e cuida de tudo", desc: "Fotos, anúncios, atendimento" },
+  { num: "4", title: "Carro vendido", desc: "Você recebe o valor combinado" },
 ];
 
 function ConsignmentBlock() {
@@ -212,7 +214,7 @@ function ConsignmentBlock() {
             Recomendado
           </span>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Consignacao: venda pelo melhor valor com apoio da Atria
+            Consignação: venda pelo melhor valor com apoio da Atria
           </h2>
         </motion.div>
 
@@ -270,7 +272,7 @@ function ConsignmentBlock() {
           className="text-center mt-10"
         >
           <a
-            href={waLink("Ola! Quero saber mais sobre consignacao do meu carro.")}
+            href={waLink("Olá! Quero saber mais sobre consignação do meu carro.")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors shadow-lg shadow-atria-navy/20"
@@ -308,14 +310,14 @@ function PurchaseForm() {
       // Also open WhatsApp as backup
       setTimeout(() => {
         window.open(
-          waLink(`Ola! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome e ${form.nome}, WhatsApp: ${form.whatsapp}`),
+          waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`),
           "_blank"
         );
       }, 500);
     } catch {
       // Fallback: open WhatsApp directly
       window.open(
-        waLink(`Ola! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome e ${form.nome}, WhatsApp: ${form.whatsapp}`),
+        waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`),
         "_blank"
       );
       setSent(true);
@@ -335,10 +337,10 @@ function PurchaseForm() {
         >
           <div className="text-center mb-8">
             <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-              Quer vender rapido?
+              Quer vender rápido?
             </h2>
             <p className="font-inter text-atria-text-gray mt-2">
-              A Atria faz uma proposta de compra. Preencha os dados abaixo — nosso time entra em contato em ate 24h.
+              A Átria faz uma proposta de compra. Preencha os dados abaixo — nosso time entra em contato em até 24h.
             </p>
           </div>
 
@@ -351,7 +353,7 @@ function PurchaseForm() {
               <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
               <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark">Dados recebidos!</h3>
               <p className="font-inter text-atria-text-gray mt-2">
-                Nosso time vai analisar e entrar em contato pelo WhatsApp em ate 24h.
+                Nosso time vai analisar e entrar em contato pelo WhatsApp em até 24h.
               </p>
             </motion.div>
           ) : (
@@ -379,7 +381,7 @@ function PurchaseForm() {
                     required
                     value={form.whatsapp}
                     onChange={handleChange("whatsapp")}
-                    placeholder="(19) 99999-9999"
+                    placeholder="(19) 99652-5211"
                     className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
                   />
                 </div>
@@ -466,7 +468,7 @@ function SocialProof() {
           </div>
           <div className="flex items-center justify-center gap-2 mt-8 text-white/60">
             <MapPin size={16} />
-            <span className="font-inter text-sm">Avaliacao presencial sem compromisso em qualquer uma das nossas lojas</span>
+            <span className="font-inter text-sm">Avaliação presencial sem compromisso em qualquer uma das nossas lojas</span>
           </div>
         </motion.div>
       </div>
@@ -488,7 +490,7 @@ function BottomCTA() {
             Pronto pra vender?
           </h2>
           <p className="font-inter text-atria-text-gray mt-2 mb-6">
-            Escolha a opcao que faz mais sentido e fale com a gente.
+            Escolha a opção que faz mais sentido e fale com a gente.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -499,7 +501,7 @@ function BottomCTA() {
               Proposta de compra
             </a>
             <a
-              href={waLink("Ola! Quero saber mais sobre consignacao do meu carro.")}
+              href={waLink("Olá! Quero saber mais sobre consignação do meu carro.")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
@@ -516,7 +518,7 @@ function BottomCTA() {
 
 // ---- Page ---------------------------------------------------------------
 export default function VendaSeuCarro() {
-  useSEO();
+  usePageSEO();
 
   return (
     <>
