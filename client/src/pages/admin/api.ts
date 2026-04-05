@@ -186,40 +186,45 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
   return data.content?.[0]?.text?.trim() || "";
 }
 
-// ── Cover image generation (DALL-E 3) ───────────────────────────────────────
+// ── Cover images (Unsplash, permanent URLs) ────────────────────────────────
 
-async function generateCoverImage(openaiKey: string, titulo: string): Promise<string> {
-  const imagePrompt = `Professional automotive blog cover photo. Theme: "${titulo}". Style: clean, modern, editorial photography of cars in an urban Brazilian setting. Wide angle, soft lighting, no text overlays, no logos. 16:9 aspect ratio.`;
+const COVER_IMAGES: Record<string, string[]> = {
+  comparativo: [
+    "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&q=80",
+    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80",
+    "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1200&q=80",
+  ],
+  "guia-preco": [
+    "https://images.unsplash.com/photo-1549317661-bd32c8ce0afa?w=1200&q=80",
+    "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=1200&q=80",
+    "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1200&q=80",
+  ],
+  review: [
+    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80",
+    "https://images.unsplash.com/photo-1542362567-b07e54358753?w=1200&q=80",
+    "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=1200&q=80",
+  ],
+  financiamento: [
+    "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1200&q=80",
+    "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80",
+    "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80",
+  ],
+  "guia-perfil": [
+    "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1200&q=80",
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&q=80",
+    "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1200&q=80",
+  ],
+};
 
-  const res = await fetch("https://api.openai.com/v1/images/generations", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${openaiKey}`,
-    },
-    body: JSON.stringify({
-      model: "dall-e-3",
-      prompt: imagePrompt,
-      n: 1,
-      size: "1792x1024",
-      quality: "standard",
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `DALL-E error ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data.data?.[0]?.url || "";
+function pickCover(categoria: string): string {
+  const images = COVER_IMAGES[categoria] || COVER_IMAGES["guia-perfil"];
+  return images[Math.floor(Math.random() * images.length)];
 }
 
 // ── Blog generation ─────────────────────────────────────────────────────────
 
 export async function generateBlogPost(
   claudeKey: string,
-  openaiKey: string,
   params: {
     categoria: string;
     tema: string;
@@ -233,11 +238,11 @@ export async function generateBlogPost(
   meta_title: string;
   meta_description: string;
   keywords: string[];
+  categoria: string;
   veiculos_slugs: string[];
 }> {
   // Build context about what models exist (for relevance, not for listing)
   const modelosNoEstoque = [...new Set(params.veiculos.map((v) => `${v.marca} ${v.modelo}`))].join(", ");
-  const capaCandidata = params.veiculos[0]?.foto || "";
 
   const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
 
@@ -274,6 +279,7 @@ IDIOMA: portugues do Brasil
 RESPONDA EM JSON:
 {
   "titulo": "Titulo chamativo com Campinas",
+  "categoria": "comparativo ou guia-preco ou review ou financiamento ou guia-perfil",
   "conteudo": "Artigo completo em markdown — SEM links, SEM fotos, SEM fichas de veiculos",
   "meta_title": "Title tag SEO (max 60 chars)",
   "meta_description": "Meta description (max 155 chars)",
@@ -283,21 +289,16 @@ RESPONDA EM JSON:
   const raw = await callClaude(claudeKey, prompt, 6000);
   const jsonStr = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
   const parsed = JSON.parse(jsonStr);
-  const titulo = parsed.titulo || params.tema;
-
-  // Generate cover image with DALL-E
-  let capa = "";
-  if (openaiKey) {
-    try { capa = await generateCoverImage(openaiKey, titulo); } catch { /* fallback: no cover */ }
-  }
+  const categoria = parsed.categoria || params.categoria || "guia-perfil";
 
   return {
-    titulo,
-    capa,
+    titulo: parsed.titulo || params.tema,
+    capa: pickCover(categoria),
     conteudo: parsed.conteudo || "",
     meta_title: parsed.meta_title || "",
     meta_description: parsed.meta_description || "",
     keywords: Array.isArray(parsed.keywords) ? parsed.keywords : params.keywords,
+    categoria,
     veiculos_slugs: params.veiculos.map((v) => v.slug),
   };
 }

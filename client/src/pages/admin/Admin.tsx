@@ -1277,7 +1277,7 @@ function toVehicleInfo(v: VeiculoAdmin) {
   return { marca: v.marca, modelo: v.modelo, versao: v.versao, ano: v.ano_fabricacao, km: v.km, preco: v.preco, cambio: v.cambio, combustivel: v.combustivel, slug: v.slug, foto: v.foto_principal };
 }
 
-function BlogPage({ claudeKey, openaiKey, vehicles }: { claudeKey: string; openaiKey: string; vehicles: VeiculoAdmin[] }) {
+function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: VeiculoAdmin[] }) {
   const published = useMemo(() => vehicles.filter((v) => v.status === "publicado"), [vehicles]);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -1360,16 +1360,16 @@ function BlogPage({ claudeKey, openaiKey, vehicles }: { claudeKey: string; opena
       // Pick a varied sample of published vehicles for context
       const sample = published.sort(() => Math.random() - 0.5).slice(0, 15).map(toVehicleInfo);
 
-      const result = await generateBlogPost(claudeKey, openaiKey, {
-        categoria: formCategoria || "guia-perfil",
-        tema: formTitulo || "", // empty = let AI decide
+      const result = await generateBlogPost(claudeKey, {
+        categoria: formCategoria || "",
+        tema: formTitulo || "",
         veiculos: sample,
         keywords: formKeywords ? formKeywords.split(",").map((k) => k.trim()).filter(Boolean) : [],
       });
 
       setFormTitulo(result.titulo);
       setFormCapa(result.capa);
-      setFormCategoria(result.keywords.some(k => k.includes("comparativo")) ? "comparativo" : formCategoria || "guia-perfil");
+      setFormCategoria((result.categoria || "guia-perfil") as BlogCategoria);
       setFormConteudo(result.conteudo);
       setFormMetaTitle(result.meta_title);
       setFormMetaDesc(result.meta_description);
@@ -1391,13 +1391,13 @@ function BlogPage({ claudeKey, openaiKey, vehicles }: { claudeKey: string; opena
       try {
         const relevantVehicles = filterVehiclesForTema(t.filter).map(toVehicleInfo);
         console.log(`[BLOG] Artigo ${i + 1}: ${t.tema.slice(0, 40)}, ${relevantVehicles.length} veiculos`);
-        const result = await generateBlogPost(claudeKey, openaiKey, {
+        const result = await generateBlogPost(claudeKey, {
           categoria: t.categoria, tema: t.tema, veiculos: relevantVehicles, keywords: t.keywords,
         });
         console.log(`[BLOG] Artigo ${i + 1} gerado:`, result.titulo);
         const slug = makeSlug(result.titulo);
         await createBlogPost({
-          slug, titulo: result.titulo, capa: result.capa, categoria: t.categoria,
+          slug, titulo: result.titulo, capa: result.capa, categoria: (result.categoria || t.categoria) as BlogCategoria,
           conteudo: result.conteudo, meta_title: result.meta_title,
           meta_description: result.meta_description, keywords: result.keywords,
           veiculos_relacionados: result.veiculos_slugs,
@@ -1886,7 +1886,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
-              {page === "blog" && <BlogPage claudeKey={claudeKey} openaiKey={openaiKey} vehicles={vehicles} />}
+              {page === "blog" && <BlogPage claudeKey={claudeKey} vehicles={vehicles} />}
               {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} claudeKey={claudeKey} setClaudeKey={setClaudeKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
             </>
           )}
