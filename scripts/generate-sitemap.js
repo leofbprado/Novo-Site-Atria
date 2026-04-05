@@ -62,12 +62,29 @@ async function getPublishedVehicles() {
   });
 }
 
+// ── Fetch published blog posts ──────────────────────────────────────────────
+async function getPublishedBlogPosts() {
+  const snap = await db
+    .collection("blog_posts")
+    .where("status", "==", "publicado")
+    .orderBy("data_publicacao", "desc")
+    .get();
+
+  return snap.docs.map((d) => {
+    const data = d.data();
+    return {
+      slug: data.slug || "",
+      lastmod: (data.data_publicacao || data.data_criacao)?.toDate?.() || new Date(),
+    };
+  });
+}
+
 // ── Generate XML ────────────────────────────────────────────────────────────
 function toW3CDate(d) {
   return d.toISOString().slice(0, 10);
 }
 
-function buildSitemap(vehicles) {
+function buildSitemap(vehicles, blogPosts) {
   const today = toW3CDate(new Date());
 
   const staticPages = [
@@ -76,6 +93,7 @@ function buildSitemap(vehicles) {
     { loc: "/vender-carro-usado-campinas-sp", priority: "0.7", changefreq: "monthly" },
     { loc: "/financiamento-carro-usado-seminovo-campinas-sp", priority: "0.7", changefreq: "monthly" },
     { loc: "/sobre-atria-veiculos-campinas-sp", priority: "0.6", changefreq: "monthly" },
+    { loc: "/blog", priority: "0.8", changefreq: "weekly" },
   ];
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
@@ -89,6 +107,11 @@ function buildSitemap(vehicles) {
     xml += `  <url>\n    <loc>${SITE_URL}/campinas-sp/${v.slug}</loc>\n    <lastmod>${toW3CDate(v.lastmod)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
   }
 
+  for (const bp of blogPosts) {
+    if (!bp.slug) continue;
+    xml += `  <url>\n    <loc>${SITE_URL}/blog/${bp.slug}</loc>\n    <lastmod>${toW3CDate(bp.lastmod)}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+  }
+
   xml += `</urlset>\n`;
   return xml;
 }
@@ -99,10 +122,16 @@ async function main() {
   const vehicles = await getPublishedVehicles();
   console.log(`Found ${vehicles.length} published vehicles`);
 
-  const xml = buildSitemap(vehicles);
+  let blogPosts = [];
+  try {
+    blogPosts = await getPublishedBlogPosts();
+    console.log(`Found ${blogPosts.length} published blog posts`);
+  } catch { console.log("No blog posts found (collection may not exist yet)"); }
+
+  const xml = buildSitemap(vehicles, blogPosts);
   fs.writeFileSync(OUTPUT, xml, "utf8");
 
-  const totalUrls = 5 + vehicles.length;
+  const totalUrls = 6 + vehicles.length + blogPosts.length;
   console.log(`Sitemap written to ${OUTPUT} (${totalUrls} URLs)`);
 }
 

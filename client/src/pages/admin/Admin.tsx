@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut,
+  LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut, BookOpen,
   RefreshCw, CheckCircle2, Search, Filter, ChevronLeft,
   ChevronRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
-  Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu,
+  Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2,
 } from "lucide-react";
 import {
   fetchAutoConfVeiculos,
   fetchAutoConfVeiculo,
   generateDescription,
+  generateBlogPost,
+  suggestBlogTopics,
 } from "./api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -29,7 +31,14 @@ import {
   getMilestoneConfig,
   saveMilestoneConfig,
   migrateAllSlugs,
+  getAllBlogPosts,
+  createBlogPost,
+  updateBlogPost,
+  publishBlogPost,
+  unpublishBlogPost,
   type VeiculoAdmin,
+  type BlogPost,
+  type BlogCategoria,
   type LeadAdmin,
   type WhatsAppClick,
   type MilestoneConfig,
@@ -50,7 +59,7 @@ const TAG_COLORS: Record<string, string> = {
 };
 const DEFAULT_TAG_COLOR = "bg-sky-100 text-sky-800 border-sky-200";
 
-type Page = "dashboard" | "estoque" | "leads" | "whatsapp" | "config";
+type Page = "dashboard" | "estoque" | "leads" | "whatsapp" | "blog" | "config";
 
 // ── Diagnostic display helpers ──────────────────────────────────────────────
 
@@ -534,6 +543,7 @@ function Sidebar({ page, setPage, onLogout, collapsed, setCollapsed }: {
     { id: "estoque", icon: <Car size={20} />, label: "Estoque" },
     { id: "leads", icon: <Users size={20} />, label: "Leads" },
     { id: "whatsapp", icon: <MessageCircle size={20} />, label: "WhatsApp" },
+    { id: "blog", icon: <BookOpen size={20} />, label: "Blog" },
     { id: "config", icon: <Settings size={20} />, label: "Configuracoes" },
   ];
 
@@ -1242,6 +1252,234 @@ function WhatsAppPage() {
   );
 }
 
+// ── Blog Page ───────────────────────────────────────────────────────────────
+const BLOG_CATEGORIAS: BlogCategoria[] = ["comparativo", "guia-preco", "review", "financiamento", "guia-perfil"];
+
+function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: VeiculoAdmin[] }) {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<BlogPost | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [genResult, setGenResult] = useState("");
+
+  // Form state
+  const [formTitulo, setFormTitulo] = useState("");
+  const [formCategoria, setFormCategoria] = useState<BlogCategoria>("guia-perfil");
+  const [formConteudo, setFormConteudo] = useState("");
+  const [formMetaTitle, setFormMetaTitle] = useState("");
+  const [formMetaDesc, setFormMetaDesc] = useState("");
+  const [formKeywords, setFormKeywords] = useState("");
+  const [formVeiculos, setFormVeiculos] = useState("");
+
+  const loadPosts = useCallback(async () => {
+    try { setPosts(await getAllBlogPosts()); } catch { /* ignore */ }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadPosts(); }, [loadPosts]);
+
+  const publishedCount = posts.filter((p) => p.status === "publicado").length;
+  const draftCount = posts.filter((p) => p.status === "rascunho").length;
+
+  const resetForm = () => {
+    setFormTitulo(""); setFormCategoria("guia-perfil"); setFormConteudo("");
+    setFormMetaTitle(""); setFormMetaDesc(""); setFormKeywords(""); setFormVeiculos("");
+    setEditing(null); setCreating(false);
+  };
+
+  const openEditor = (post: BlogPost) => {
+    setEditing(post); setCreating(false);
+    setFormTitulo(post.titulo); setFormCategoria(post.categoria);
+    setFormConteudo(post.conteudo); setFormMetaTitle(post.meta_title);
+    setFormMetaDesc(post.meta_description);
+    setFormKeywords(post.keywords.join(", ")); setFormVeiculos(post.veiculos_relacionados.join(", "));
+  };
+
+  const makeSlug = (title: string) =>
+    title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+  const handleSave = async () => {
+    const keywords = formKeywords.split(",").map((k) => k.trim()).filter(Boolean);
+    const veiculos = formVeiculos.split(",").map((v) => v.trim()).filter(Boolean);
+    const slug = editing ? editing.slug : makeSlug(formTitulo);
+
+    const data = {
+      slug, titulo: formTitulo, categoria: formCategoria,
+      conteudo: formConteudo, meta_title: formMetaTitle,
+      meta_description: formMetaDesc, keywords, veiculos_relacionados: veiculos,
+    };
+
+    if (editing) {
+      await updateBlogPost(slug, data);
+    } else {
+      await createBlogPost(data);
+    }
+    resetForm(); loadPosts();
+  };
+
+  const handleGenerate = async () => {
+    if (!openaiKey) { setGenResult("Configure a chave OpenAI primeiro"); return; }
+    setGenerating(true); setGenResult("");
+    try {
+      const veiculosInfo = vehicles
+        .filter((v) => v.status === "publicado")
+        .slice(0, 20)
+        .map((v) => ({ marca: v.marca, modelo: v.modelo, ano: v.ano_fabricacao, preco: v.preco, slug: v.slug }));
+
+      const result = await generateBlogPost(openaiKey, {
+        categoria: formCategoria,
+        tema: formTitulo || "artigo sobre carros usados em Campinas",
+        veiculos: veiculosInfo,
+        keywords: formKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+      });
+
+      setFormTitulo(result.titulo);
+      setFormConteudo(result.conteudo);
+      setFormMetaTitle(result.meta_title);
+      setFormMetaDesc(result.meta_description);
+      setFormKeywords(result.keywords.join(", "));
+      setGenResult("Artigo gerado com sucesso");
+    } catch (err: any) { setGenResult(`Erro: ${err.message}`); }
+    setGenerating(false);
+  };
+
+  const handlePublish = async (slug: string, currentStatus: string) => {
+    if (currentStatus === "publicado") await unpublishBlogPost(slug);
+    else await publishBlogPost(slug);
+    loadPosts();
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Spinner size={24} /></div>;
+
+  // Editor view
+  if (creating || editing) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-900">{editing ? "Editar Artigo" : "Novo Artigo"}</h1>
+          <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+        </div>
+        <div className="max-w-4xl space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Titulo</label>
+              <input value={formTitulo} onChange={(e) => setFormTitulo(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Titulo do artigo" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Categoria</label>
+              <select value={formCategoria} onChange={(e) => setFormCategoria(e.target.value as BlogCategoria)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none bg-white focus:border-blue-500">
+                {BLOG_CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Keywords (separadas por virgula)</label>
+            <input value={formKeywords} onChange={(e) => setFormKeywords(e.target.value)}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="suv usado campinas, tracker usado" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Conteudo (markdown)</label>
+            <textarea value={formConteudo} onChange={(e) => setFormConteudo(e.target.value)} rows={20}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-mono" placeholder="Conteudo do artigo em markdown..." />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Meta Title</label>
+              <input value={formMetaTitle} onChange={(e) => setFormMetaTitle(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Title tag (max 60 chars)" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Meta Description</label>
+              <input value={formMetaDesc} onChange={(e) => setFormMetaDesc(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Description (max 155 chars)" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Veiculos relacionados (slugs, separados por virgula)</label>
+            <input value={formVeiculos} onChange={(e) => setFormVeiculos(e.target.value)}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="comprar-honda-civic-..., comprar-toyota-corolla-..." />
+          </div>
+          {genResult && (
+            <p className={`text-sm ${genResult.startsWith("Erro") ? "text-red-600" : "text-emerald-600"}`}>{genResult}</p>
+          )}
+          <div className="flex gap-2">
+            <button onClick={handleGenerate} disabled={generating}
+              className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              {generating ? <Spinner size={14} /> : <Sparkles size={14} />}
+              {generating ? "Gerando..." : "Gerar com IA"}
+            </button>
+            <button onClick={handleSave}
+              className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              <Save size={14} /> Salvar rascunho
+            </button>
+            {editing && (
+              <button onClick={() => { handlePublish(editing.slug, editing.status); resetForm(); }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                <Eye size={14} /> {editing.status === "publicado" ? "Despublicar" : "Publicar"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // List view
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Blog</h1>
+          <p className="text-slate-500 text-sm mt-0.5">{posts.length} artigos ({publishedCount} publicados, {draftCount} rascunhos)</p>
+        </div>
+        <button onClick={() => { resetForm(); setCreating(true); }}
+          className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
+          <Plus size={14} /> Novo Artigo
+        </button>
+      </div>
+
+      {posts.length === 0 ? (
+        <EmptyState icon={<BookOpen size={48} />} title="Nenhum artigo" description='Clique em "Novo Artigo" para criar o primeiro.' />
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/50">
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase">Titulo</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase hidden md:table-cell">Categoria</th>
+                <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase">Status</th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase">Acoes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {posts.map((post) => (
+                <tr key={post.slug} className="hover:bg-slate-50 cursor-pointer" onClick={() => openEditor(post)}>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-slate-900 truncate max-w-md">{post.titulo}</p>
+                    <p className="text-slate-400 text-xs truncate">/blog/{post.slug}</p>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{post.categoria}</td>
+                  <td className="px-4 py-3 text-center"><Badge status={post.status} /></td>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={(e) => { e.stopPropagation(); handlePublish(post.slug, post.status); }}
+                      className="text-slate-400 hover:text-slate-600 p-1" title={post.status === "publicado" ? "Despublicar" : "Publicar"}>
+                      {post.status === "publicado" ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Config Page ──────────────────────────────────────────────────────────────
 function ConfigPage({ openaiKey, setOpenaiKey, milestoneConfig, setMilestoneConfig }: {
   openaiKey: string; setOpenaiKey: (k: string) => void;
@@ -1506,6 +1744,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
+              {page === "blog" && <BlogPage openaiKey={openaiKey} vehicles={vehicles} />}
               {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
             </>
           )}

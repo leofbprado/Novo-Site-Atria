@@ -6,5 +6,6 @@ export const ROUTES = {
   venderCarro: "/vender-carro-usado-campinas-sp",
   financiamento: "/financiamento-carro-usado-seminovo-campinas-sp",
   sobre: "/sobre-atria-veiculos-campinas-sp",
+  blog: "/blog",
   admin: "/admin",
 } as const;

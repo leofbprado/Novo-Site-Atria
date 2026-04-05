@@ -487,3 +487,103 @@ export async function migrateAllSlugs(): Promise<{ migrated: number; skipped: nu
 
   return { migrated, skipped: vehicles.length - migrated };
 }
+
+// ── Blog ─────────────────────────────────────────────────────────────────────
+
+export type BlogCategoria = "comparativo" | "guia-preco" | "review" | "financiamento" | "guia-perfil";
+
+export interface BlogPost {
+  slug: string;
+  titulo: string;
+  conteudo: string;
+  meta_title: string;
+  meta_description: string;
+  keywords: string[];
+  status: "rascunho" | "publicado";
+  data_criacao: Timestamp | null;
+  data_publicacao: Timestamp | null;
+  veiculos_relacionados: string[];
+  categoria: BlogCategoria;
+}
+
+const BLOG_COLLECTION = "blog_posts";
+
+function normalizeBlogPost(raw: Record<string, unknown>): BlogPost {
+  return {
+    slug: (raw.slug as string) || "",
+    titulo: (raw.titulo as string) || "",
+    conteudo: (raw.conteudo as string) || "",
+    meta_title: (raw.meta_title as string) || "",
+    meta_description: (raw.meta_description as string) || "",
+    keywords: Array.isArray(raw.keywords) ? raw.keywords : [],
+    status: ((raw.status as string) || "rascunho") as BlogPost["status"],
+    data_criacao: (raw.data_criacao as Timestamp) || null,
+    data_publicacao: (raw.data_publicacao as Timestamp) || null,
+    veiculos_relacionados: Array.isArray(raw.veiculos_relacionados) ? raw.veiculos_relacionados : [],
+    categoria: ((raw.categoria as string) || "guia-perfil") as BlogCategoria,
+  };
+}
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(collection(firestore, BLOG_COLLECTION), orderBy("data_criacao", "desc"))
+  );
+  return snap.docs.map((d) => normalizeBlogPost(d.data()));
+}
+
+export async function getPublishedBlogPosts(): Promise<BlogPost[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(
+      collection(firestore, BLOG_COLLECTION),
+      where("status", "==", "publicado"),
+      orderBy("data_publicacao", "desc")
+    )
+  );
+  return snap.docs.map((d) => normalizeBlogPost(d.data()));
+}
+
+export async function getPublishedBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  const firestore = requireDb();
+  const snap = await getDocs(
+    query(
+      collection(firestore, BLOG_COLLECTION),
+      where("slug", "==", slug),
+      where("status", "==", "publicado")
+    )
+  );
+  if (snap.empty) return null;
+  return normalizeBlogPost(snap.docs[0].data());
+}
+
+export async function createBlogPost(post: Omit<BlogPost, "data_criacao" | "data_publicacao" | "status">): Promise<void> {
+  const firestore = requireDb();
+  await setDoc(doc(firestore, BLOG_COLLECTION, post.slug), {
+    ...post,
+    status: "rascunho",
+    data_criacao: serverTimestamp(),
+    data_publicacao: null,
+  });
+}
+
+export async function updateBlogPost(slug: string, fields: Partial<BlogPost>): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, BLOG_COLLECTION, slug), fields);
+}
+
+export async function publishBlogPost(slug: string): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, BLOG_COLLECTION, slug), {
+    status: "publicado",
+    data_publicacao: serverTimestamp(),
+  });
+}
+
+export async function unpublishBlogPost(slug: string): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, BLOG_COLLECTION, slug), {
+    status: "rascunho",
+    data_publicacao: null,
+  });
+}

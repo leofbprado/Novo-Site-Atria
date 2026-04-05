@@ -17,6 +17,8 @@ const VehicleDetail = lazy(() => import("@/pages/VehicleDetail"));
 const VendaSeuCarro = lazy(() => import("@/pages/VendaSeuCarro"));
 const Financiamento = lazy(() => import("@/pages/Financiamento"));
 const Sobre = lazy(() => import("@/pages/Sobre"));
+const Blog = lazy(() => import("@/pages/Blog"));
+const BlogPostPage = lazy(() => import("@/pages/BlogPost"));
 const Admin = lazy(() => import("@/pages/admin/Admin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
@@ -51,6 +53,8 @@ function Router() {
         <Route path={ROUTES.venderCarro} component={() => <Layout><VendaSeuCarro /></Layout>} />
         <Route path={ROUTES.financiamento} component={() => <Layout><Financiamento /></Layout>} />
         <Route path={ROUTES.sobre} component={() => <Layout><Sobre /></Layout>} />
+        <Route path="/blog/:slug" component={() => <Layout><BlogPostPage /></Layout>} />
+        <Route path={ROUTES.blog} component={() => <Layout><Blog /></Layout>} />
         {/* Old vehicle URLs — still resolve via old_slug fallback */}
         <Route path="/campinas/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
         <Route path="/veiculo/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
