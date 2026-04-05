@@ -186,10 +186,40 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
   return data.content?.[0]?.text?.trim() || "";
 }
 
+// ── Cover image generation (DALL-E 3) ───────────────────────────────────────
+
+async function generateCoverImage(openaiKey: string, titulo: string): Promise<string> {
+  const imagePrompt = `Professional automotive blog cover photo. Theme: "${titulo}". Style: clean, modern, editorial photography of cars in an urban Brazilian setting. Wide angle, soft lighting, no text overlays, no logos. 16:9 aspect ratio.`;
+
+  const res = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${openaiKey}`,
+    },
+    body: JSON.stringify({
+      model: "dall-e-3",
+      prompt: imagePrompt,
+      n: 1,
+      size: "1792x1024",
+      quality: "standard",
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `DALL-E error ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.data?.[0]?.url || "";
+}
+
 // ── Blog generation ─────────────────────────────────────────────────────────
 
 export async function generateBlogPost(
   claudeKey: string,
+  openaiKey: string,
   params: {
     categoria: string;
     tema: string;
@@ -253,9 +283,17 @@ RESPONDA EM JSON:
   const raw = await callClaude(claudeKey, prompt, 6000);
   const jsonStr = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
   const parsed = JSON.parse(jsonStr);
+  const titulo = parsed.titulo || params.tema;
+
+  // Generate cover image with DALL-E
+  let capa = "";
+  if (openaiKey) {
+    try { capa = await generateCoverImage(openaiKey, titulo); } catch { /* fallback: no cover */ }
+  }
+
   return {
-    titulo: parsed.titulo || params.tema,
-    capa: capaCandidata,
+    titulo,
+    capa,
     conteudo: parsed.conteudo || "",
     meta_title: parsed.meta_title || "",
     meta_description: parsed.meta_description || "",

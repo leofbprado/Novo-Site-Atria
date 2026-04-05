@@ -1277,7 +1277,7 @@ function toVehicleInfo(v: VeiculoAdmin) {
   return { marca: v.marca, modelo: v.modelo, versao: v.versao, ano: v.ano_fabricacao, km: v.km, preco: v.preco, cambio: v.cambio, combustivel: v.combustivel, slug: v.slug, foto: v.foto_principal };
 }
 
-function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: VeiculoAdmin[] }) {
+function BlogPage({ claudeKey, openaiKey, vehicles }: { claudeKey: string; openaiKey: string; vehicles: VeiculoAdmin[] }) {
   const published = useMemo(() => vehicles.filter((v) => v.status === "publicado"), [vehicles]);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -1360,7 +1360,7 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
       // Pick a varied sample of published vehicles for context
       const sample = published.sort(() => Math.random() - 0.5).slice(0, 15).map(toVehicleInfo);
 
-      const result = await generateBlogPost(claudeKey, {
+      const result = await generateBlogPost(claudeKey, openaiKey, {
         categoria: formCategoria || "guia-perfil",
         tema: formTitulo || "", // empty = let AI decide
         veiculos: sample,
@@ -1391,7 +1391,7 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
       try {
         const relevantVehicles = filterVehiclesForTema(t.filter).map(toVehicleInfo);
         console.log(`[BLOG] Artigo ${i + 1}: ${t.tema.slice(0, 40)}, ${relevantVehicles.length} veiculos`);
-        const result = await generateBlogPost(claudeKey, {
+        const result = await generateBlogPost(claudeKey, openaiKey, {
           categoria: t.categoria, tema: t.tema, veiculos: relevantVehicles, keywords: t.keywords,
         });
         console.log(`[BLOG] Artigo ${i + 1} gerado:`, result.titulo);
@@ -1886,7 +1886,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
-              {page === "blog" && <BlogPage claudeKey={claudeKey} vehicles={vehicles} />}
+              {page === "blog" && <BlogPage claudeKey={claudeKey} openaiKey={openaiKey} vehicles={vehicles} />}
               {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} claudeKey={claudeKey} setClaudeKey={setClaudeKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
             </>
           )}
