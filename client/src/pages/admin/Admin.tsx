@@ -1255,13 +1255,40 @@ function WhatsAppPage() {
 // ── Blog Page ───────────────────────────────────────────────────────────────
 const BLOG_CATEGORIAS: BlogCategoria[] = ["comparativo", "guia-preco", "review", "financiamento", "guia-perfil"];
 
+const BLOG_8_TEMAS: Array<{ tema: string; categoria: BlogCategoria; keywords: string[]; filter: (v: VeiculoAdmin) => boolean }> = [
+  { tema: "Melhores SUVs usados ate R$90 mil em Campinas 2026", categoria: "guia-preco", keywords: ["suv usado campinas", "suv seminovo campinas sp"],
+    filter: (v) => (v.tipo || "").toLowerCase().includes("suv") && v.preco <= 90000 },
+  { tema: "Tracker vs Creta vs HR-V usado — qual comprar em Campinas?", categoria: "comparativo", keywords: ["tracker usado campinas", "creta usado campinas", "hr-v usado campinas"],
+    filter: (v) => /tracker|creta|hr-v|hrv/i.test(v.modelo) },
+  { tema: "Vale a pena comprar Honda Civic usado em Campinas? Guia completo", categoria: "review", keywords: ["honda civic usado campinas", "civic seminovo campinas sp"],
+    filter: (v) => /civic/i.test(v.modelo) },
+  { tema: "Como financiar carro usado em Campinas — taxas e aprovacao em 2026", categoria: "financiamento", keywords: ["financiamento carro usado campinas", "financiar seminovo campinas"],
+    filter: () => true },
+  { tema: "Melhores carros usados ate R$60 mil para familia em Campinas", categoria: "guia-perfil", keywords: ["carro usado familia campinas", "seminovo ate 60 mil campinas"],
+    filter: (v) => v.preco <= 60000 },
+  { tema: "Sedan usado em Campinas — Corolla, Civic ou Jetta? Comparativo 2026", categoria: "comparativo", keywords: ["sedan usado campinas", "corolla usado campinas", "jetta usado campinas"],
+    filter: (v) => /corolla|civic|jetta/i.test(v.modelo) },
+  { tema: "Guia completo: comprar carro por consignacao em Campinas", categoria: "guia-perfil", keywords: ["consignacao carro campinas", "vender carro consignacao campinas"],
+    filter: () => true },
+  { tema: "Picapes usadas em Campinas — Toro, S10 e Hilux: qual escolher?", categoria: "comparativo", keywords: ["picape usada campinas", "toro usada campinas", "s10 usada campinas"],
+    filter: (v) => /toro|s10|hilux|ranger|amarok|saveiro|strada/i.test(v.modelo) || /picape|pickup|caminhonete/i.test(v.tipo || "") },
+];
+
+function toVehicleInfo(v: VeiculoAdmin) {
+  return { marca: v.marca, modelo: v.modelo, versao: v.versao, ano: v.ano_fabricacao, km: v.km, preco: v.preco, cambio: v.cambio, combustivel: v.combustivel, slug: v.slug, foto: v.foto_principal };
+}
+
 function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: VeiculoAdmin[] }) {
+  const published = useMemo(() => vehicles.filter((v) => v.status === "publicado"), [vehicles]);
+
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [creating, setCreating] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [genResult, setGenResult] = useState("");
+  const [batchGenerating, setBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState("");
 
   // Form state
   const [formTitulo, setFormTitulo] = useState("");
@@ -1300,6 +1327,13 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
     title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+  const filterVehiclesForTema = (filter: (v: VeiculoAdmin) => boolean): VeiculoAdmin[] => {
+    const matched = published.filter(filter);
+    if (matched.length >= 3) return matched.slice(0, 10);
+    // Fallback: return a varied sample if filter matches too few
+    return published.sort(() => Math.random() - 0.5).slice(0, 10);
+  };
+
   const handleSave = async () => {
     const keywords = formKeywords.split(",").map((k) => k.trim()).filter(Boolean);
     const veiculos = formVeiculos.split(",").map((v) => v.trim()).filter(Boolean);
@@ -1323,15 +1357,12 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
     if (!openaiKey) { setGenResult("Configure a chave OpenAI primeiro"); return; }
     setGenerating(true); setGenResult("");
     try {
-      const veiculosInfo = vehicles
-        .filter((v) => v.status === "publicado")
-        .slice(0, 20)
-        .map((v) => ({ marca: v.marca, modelo: v.modelo, ano: v.ano_fabricacao, preco: v.preco, slug: v.slug }));
+      const relevantVehicles = published.slice(0, 10).map(toVehicleInfo);
 
       const result = await generateBlogPost(openaiKey, {
         categoria: formCategoria,
         tema: formTitulo || "artigo sobre carros usados em Campinas",
-        veiculos: veiculosInfo,
+        veiculos: relevantVehicles,
         keywords: formKeywords.split(",").map((k) => k.trim()).filter(Boolean),
       });
 
@@ -1340,9 +1371,38 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
       setFormMetaTitle(result.meta_title);
       setFormMetaDesc(result.meta_description);
       setFormKeywords(result.keywords.join(", "));
+      setFormVeiculos(result.veiculos_slugs.join(", "));
       setGenResult("Artigo gerado com sucesso");
     } catch (err: any) { setGenResult(`Erro: ${err.message}`); }
     setGenerating(false);
+  };
+
+  const handleGenerate8 = async () => {
+    if (!openaiKey) { setBatchProgress("Configure a chave OpenAI primeiro"); return; }
+    setBatchGenerating(true); setBatchProgress("");
+    let created = 0;
+    for (let i = 0; i < BLOG_8_TEMAS.length; i++) {
+      const t = BLOG_8_TEMAS[i];
+      setBatchProgress(`Gerando artigo ${i + 1}/${BLOG_8_TEMAS.length}: ${t.tema.slice(0, 50)}...`);
+      try {
+        const relevantVehicles = filterVehiclesForTema(t.filter).map(toVehicleInfo);
+        const result = await generateBlogPost(openaiKey, {
+          categoria: t.categoria, tema: t.tema, veiculos: relevantVehicles, keywords: t.keywords,
+        });
+        const slug = makeSlug(result.titulo);
+        await createBlogPost({
+          slug, titulo: result.titulo, categoria: t.categoria,
+          conteudo: result.conteudo, meta_title: result.meta_title,
+          meta_description: result.meta_description, keywords: result.keywords,
+          veiculos_relacionados: result.veiculos_slugs,
+        });
+        created++;
+      } catch (err: any) { setBatchProgress(`Erro no artigo ${i + 1}: ${err.message}`); }
+      if (i < BLOG_8_TEMAS.length - 1) await new Promise((r) => setTimeout(r, 2000));
+    }
+    setBatchProgress(`Concluido: ${created} artigos gerados como rascunho`);
+    setBatchGenerating(false);
+    loadPosts();
   };
 
   const handlePublish = async (slug: string, currentStatus: string) => {
@@ -1436,13 +1496,33 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
           <h1 className="text-2xl font-bold text-slate-900">Blog</h1>
           <p className="text-slate-500 text-sm mt-0.5">{posts.length} artigos ({publishedCount} publicados, {draftCount} rascunhos)</p>
         </div>
-        <button onClick={() => { resetForm(); setCreating(true); }}
-          className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
-          <Plus size={14} /> Novo Artigo
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => { resetForm(); setCreating(true); }}
+            className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
+            <Plus size={14} /> Novo Artigo
+          </button>
+          <button onClick={handleGenerate8} disabled={batchGenerating || !openaiKey}
+            className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
+            {batchGenerating ? <Spinner size={14} /> : <Sparkles size={14} />}
+            {batchGenerating ? "Gerando..." : "Gerar 8 Artigos SEO"}
+          </button>
+        </div>
       </div>
 
-      {posts.length === 0 ? (
+      {batchProgress && (
+        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border ${
+          batchProgress.startsWith("Erro") ? "bg-red-50 text-red-700 border-red-200"
+          : batchProgress.startsWith("Concluido") ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+          : "bg-blue-50 text-blue-700 border-blue-200"
+        }`}>
+          {batchProgress.startsWith("Erro") ? <AlertCircle size={14} /> :
+           batchProgress.startsWith("Concluido") ? <CheckCircle2 size={14} /> :
+           <Spinner size={14} />}
+          {batchProgress}
+        </div>
+      )}
+
+      {posts.length === 0 && !batchProgress ? (
         <EmptyState icon={<BookOpen size={48} />} title="Nenhum artigo" description='Clique em "Novo Artigo" para criar o primeiro.' />
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
