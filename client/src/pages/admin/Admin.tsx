@@ -40,13 +40,12 @@ import {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
-const PRESET_TAGS = ["destaque", "oferta", "seminovo premium", "reservado", "vendido"];
+const PRESET_TAGS = ["destaque", "oferta", "seminovo premium", "reservado"];
 const TAG_COLORS: Record<string, string> = {
   destaque: "bg-amber-100 text-amber-800 border-amber-200",
   oferta: "bg-emerald-100 text-emerald-800 border-emerald-200",
   "seminovo premium": "bg-violet-100 text-violet-800 border-violet-200",
   reservado: "bg-orange-100 text-orange-800 border-orange-200",
-  vendido: "bg-red-100 text-red-800 border-red-200",
 };
 const DEFAULT_TAG_COLOR = "bg-sky-100 text-sky-800 border-sky-200";
 
@@ -184,7 +183,7 @@ function Badge({ status }: { status: string }) {
     : status === "novo"
     ? "bg-amber-50 text-amber-700 border-amber-200"
     : "bg-slate-100 text-slate-600 border-slate-200";
-  const label = status === "publicado" ? "Publicado" : status === "rascunho" ? "Rascunho" : status.charAt(0).toUpperCase() + status.slice(1);
+  const label = status === "publicado" ? "Publicado" : status === "rascunho" ? "Rascunho" : status === "despublicado" ? "Despublicado" : status.charAt(0).toUpperCase() + status.slice(1);
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${styles}`}>
       {label}
@@ -660,7 +659,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
   milestoneConfig: MilestoneConfig;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"" | "rascunho" | "publicado">("");
+  const [statusFilter, setStatusFilter] = useState<"ativos" | "rascunho" | "publicado" | "despublicado" | "todos">("ativos");
   const [perfSort, setPerfSort] = useState<"" | "coldest" | "stalled" | "views_no_contact" | "milestone">("");
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -674,7 +673,10 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
 
   const filtered = useMemo(() => {
     return vehicles.filter((v) => {
-      if (statusFilter && v.status !== statusFilter) return false;
+      if (statusFilter === "ativos" && v.status === "despublicado") return false;
+      if (statusFilter === "rascunho" && v.status !== "rascunho") return false;
+      if (statusFilter === "publicado" && v.status !== "publicado") return false;
+      if (statusFilter === "despublicado" && v.status !== "despublicado") return false;
       if (!searchTerm) return true;
       const s = searchTerm.toLowerCase();
       return v.marca.toLowerCase().includes(s) || v.modelo.toLowerCase().includes(s) || v.versao.toLowerCase().includes(s);
@@ -747,6 +749,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
 
   const publishedCount = vehicles.filter((v) => v.status === "publicado").length;
   const draftCount = vehicles.filter((v) => v.status === "rascunho").length;
+  const despublicadoCount = vehicles.filter((v) => v.status === "despublicado").length;
 
   const handleSync = async () => {
     setSyncing(true); setSyncResult(""); setEnrichResult(""); setPublishAllResult("");
@@ -768,7 +771,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
       }
       const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
       const despublicados = await despublishOrphanVeiculos(autoconfIds);
-      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados (vendidos)`);
+      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados`);
       loadVehicles();
     } catch (err: any) { setSyncResult(`Erro: ${err.message}`); }
     setSyncing(false);
@@ -823,7 +826,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Estoque</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{vehicles.length} veiculos ({publishedCount} publicados, {draftCount} rascunhos)</p>
+          <p className="text-slate-500 text-sm mt-0.5">{vehicles.length} veiculos ({publishedCount} publicados, {draftCount} rascunhos, {despublicadoCount} despublicados)</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={handleSync} disabled={syncing || enriching || publishingAll}
@@ -879,9 +882,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
             <Filter size={14} className="text-slate-400" />
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}
               className="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none bg-white focus:border-blue-500">
-              <option value="">Todos</option>
-              <option value="rascunho">Rascunho</option>
+              <option value="ativos">Ativos</option>
               <option value="publicado">Publicado</option>
+              <option value="rascunho">Rascunho</option>
+              <option value="despublicado">Despublicado</option>
+              <option value="todos">Todos</option>
             </select>
           </div>
           <div className="flex items-center gap-2">

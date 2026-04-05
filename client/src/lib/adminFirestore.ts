@@ -35,7 +35,7 @@ export interface VeiculoAdmin {
   observacao: string;
   portas: number;
   // Admin fields
-  status: "rascunho" | "publicado" | "vendido";
+  status: "rascunho" | "publicado" | "despublicado";
   tags: string[];
   descricao_ia: string;
   slug: string;
@@ -101,7 +101,7 @@ function normalizeVeiculoAdmin(raw: Record<string, unknown>): VeiculoAdmin {
     placa_final: (raw.placa_final as string) || "",
     observacao: (raw.observacao as string) || "",
     portas: Number(raw.portas) || 0,
-    status: (raw.status as string) || "rascunho",
+    status: ((raw.status as string) === "vendido" ? "despublicado" : (raw.status as string)) || "rascunho",
     tags: Array.isArray(raw.tags) ? raw.tags : [],
     descricao_ia: (raw.descricao_ia as string) || "",
     slug: (raw.slug as string) || "",
@@ -204,7 +204,7 @@ export async function upsertVeiculoFromAutoConf(
 
 /**
  * Despublica veículos que existem no Firestore como "publicado"
- * mas não vieram na lista do AutoConf (provavelmente vendidos).
+ * mas não vieram na lista do AutoConf (provavelmente vendidos/removidos).
  */
 export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promise<number> {
   const firestore = requireDb();
@@ -213,7 +213,7 @@ export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promis
   for (const docSnap of snap.docs) {
     if (!autoconfIds.has(docSnap.id) && docSnap.data().status === "publicado") {
       await updateDoc(docSnap.ref, {
-        status: "vendido",
+        status: "despublicado",
         data_remocao: serverTimestamp(),
       });
       count++;
