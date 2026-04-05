@@ -40,6 +40,12 @@ function Router() {
     <Suspense fallback={<PageLoader />}>
       <Switch>
         <Route path={ROUTES.home} component={() => <Layout><Home /></Layout>} />
+        {/* Old fixed-page URLs — redirect before new routes (wouter matches by prefix) */}
+        <Route path="/estoque" component={() => <Redirect to={ROUTES.estoque} />} />
+        <Route path="/venda-seu-carro" component={() => <Redirect to={ROUTES.venderCarro} />} />
+        <Route path="/financiamento" component={() => <Redirect to={ROUTES.financiamento} />} />
+        <Route path="/sobre" component={() => <Redirect to={ROUTES.sobre} />} />
+        {/* New SEO routes */}
         <Route path={ROUTES.estoque} component={() => <Layout><Estoque /></Layout>} />
         <Route path="/campinas/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
         <Route path={ROUTES.venderCarro} component={() => <Layout><VendaSeuCarro /></Layout>} />
@@ -47,11 +53,6 @@ function Router() {
         <Route path={ROUTES.sobre} component={() => <Layout><Sobre /></Layout>} />
         {/* Old vehicle URLs — still resolve via old_slug fallback */}
         <Route path="/veiculo/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
-        {/* Old fixed-page URLs — client-side redirect (hosting 301 handles crawlers) */}
-        <Route path="/estoque" component={() => <Redirect to={ROUTES.estoque} />} />
-        <Route path="/venda-seu-carro" component={() => <Redirect to={ROUTES.venderCarro} />} />
-        <Route path="/financiamento" component={() => <Redirect to={ROUTES.financiamento} />} />
-        <Route path="/sobre" component={() => <Redirect to={ROUTES.sobre} />} />
         <Route path={ROUTES.admin} component={() => <Admin />} />
         <Route component={() => <Layout><NotFound /></Layout>} />
       </Switch>
