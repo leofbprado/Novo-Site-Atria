@@ -127,3 +127,151 @@ export async function getVehicleDailyHistory(
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, days);
 }
+
+// ─── Diagnostic Types ───────────────────────────────────────────────────────
+
+export type TendenciaDir = "subindo" | "estavel" | "caindo";
+
+export type DiagnosticoTexto =
+  | "Demanda forte — segurar preço"
+  | "Preço pode estar acima do mercado"
+  | "Sem exposição — verificar fotos/título/posição"
+  | "Nicho específico — manter"
+  | "Sem dados";
+
+export interface VehicleDiagnostic {
+  views7d: number;
+  contatos7d: number;
+  conversao: number;          // contatos/views em %, 0 se views=0
+  tendenciaDir: TendenciaDir;
+  tendenciaPct: number;       // variação % (positivo = subindo)
+  diagnostico: DiagnosticoTexto;
+}
+
+// ─── Batch Daily History (all vehicles, last N days) ────────────────────────
+
+export async function getAllVehicleDailyHistory(
+  slugs: string[],
+  days = 14,
+): Promise<Map<string, DailyRecord[]>> {
+  const map = new Map<string, DailyRecord[]>();
+  if (!db || slugs.length === 0) return map;
+
+  // Parallel fetch — one query per vehicle (Firestore subcollections
+  // can't be queried across parents, so this is the only option)
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+  const promises = slugs.map(async (slug) => {
+    const snap = await getDocs(
+      collection(db!, COLLECTION, slug, "historico_diario"),
+    );
+    const records: DailyRecord[] = [];
+    snap.forEach((d) => {
+      if (d.id >= cutoffStr) {
+        records.push({
+          date: d.id,
+          pageviews: d.data().pageviews ?? 0,
+          cliques_whatsapp: d.data().cliques_whatsapp ?? 0,
+          cliques_financiamento: d.data().cliques_financiamento ?? 0,
+          cliques_telefone: d.data().cliques_telefone ?? 0,
+          leads: d.data().leads ?? 0,
+        });
+      }
+    });
+    records.sort((a, b) => b.date.localeCompare(a.date));
+    map.set(slug, records);
+  });
+
+  await Promise.all(promises);
+  return map;
+}
+
+// ─── Calculate Diagnostic (per vehicle) ─────────────────────────────────────
+
+function sumPeriod(records: DailyRecord[], startDate: string, endDate: string) {
+  let views = 0, contatos = 0;
+  for (const r of records) {
+    if (r.date >= startDate && r.date <= endDate) {
+      views += r.pageviews;
+      contatos += r.cliques_whatsapp + r.cliques_telefone + r.leads;
+    }
+  }
+  return { views, contatos };
+}
+
+export function calcDiagnostic(
+  records: DailyRecord[],
+  medianaViews: number,
+  medianaContatos: number,
+): VehicleDiagnostic {
+  if (!records.length) {
+    return {
+      views7d: 0, contatos7d: 0, conversao: 0,
+      tendenciaDir: "estavel", tendenciaPct: 0,
+      diagnostico: "Sem dados",
+    };
+  }
+
+  const today = new Date();
+  const d7ago = new Date(today);
+  d7ago.setDate(d7ago.getDate() - 7);
+  const d14ago = new Date(today);
+  d14ago.setDate(d14ago.getDate() - 14);
+
+  const todayStr = today.toISOString().slice(0, 10);
+  const d7agoStr = d7ago.toISOString().slice(0, 10);
+  const d14agoStr = d14ago.toISOString().slice(0, 10);
+
+  // Últimos 7 dias
+  const curr = sumPeriod(records, d7agoStr, todayStr);
+  // 7 dias anteriores
+  const prev = sumPeriod(records, d14agoStr, d7agoStr);
+
+  const views7d = curr.views;
+  const contatos7d = curr.contatos;
+  const conversao = views7d > 0 ? (contatos7d / views7d) * 100 : 0;
+
+  // Tendência: comparar atividade total (views + contatos) entre os dois períodos
+  const currTotal = curr.views + curr.contatos;
+  const prevTotal = prev.views + prev.contatos;
+  let tendenciaPct = 0;
+  if (prevTotal > 0) {
+    tendenciaPct = ((currTotal - prevTotal) / prevTotal) * 100;
+  } else if (currTotal > 0) {
+    tendenciaPct = 100;
+  }
+  const tendenciaDir: TendenciaDir =
+    tendenciaPct > 10 ? "subindo" :
+    tendenciaPct < -10 ? "caindo" :
+    "estavel";
+
+  // Diagnóstico: views e contatos altos/baixos relativos à mediana da frota
+  const viewsAlta = views7d >= medianaViews && medianaViews > 0;
+  const contatosAlto = contatos7d >= medianaContatos && medianaContatos > 0;
+
+  let diagnostico: DiagnosticoTexto;
+  if (medianaViews === 0 && medianaContatos === 0) {
+    diagnostico = "Sem dados";
+  } else if (viewsAlta && contatosAlto) {
+    diagnostico = "Demanda forte — segurar preço";
+  } else if (viewsAlta && !contatosAlto) {
+    diagnostico = "Preço pode estar acima do mercado";
+  } else if (!viewsAlta && contatosAlto) {
+    diagnostico = "Nicho específico — manter";
+  } else {
+    diagnostico = "Sem exposição — verificar fotos/título/posição";
+  }
+
+  return { views7d, contatos7d, conversao, tendenciaDir, tendenciaPct, diagnostico };
+}
+
+// ─── Mediana helper ─────────────────────────────────────────────────────────
+
+export function calcMediana(values: number[]): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}

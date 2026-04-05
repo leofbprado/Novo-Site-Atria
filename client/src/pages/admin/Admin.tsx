@@ -33,7 +33,10 @@ import {
   type WhatsAppClick,
   type MilestoneConfig,
 } from "@/lib/adminFirestore";
-import { getAllVehicleAnalytics, type VehicleAnalytics } from "@/lib/vehicleAnalytics";
+import {
+  getAllVehicleAnalytics, getAllVehicleDailyHistory, calcDiagnostic, calcMediana,
+  type VehicleAnalytics, type DailyRecord, type VehicleDiagnostic,
+} from "@/lib/vehicleAnalytics";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
@@ -49,25 +52,20 @@ const DEFAULT_TAG_COLOR = "bg-sky-100 text-sky-800 border-sky-200";
 
 type Page = "dashboard" | "estoque" | "leads" | "whatsapp" | "config";
 
-// ── Performance helpers ─────────────────────────────────────────────────────
-type ThermoLevel = "quente" | "morno" | "frio";
+// ── Diagnostic display helpers ──────────────────────────────────────────────
 
-function calcThermometer(
-  viewsPerDay: number, contatosPerDay: number,
-  avgViews: number, avgContatos: number,
-): ThermoLevel {
-  const rate = viewsPerDay + contatosPerDay * 3;
-  const avg = avgViews + avgContatos * 3;
-  if (avg === 0) return "morno";
-  if (rate > avg * 1.2) return "quente";
-  if (rate < avg * 0.8) return "frio";
-  return "morno";
-}
+const DIAG_STYLE: Record<string, { icon: string; cls: string }> = {
+  "Demanda forte — segurar preço":                  { icon: "\uD83D\uDFE2", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  "Preço pode estar acima do mercado":              { icon: "\uD83D\uDFE1", cls: "text-amber-700 bg-amber-50 border-amber-200" },
+  "Sem exposição — verificar fotos/título/posição": { icon: "\uD83D\uDD34", cls: "text-red-700 bg-red-50 border-red-200" },
+  "Nicho específico — manter":                      { icon: "\uD83D\uDFE3", cls: "text-violet-700 bg-violet-50 border-violet-200" },
+  "Sem dados":                                       { icon: "\u2796", cls: "text-slate-500 bg-slate-50 border-slate-200" },
+};
 
-const THERMO: Record<ThermoLevel, { emoji: string; label: string; cls: string }> = {
-  quente: { emoji: "\uD83D\uDFE2", label: "Quente", cls: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-  morno: { emoji: "\uD83D\uDFE1", label: "Morno", cls: "text-amber-600 bg-amber-50 border-amber-200" },
-  frio: { emoji: "\uD83D\uDD34", label: "Frio", cls: "text-red-600 bg-red-50 border-red-200" },
+const TEND_ICON: Record<string, string> = {
+  subindo: "\u2197\uFE0F",
+  estavel: "\u2796",
+  caindo: "\u2198\uFE0F",
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -656,9 +654,10 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
 }
 
 // ── Estoque Page ─────────────────────────────────────────────────────────────
-function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, milestoneConfig }: {
+function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistory, milestoneConfig }: {
   vehicles: VeiculoAdmin[]; loadVehicles: () => void; openaiKey: string;
-  analytics: Map<string, VehicleAnalytics>; milestoneConfig: MilestoneConfig;
+  analytics: Map<string, VehicleAnalytics>; dailyHistory: Map<string, DailyRecord[]>;
+  milestoneConfig: MilestoneConfig;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | "rascunho" | "publicado">("");
@@ -680,32 +679,60 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, milestoneCo
     });
   }, [vehicles, statusFilter, searchTerm]);
 
-  // Performance data
+  // Performance data — diagnostic based on last 7 days vs previous 7 days
   const now = Date.now();
-  const withPerf = useMemo(() => filtered.map((v) => {
+
+  // Step 1: basic fields + milestone detection
+  const withBasic = useMemo(() => filtered.map((v) => {
     const a = analytics.get(v.slug);
     const pubDate = v.data_publicacao?.toDate?.();
     const dias = pubDate ? Math.max(1, Math.floor((now - pubDate.getTime()) / 86400000)) : 0;
     const views = a?.pageviews ?? 0;
     const contatos = (a?.cliques_whatsapp ?? 0) + (a?.cliques_telefone ?? 0) + (a?.leads ?? 0);
-    const viewsDay = dias > 0 ? views / dias : 0;
-    const contatosDay = dias > 0 ? contatos / dias : 0;
     const milestone = milestoneConfig.dias.find((d) => dias >= d && dias < d + 3) ?? null;
-    return { ...v, dias, views, contatos, viewsDay, contatosDay, milestone };
-  }), [filtered, analytics, milestoneConfig, now]);
+    const history = dailyHistory.get(v.slug) ?? [];
+    return { ...v, dias, views, contatos, milestone, history };
+  }), [filtered, analytics, milestoneConfig, dailyHistory, now]);
 
-  const { avgV, avgC } = useMemo(() => {
-    const pub = withPerf.filter((v) => v.status === "publicado" && v.dias > 0);
-    if (!pub.length) return { avgV: 0, avgC: 0 };
-    return { avgV: pub.reduce((s, v) => s + v.viewsDay, 0) / pub.length, avgC: pub.reduce((s, v) => s + v.contatosDay, 0) / pub.length };
-  }, [withPerf]);
+  // Step 2: compute medianas from published vehicles for diagnostic thresholds
+  const { medianaViews, medianaContatos } = useMemo(() => {
+    const pub = withBasic.filter((v) => v.status === "publicado" && v.dias > 0 && v.history.length > 0);
+    if (!pub.length) return { medianaViews: 0, medianaContatos: 0 };
+
+    const today = new Date();
+    const d7ago = new Date(today);
+    d7ago.setDate(d7ago.getDate() - 7);
+    const todayStr = today.toISOString().slice(0, 10);
+    const d7agoStr = d7ago.toISOString().slice(0, 10);
+
+    const viewsList: number[] = [];
+    const contatosList: number[] = [];
+    for (const v of pub) {
+      let vw = 0, ct = 0;
+      for (const r of v.history) {
+        if (r.date >= d7agoStr && r.date <= todayStr) {
+          vw += r.pageviews;
+          ct += r.cliques_whatsapp + r.cliques_telefone + r.leads;
+        }
+      }
+      viewsList.push(vw);
+      contatosList.push(ct);
+    }
+    return { medianaViews: calcMediana(viewsList), medianaContatos: calcMediana(contatosList) };
+  }, [withBasic]);
+
+  // Step 3: compute diagnostic per vehicle
+  const withPerf = useMemo(() => withBasic.map((v) => {
+    const diag = calcDiagnostic(v.history, medianaViews, medianaContatos);
+    return { ...v, diag };
+  }), [withBasic, medianaViews, medianaContatos]);
 
   const sorted = useMemo(() => {
     const arr = [...withPerf];
     switch (perfSort) {
-      case "coldest": return arr.sort((a, b) => (a.viewsDay + a.contatosDay) - (b.viewsDay + b.contatosDay));
+      case "coldest": return arr.sort((a, b) => (a.diag.views7d + a.diag.contatos7d) - (b.diag.views7d + b.diag.contatos7d));
       case "stalled": return arr.sort((a, b) => b.dias - a.dias);
-      case "views_no_contact": return arr.sort((a, b) => { const rA = a.views > 0 ? a.contatos / a.views : 1; const rB = b.views > 0 ? b.contatos / b.views : 1; return rA - rB; });
+      case "views_no_contact": return arr.sort((a, b) => { const rA = a.diag.views7d > 0 ? a.diag.contatos7d / a.diag.views7d : 1; const rB = b.diag.views7d > 0 ? b.diag.contatos7d / b.diag.views7d : 1; return rA - rB; });
       case "milestone": return arr.filter((v) => v.milestone !== null);
       default: return arr;
     }
@@ -879,9 +906,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, milestoneCo
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Tags</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Dias</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Views</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Contatos</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Temp.</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Desempenho 7d</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -916,28 +941,38 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, milestoneCo
                     <td className="px-4 py-3 text-center hidden xl:table-cell">
                       <span className="text-sm text-slate-600">{v.dias > 0 ? `${v.dias}d` : "-"}</span>
                     </td>
-                    <td className="px-4 py-3 text-center hidden xl:table-cell">
-                      <span className="text-sm text-slate-600">{v.views || "-"}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center hidden xl:table-cell">
-                      <span className="text-sm text-slate-600">{v.contatos || "-"}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center hidden xl:table-cell">
-                      {v.dias > 0 ? (() => { const lv = calcThermometer(v.viewsDay, v.contatosDay, avgV, avgC); const t = THERMO[lv]; return (
-                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${t.cls}`}>{t.emoji} {t.label}</span>
-                      ); })() : <span className="text-xs text-slate-300">-</span>}
+                    <td className="px-4 py-3 hidden xl:table-cell">
+                      {v.dias > 0 ? (() => {
+                        const d = v.diag;
+                        const style = DIAG_STYLE[d.diagnostico] ?? DIAG_STYLE["Sem dados"];
+                        return (
+                          <div className={`inline-flex flex-col gap-0.5 text-xs px-2.5 py-1.5 rounded-lg border ${style.cls}`}>
+                            <div className="flex items-center gap-2 font-medium">
+                              <span>{d.views7d} views</span>
+                              <span className="text-slate-300">|</span>
+                              <span>{d.contatos7d} contatos</span>
+                              <span className="text-slate-300">|</span>
+                              <span>{d.conversao.toFixed(1)}%</span>
+                              <span className="text-slate-300">|</span>
+                              <span>{TEND_ICON[d.tendenciaDir]} {d.tendenciaPct > 0 ? "+" : ""}{d.tendenciaPct.toFixed(0)}%</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-[11px]">
+                              <span>{style.icon}</span>
+                              <span>{d.diagnostico}</span>
+                            </div>
+                          </div>
+                        );
+                      })() : <span className="text-xs text-slate-300">Sem dados</span>}
                     </td>
                   </tr>
                   ,v.milestone ? (
                     <tr key={`${v.autoconf_id}-ms`} className="bg-orange-50/50">
-                      <td colSpan={10} className="px-4 py-1.5">
+                      <td colSpan={8} className="px-4 py-1.5">
                         <div className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border ${
-                          calcThermometer(v.viewsDay, v.contatosDay, avgV, avgC) === "frio" ? "bg-red-50 text-red-700 border-red-200" :
-                          calcThermometer(v.viewsDay, v.contatosDay, avgV, avgC) === "quente" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                          "bg-amber-50 text-amber-700 border-amber-200"
+                          (DIAG_STYLE[v.diag.diagnostico] ?? DIAG_STYLE["Sem dados"]).cls
                         }`}>
                           <AlertCircle size={12} />
-                          Marco {v.milestone}d: {v.views} views, {v.contatos} contatos — Revisar preço/anúncio
+                          Marco {v.milestone}d: {v.diag.views7d} views 7d, {v.diag.contatos7d} contatos 7d, {v.diag.conversao.toFixed(1)}% conv. — {v.diag.diagnostico}
                         </div>
                       </td>
                     </tr>
@@ -1342,6 +1377,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [error, setError] = useState("");
   const [openaiKey, setOpenaiKey] = useState("");
   const [analytics, setAnalytics] = useState<Map<string, VehicleAnalytics>>(new Map());
+  const [dailyHistory, setDailyHistory] = useState<Map<string, DailyRecord[]>>(new Map());
   const [milestoneConfig, setMilestoneConfig] = useState<MilestoneConfig>({ dias: [7, 20, 40, 60] });
 
   const loadVehicles = useCallback(async () => {
@@ -1367,6 +1403,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     getAllVehicleAnalytics().then(setAnalytics).catch(() => {});
     getMilestoneConfig().then(setMilestoneConfig).catch(() => {});
   }, []);
+
+  // Fetch daily history when vehicles are loaded
+  useEffect(() => {
+    if (!vehicles.length) return;
+    const slugs = vehicles.map((v) => v.slug).filter(Boolean);
+    if (!slugs.length) return;
+    getAllVehicleDailyHistory(slugs, 14).then(setDailyHistory).catch(() => {});
+  }, [vehicles]);
 
   const { logout } = useAuth();
   const handleLogout = async () => {
@@ -1396,7 +1440,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           ) : (
             <>
               {page === "dashboard" && <DashboardPage vehicles={vehicles} leads={leads} />}
-              {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} milestoneConfig={milestoneConfig} />}
+              {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
               {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
