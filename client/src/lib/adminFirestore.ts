@@ -35,7 +35,7 @@ export interface VeiculoAdmin {
   observacao: string;
   portas: number;
   // Admin fields
-  status: "rascunho" | "publicado";
+  status: "rascunho" | "publicado" | "vendido";
   tags: string[];
   descricao_ia: string;
   slug: string;
@@ -200,6 +200,26 @@ export async function upsertVeiculoFromAutoConf(
     });
     return "created";
   }
+}
+
+/**
+ * Despublica veículos que existem no Firestore como "publicado"
+ * mas não vieram na lista do AutoConf (provavelmente vendidos).
+ */
+export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promise<number> {
+  const firestore = requireDb();
+  const snap = await getDocs(collection(firestore, COLLECTION));
+  let count = 0;
+  for (const docSnap of snap.docs) {
+    if (!autoconfIds.has(docSnap.id) && docSnap.data().status === "publicado") {
+      await updateDoc(docSnap.ref, {
+        status: "vendido",
+        data_remocao: serverTimestamp(),
+      });
+      count++;
+    }
+  }
+  return count;
 }
 
 export async function updateVeiculoTags(autoconfId: number, tags: string[]): Promise<void> {

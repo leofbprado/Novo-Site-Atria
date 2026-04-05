@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth";
 import {
   getAllAdminVeiculos,
   upsertVeiculoFromAutoConf,
+  despublishOrphanVeiculos,
   updateVeiculoTags,
   updateVeiculoDescricao,
   updateVeiculoTechnicalSpecs,
@@ -765,7 +766,9 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
         const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
         if (result === "created") created++; else updated++;
       }
-      setSyncResult(`${created} novos, ${updated} atualizados de ${dados.length} veiculos`);
+      const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
+      const despublicados = await despublishOrphanVeiculos(autoconfIds);
+      setSyncResult(`${created} novos, ${updated} atualizados, ${despublicados} despublicados (vendidos)`);
       loadVehicles();
     } catch (err: any) { setSyncResult(`Erro: ${err.message}`); }
     setSyncing(false);
@@ -818,7 +821,9 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
         await publishVeiculo(imported[i].id);
       }
 
-      setImportProgress(`Concluido! ${total} veiculos importados e publicados.`);
+      const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
+      const despublicados = await despublishOrphanVeiculos(autoconfIds);
+      setImportProgress(`Concluido! ${total} importados e publicados, ${despublicados} despublicados (vendidos).`);
       loadVehicles();
     } catch (err: any) { setImportProgress(`Erro: ${err.message}`); }
     setImportingAll(false);
