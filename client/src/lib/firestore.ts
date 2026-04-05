@@ -229,7 +229,7 @@ export async function getVehicles(
 }
 
 export function vehiclePath(v: Vehicle): string {
-  return `/campinas/${v.slug}`;
+  return `/campinas-sp/${v.slug}`;
 }
 
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {

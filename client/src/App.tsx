@@ -47,11 +47,12 @@ function Router() {
         <Route path="/sobre" component={() => <Redirect to={ROUTES.sobre} />} />
         {/* New SEO routes */}
         <Route path={ROUTES.estoque} component={() => <Layout><Estoque /></Layout>} />
-        <Route path="/campinas/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
+        <Route path="/campinas-sp/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
         <Route path={ROUTES.venderCarro} component={() => <Layout><VendaSeuCarro /></Layout>} />
         <Route path={ROUTES.financiamento} component={() => <Layout><Financiamento /></Layout>} />
         <Route path={ROUTES.sobre} component={() => <Layout><Sobre /></Layout>} />
         {/* Old vehicle URLs — still resolve via old_slug fallback */}
+        <Route path="/campinas/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
         <Route path="/veiculo/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
         <Route path={ROUTES.admin} component={() => <Admin />} />
         <Route component={() => <Layout><NotFound /></Layout>} />

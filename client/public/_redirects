@@ -2,4 +2,5 @@
 /venda-seu-carro  /vender-carro-usado-campinas-sp                      301
 /financiamento    /financiamento-carro-usado-seminovo-campinas-sp       301
 /sobre            /sobre-atria-veiculos-campinas-sp                     301
+/campinas/*       /campinas-sp/:splat                                   301
 /*                /index.html                                           200

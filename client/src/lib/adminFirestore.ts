@@ -82,10 +82,13 @@ function slugify(text: string): string {
 }
 
 function makeSeoSlug(
-  v: { marca: string; modelo: string; ano_fabricacao: number; autoconf_id: number },
+  v: { marca: string; modelo: string; versao: string; tipo: string; ano_fabricacao: number; autoconf_id: number },
   existingSlugs?: Set<string>,
 ): string {
-  const base = `comprar-${slugify(`${v.marca}-${v.modelo}`)}-${v.ano_fabricacao}-usado-seminovo`;
+  const parts = [v.marca, v.modelo];
+  if (v.versao) parts.push(v.versao);
+  if (v.tipo) parts.push(v.tipo);
+  const base = `comprar-${slugify(parts.join("-"))}-${v.ano_fabricacao}-usado-seminovo`;
   if (!existingSlugs || !existingSlugs.has(base)) return base;
   return `${base}-${String(v.autoconf_id).slice(-4)}`;
 }
@@ -196,6 +199,8 @@ export async function upsertVeiculoFromAutoConf(
     const slug = makeSeoSlug({
       marca: baseFields.marca,
       modelo: baseFields.modelo,
+      versao: baseFields.versao,
+      tipo: baseFields.tipo,
       ano_fabricacao: baseFields.ano_fabricacao,
       autoconf_id: id,
     });
@@ -432,10 +437,12 @@ export async function migrateAllSlugs(): Promise<{ migrated: number; skipped: nu
   for (const v of vehicles) {
     const marca = (v.data.marca as string) || "";
     const modelo = (v.data.modelo as string) || "";
+    const versao = (v.data.versao as string) || "";
+    const tipo = (v.data.tipo as string) || "";
     const ano = Number(v.data.ano_fabricacao) || 0;
     const currentSlug = (v.data.slug as string) || "";
 
-    const newSlug = makeSeoSlug({ marca, modelo, ano_fabricacao: ano, autoconf_id: v.id }, newSlugs);
+    const newSlug = makeSeoSlug({ marca, modelo, versao, tipo, ano_fabricacao: ano, autoconf_id: v.id }, newSlugs);
     newSlugs.add(newSlug);
 
     if (currentSlug !== newSlug) {
