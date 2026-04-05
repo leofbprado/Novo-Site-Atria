@@ -171,7 +171,7 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
       "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-opus-4-20250514",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
@@ -205,65 +205,57 @@ export async function generateBlogPost(
   keywords: string[];
   veiculos_slugs: string[];
 }> {
-  const veiculosList = params.veiculos
-    .map((v) => `${v.marca} ${v.modelo} ${v.versao} ${v.ano} | ${v.km.toLocaleString("pt-BR")} km | ${v.cambio} | ${v.combustivel} | R$${v.preco.toLocaleString("pt-BR")} | foto: ${v.foto} | link: /campinas-sp/${v.slug}`)
-    .join("\n");
+  // Build context about what models exist (for relevance, not for listing)
+  const modelosNoEstoque = [...new Set(params.veiculos.map((v) => `${v.marca} ${v.modelo}`))].join(", ");
+  const capaCandidata = params.veiculos[0]?.foto || "";
 
-  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo: educar o leitor e gerar confianca na loja. O artigo NAO e um catalogo — e conteudo util que posiciona a Atria como autoridade.
+  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
 
 TEMA: ${params.tema}
 CATEGORIA: ${params.categoria}
 KEYWORDS SEO: ${params.keywords.join(", ")}
+MODELOS QUE EXISTEM NO ESTOQUE (pra voce saber do que falar, NAO pra anunciar): ${modelosNoEstoque}
 
-VEICULOS DO ESTOQUE (use apenas como referencia contextual, NAO liste todos):
-${veiculosList}
+REGRAS ABSOLUTAS:
+1. O artigo e 100% CONTEUDO EDUCATIVO. NAO e catalogo, NAO e anuncio
+2. NUNCA insira links pra veiculos do estoque no meio do texto
+3. NUNCA liste veiculos com preco, km ou ficha tecnica — isso e trabalho da pagina de estoque
+4. NUNCA insira fotos de veiculos do estoque no corpo do artigo
+5. No MAXIMO, no final do artigo, uma unica frase: "Confira nosso estoque se quiser ver algum desses modelos de perto."
+6. O nome da loja e "Atria Veiculos" (com acento: Átria)
+7. NUNCA invente dados tecnicos (consumo, FIPE, custo de manutencao). Se nao sabe o numero exato, nao coloque
+8. NUNCA fale mal de nenhum veiculo, marca ou modelo
+9. PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "merece destaque"
 
-ESTRUTURA DO ARTIGO (80% educacao, 20% estoque):
+ESTRUTURA:
+1. INTRODUCAO (2-3 linhas): direto ao problema/duvida do leitor. Sem "neste artigo vamos explorar"
+2. CORPO com 4-6 secoes ## organizadas por TOPICO (NAO por veiculo):
+   - O que avaliar, cuidados, diferencas entre versoes, quando vale a pena, pra quem serve
+   - Conhecimento automotivo real: diferenca entre tracao 4x2 e 4x4, cambio CVT vs torque converter, quando diesel compensa, etc
+   - Tom: consultor explicando pra um amigo. Direto, com opiniao
+   - Pode citar modelos pelo nome (ex: "o Compass tem entre-eixos maior que o T-Cross") mas sem linkar nem anunciar
+3. Se for comparativo: tabela markdown comparando caracteristicas GERAIS dos modelos (NAO dados do nosso estoque)
+4. CONCLUSAO curta + "Confira nosso estoque se quiser ver algum desses modelos de perto. Átria Veículos, Campinas-SP. WhatsApp: (19) 99652-5211"
 
-1. INTRODUCAO (2-3 linhas): vai direto ao problema/duvida do leitor. Sem "neste artigo vamos". Ex: "Quem procura SUV usado em Campinas enfrenta um dilema: conforto vs preco. Vamos descomplicar."
-
-2. CORPO EDUCATIVO (o conteudo principal):
-   - Explique O QUE o leitor precisa saber sobre o tema (o que avaliar, cuidados, diferencas entre versoes, quando vale a pena, pra quem serve)
-   - Use conhecimento automotivo real: diferenca entre tracao 4x2 e 4x4, vantagens de cambio CVT vs torque converter, quando diesel compensa, o que verificar na carroceria de uma picape usada, etc
-   - Organize por TOPICOS UTEIS (ex: "O que verificar antes de comprar", "Diesel ou flex?", "Qual versao oferece melhor custo-beneficio") — NAO por veiculo
-   - Tom: consultor explicando pra um amigo. Direto, com opiniao (mas sem falar mal de nenhum modelo)
-
-3. MENCOES AO ESTOQUE (naturais, dentro do contexto):
-   - Mencione 2-4 veiculos do estoque como EXEMPLOS dentro do texto educativo
-   - Formato: "Aqui na Atria, temos uma [Toro Ranch 4x4 diesel 2021 com 101 mil km por R$125.890](/campinas-sp/slug) — um bom exemplo de versao pra quem roda em estrada de terra."
-   - Inclua a foto quando mencionar: ![Fiat Toro Ranch 2021](url_foto)
-   - NAO faca uma secao separada por veiculo — mencione dentro do fluxo do texto
-
-4. SE FOR COMPARATIVO: inclua tabela markdown comparando os modelos (preco, km, ano, ponto forte de cada)
-
-5. CTA FINAL: "Quer ver essas opcoes de perto? Visite a Atria Veiculos em Campinas ou fale com a gente pelo WhatsApp: (19) 99652-5211"
-
-REGRAS:
-- Use APENAS dados fornecidos na lista de veiculos. NUNCA invente consumo, FIPE, custo de manutencao ou especificacoes
-- NUNCA fale mal de nenhum veiculo — todos sao boas opcoes pra perfis diferentes
-- PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "e uma otima escolha", "merece destaque"
-- Se o estoque NAO tem um modelo mencionado no tema, NAO invente dados — foque nos que tem
-- Tamanho: 1000-1500 palavras
-- Formato: markdown com ## pra subtitulos
-- Links: path relativo /campinas-sp/slug (sem dominio)
-- Em portugues do Brasil
+TAMANHO: 1000-1500 palavras
+FORMATO: markdown com ## pra subtitulos
+IDIOMA: portugues do Brasil
 
 RESPONDA EM JSON:
 {
-  "titulo": "Titulo do artigo (chamativo, com Campinas)",
-  "capa": "URL da foto do veiculo mais relevante do artigo (escolha da lista acima)",
-  "conteudo": "Artigo completo em markdown",
+  "titulo": "Titulo chamativo com Campinas",
+  "conteudo": "Artigo completo em markdown — SEM links, SEM fotos, SEM fichas de veiculos",
   "meta_title": "Title tag SEO (max 60 chars)",
-  "meta_description": "Meta description (max 155 chars, com dado real)",
+  "meta_description": "Meta description (max 155 chars)",
   "keywords": ["keyword1", "keyword2"]
 }`;
 
-  const raw = await callClaude(claudeKey, prompt);
+  const raw = await callClaude(claudeKey, prompt, 6000);
   const jsonStr = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
   const parsed = JSON.parse(jsonStr);
   return {
     titulo: parsed.titulo || params.tema,
-    capa: parsed.capa || params.veiculos[0]?.foto || "",
+    capa: capaCandidata,
     conteudo: parsed.conteudo || "",
     meta_title: parsed.meta_title || "",
     meta_description: parsed.meta_description || "",
