@@ -11,12 +11,13 @@ const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComp
 
 // ---- SEO -------------------------------------------------------------------
 import { useSEO } from "@/hooks/useSEO";
+import { ROUTES } from "@/lib/constants";
 
 function usePageSEO() {
   useSEO({
     title: "Financiamento de Seminovos em Campinas SP | Átria Veículos",
     description: "Financiamento facilitado para seminovos na Átria Veículos. Taxas a partir de 0,99%/mês, aprovação em 24h, até 60x. Simule agora!",
-    path: "/financiamento",
+    path: ROUTES.financiamento,
   });
 }
 
@@ -169,7 +170,7 @@ function Simulador() {
                   >
                     Quero financiar!
                   </button>
-                  <a href="/estoque" className="block text-center font-inter text-white/60 hover:text-white text-sm underline underline-offset-2">
+                  <a href={ROUTES.estoque} className="block text-center font-inter text-white/60 hover:text-white text-sm underline underline-offset-2">
                     Ver veículos nessa faixa
                   </a>
                 </motion.div>
@@ -410,7 +411,7 @@ function SimulacaoCPF() {
           Para simulação com CPF, escolha um veículo do nosso estoque e use o simulador Credere na página do veículo.
         </p>
         <a
-          href="/estoque"
+          href={ROUTES.estoque}
           className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
         >
           <Car size={18} />
@@ -444,7 +445,7 @@ function CTAFinal() {
             <Send size={18} />
             Falar via WhatsApp
           </a>
-          <a href="/estoque" className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-white text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
+          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-white text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
             Ver Estoque
           </a>
         </div>

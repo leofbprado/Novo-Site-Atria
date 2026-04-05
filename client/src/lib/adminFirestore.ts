@@ -39,6 +39,7 @@ export interface VeiculoAdmin {
   tags: string[];
   descricao_ia: string;
   slug: string;
+  old_slug: string;
   data_importacao: Timestamp | null;
   data_publicacao: Timestamp | null;
   technical_specs?: Record<string, number>;
@@ -71,14 +72,22 @@ function requireDb() {
 
 // ── Slug helper ──────────────────────────────────────────────────────────────
 
-function makeSlug(v: { marca: string; modelo: string; ano_fabricacao: number; autoconf_id: number }) {
-  const base = `${v.marca}-${v.modelo}-${v.ano_fabricacao}`
+function slugify(text: string): string {
+  return text
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
-  return `${base}-${v.autoconf_id}`;
+}
+
+function makeSeoSlug(
+  v: { marca: string; modelo: string; ano_fabricacao: number; autoconf_id: number },
+  existingSlugs?: Set<string>,
+): string {
+  const base = `comprar-${slugify(`${v.marca}-${v.modelo}`)}-${v.ano_fabricacao}-usado-seminovo`;
+  if (!existingSlugs || !existingSlugs.has(base)) return base;
+  return `${base}-${String(v.autoconf_id).slice(-4)}`;
 }
 
 // ── CRUD ─────────────────────────────────────────────────────────────────────
@@ -105,6 +114,7 @@ function normalizeVeiculoAdmin(raw: Record<string, unknown>): VeiculoAdmin {
     tags: Array.isArray(raw.tags) ? raw.tags : [],
     descricao_ia: (raw.descricao_ia as string) || "",
     slug: (raw.slug as string) || "",
+    old_slug: (raw.old_slug as string) || "",
     fotos,
     acessorios: normalizeAcessorios(raw.acessorios),
     foto_principal: (raw.foto_principal as string) || fotos[0] || "",
@@ -183,7 +193,7 @@ export async function upsertVeiculoFromAutoConf(
     return "updated";
   } else {
     // New vehicle — create with admin defaults
-    const slug = makeSlug({
+    const slug = makeSeoSlug({
       marca: baseFields.marca,
       modelo: baseFields.modelo,
       ano_fabricacao: baseFields.ano_fabricacao,
@@ -195,6 +205,7 @@ export async function upsertVeiculoFromAutoConf(
       tags: [],
       descricao_ia: "",
       slug,
+      old_slug: "",
       data_importacao: serverTimestamp(),
       data_publicacao: null,
     });
@@ -378,13 +389,66 @@ export async function getFeaturedPublishedVeiculos(): Promise<VeiculoAdmin[]> {
 
 export async function getPublishedVeiculoBySlug(slug: string): Promise<VeiculoAdmin | null> {
   const firestore = requireDb();
-  const snap = await getDocs(
+  // Try new slug first
+  let snap = await getDocs(
     query(
       collection(firestore, COLLECTION),
       where("slug", "==", slug),
       where("status", "==", "publicado")
     )
   );
+  // Fallback to old_slug for backward compat
+  if (snap.empty) {
+    snap = await getDocs(
+      query(
+        collection(firestore, COLLECTION),
+        where("old_slug", "==", slug),
+        where("status", "==", "publicado")
+      )
+    );
+  }
   if (snap.empty) return null;
   return normalizeVeiculoAdmin(snap.docs[0].data());
+}
+
+/**
+ * Migra todos os slugs existentes para o novo formato SEO.
+ * Salva o slug antigo em old_slug para backward compat.
+ */
+export async function migrateAllSlugs(): Promise<{ migrated: number; skipped: number }> {
+  const firestore = requireDb();
+  const snap = await getDocs(collection(firestore, COLLECTION));
+
+  // First pass: compute all new slugs to detect collisions
+  const vehicles = snap.docs.map((d) => ({
+    ref: d.ref,
+    data: d.data(),
+    id: Number(d.id),
+  }));
+
+  const newSlugs = new Set<string>();
+  const updates: Array<{ ref: typeof vehicles[0]["ref"]; slug: string; oldSlug: string }> = [];
+
+  for (const v of vehicles) {
+    const marca = (v.data.marca as string) || "";
+    const modelo = (v.data.modelo as string) || "";
+    const ano = Number(v.data.ano_fabricacao) || 0;
+    const currentSlug = (v.data.slug as string) || "";
+
+    const newSlug = makeSeoSlug({ marca, modelo, ano_fabricacao: ano, autoconf_id: v.id }, newSlugs);
+    newSlugs.add(newSlug);
+
+    if (currentSlug !== newSlug) {
+      updates.push({ ref: v.ref, slug: newSlug, oldSlug: currentSlug });
+    }
+  }
+
+  // Second pass: write updates
+  let migrated = 0;
+  for (const u of updates) {
+    await updateDoc(u.ref, { slug: u.slug, old_slug: u.oldSlug });
+    migrated++;
+  }
+
+  return { migrated, skipped: vehicles.length - migrated };
 }

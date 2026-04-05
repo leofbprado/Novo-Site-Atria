@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, CheckCircle } from "lucide-react";
-import { getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
+import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WA_NUMBER = "5519996525211";
@@ -120,13 +120,13 @@ type ActiveChip = { label: string; onRemove: () => void };
 
 // ─── Schema SEO ───────────────────────────────────────────────────────────────
 import { useSEO } from "@/hooks/useSEO";
-import { SITE_URL } from "@/lib/constants";
+import { SITE_URL, ROUTES } from "@/lib/constants";
 
 function usePageSEO(vehicles: Vehicle[]) {
   useSEO({
     title: "Estoque de Carros Usados e Seminovos em Campinas SP | Átria Veículos",
     description: "Confira nosso estoque de veículos seminovos em Campinas. SUVs, sedãs, hatches e picapes das melhores marcas com financiamento facilitado.",
-    path: "/estoque",
+    path: ROUTES.estoque,
   });
 
   useEffect(() => {
@@ -717,7 +717,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
       className="group bg-white rounded-xl overflow-hidden border border-atria-gray-medium hover:shadow-lg transition-shadow"
       itemScope itemType="https://schema.org/Car"
     >
-      <a href={`/veiculo/${v.slug}`} className="block">
+      <a href={vehiclePath(v)} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-atria-gray-light">
           {v.fotos?.[0] ? (
             <img
@@ -748,7 +748,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
       </a>
       <div className="p-5 pb-3">
         <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider mb-0.5">{v.marca}</p>
-        <a href={`/veiculo/${v.slug}`}>
+        <a href={vehiclePath(v)}>
           <h3 className="font-barlow-condensed font-bold text-xl text-atria-text-dark leading-tight mb-2 hover:text-atria-navy transition-colors" itemProp="name">
             {titulo}
           </h3>
@@ -779,7 +779,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
         >
           QUERO ESSE
         </a>
-        <a href={`/veiculo/${v.slug}`}
+        <a href={vehiclePath(v)}
           className="px-4 py-2.5 border border-atria-gray-medium text-atria-text-gray hover:border-atria-navy hover:text-atria-navy font-inter text-sm font-semibold rounded transition-all text-center"
         >
           Detalhes

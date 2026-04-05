@@ -228,17 +228,32 @@ export async function getVehicles(
   }
 }
 
+export function vehiclePath(v: Vehicle): string {
+  return `/campinas/${v.slug}`;
+}
+
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   if (!db) return MOCK_VEHICLES.find((v) => v.slug === slug) ?? null;
 
   try {
-    const snap = await getDocs(
+    // Try new slug first
+    let snap = await getDocs(
       query(
         collection(db, ADMIN_COLLECTION),
         where("slug", "==", slug),
         where("status", "==", "publicado")
       )
     );
+    // Fallback to old_slug for backward compat
+    if (snap.empty) {
+      snap = await getDocs(
+        query(
+          collection(db, ADMIN_COLLECTION),
+          where("old_slug", "==", slug),
+          where("status", "==", "publicado")
+        )
+      );
+    }
     if (snap.empty) return null;
     return adminToVehicle(snap.docs[0].data() as VeiculoAdmin);
   } catch {

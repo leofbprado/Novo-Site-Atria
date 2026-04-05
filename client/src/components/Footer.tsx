@@ -1,3 +1,5 @@
+import { ROUTES } from "@/lib/constants";
+
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
 const WA = "https://wa.me/5519996525211";
 
@@ -24,22 +26,22 @@ const LOJAS = [
 
 const LINKS = {
   institucional: [
-    { label: "Sobre a Átria", href: "/sobre" },
-    { label: "Nossas Lojas", href: "/sobre#lojas" },
+    { label: "Sobre a Átria", href: ROUTES.sobre },
+    { label: "Nossas Lojas", href: `${ROUTES.sobre}#lojas` },
     { label: "Trabalhe Conosco", href: "/trabalhe-conosco" },
     { label: "Blog", href: "/blog" },
   ],
   atendimento: [
     { label: "WhatsApp", href: WA },
-    { label: "Contato", href: "/sobre#contato" },
-    { label: "Financiamento", href: "/financiamento" },
+    { label: "Contato", href: `${ROUTES.sobre}#contato` },
+    { label: "Financiamento", href: ROUTES.financiamento },
     { label: "Avaliação do Seu Carro", href: "/avaliacao" },
   ],
   veiculos: [
-    { label: "Todos os Veículos", href: "/estoque" },
-    { label: "SUVs e Crossovers", href: "/estoque?tipo=suv" },
-    { label: "Sedans", href: "/estoque?tipo=sedan" },
-    { label: "Picapes", href: "/estoque?tipo=pickup" },
+    { label: "Todos os Veículos", href: ROUTES.estoque },
+    { label: "SUVs e Crossovers", href: `${ROUTES.estoque}?tipo=suv` },
+    { label: "Sedans", href: `${ROUTES.estoque}?tipo=sedan` },
+    { label: "Picapes", href: `${ROUTES.estoque}?tipo=pickup` },
   ],
 };
 

@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Phone } from "lucide-react";
+import { ROUTES } from "@/lib/constants";
 
 const LOGO_AZUL = "https://i.postimg.cc/7Zvv28w2/Logo_%C3%81tria_Azul.png";
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
 
 const NAV_LINKS = [
   { label: "Início", href: "/" },
-  { label: "Estoque", href: "/estoque" },
-  { label: "Venda seu Carro", href: "/venda-seu-carro" },
-  { label: "Financiamento", href: "/financiamento" },
-  { label: "Sobre", href: "/sobre" },
-  { label: "Contato", href: "/sobre#contato" },
+  { label: "Estoque", href: ROUTES.estoque },
+  { label: "Venda seu Carro", href: ROUTES.venderCarro },
+  { label: "Financiamento", href: ROUTES.financiamento },
+  { label: "Sobre", href: ROUTES.sobre },
+  { label: "Contato", href: `${ROUTES.sobre}#contato` },
 ];
 
 const WHATSAPP =
@@ -115,7 +116,7 @@ export function Header() {
             <WaIcon />
             WhatsApp
           </a>
-          <a href="/estoque" className="btn-yellow rounded text-sm px-5 py-2.5">
+          <a href={ROUTES.estoque} className="btn-yellow rounded text-sm px-5 py-2.5">
             Ver Estoque
           </a>
         </div>
@@ -166,7 +167,7 @@ export function Header() {
                   <WaIcon />
                   WhatsApp
                 </a>
-                <a href="/estoque" className="btn-yellow rounded text-sm text-center py-3">
+                <a href={ROUTES.estoque} className="btn-yellow rounded text-sm text-center py-3">
                   Ver Estoque
                 </a>
               </div>

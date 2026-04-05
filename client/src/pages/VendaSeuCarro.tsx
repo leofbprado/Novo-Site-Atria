@@ -12,12 +12,13 @@ const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComp
 
 // ---- SEO ----------------------------------------------------------------
 import { useSEO } from "@/hooks/useSEO";
+import { ROUTES } from "@/lib/constants";
 
 function usePageSEO() {
   useSEO({
     title: "Venda seu Carro Usado em Campinas SP | Compra Imediata | Átria Veículos",
     description: "Venda seu carro em Campinas com a Átria Veículos. Receba proposta de compra imediata ou venda por consignação com apoio profissional.",
-    path: "/venda-seu-carro",
+    path: ROUTES.venderCarro,
   });
 }
 

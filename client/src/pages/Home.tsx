@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react"
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
-import { getFeaturedVehicles, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
+import { getFeaturedVehicles, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -312,7 +313,7 @@ function Hero() {
           {["SUV", "Sedan", "Hatch", "Pickup", "Elétrico"].map((tag) => (
             <a
               key={tag}
-              href={`/estoque?tipo=${tag.toLowerCase()}`}
+              href={`${ROUTES.estoque}?tipo=${tag.toLowerCase()}`}
               className="font-inter text-xs text-white/60 hover:text-atria-yellow transition-colors uppercase tracking-wider"
             >
               {tag}
@@ -466,7 +467,7 @@ function Simulador() {
                 )}
               </AnimatePresence>
 
-              <a href="/estoque" className="btn-yellow w-full text-center block rounded">
+              <a href={ROUTES.estoque} className="btn-yellow w-full text-center block rounded">
                 Ver veículos nessa faixa
               </a>
               <p className="text-white/40 text-xs text-center">
@@ -514,7 +515,7 @@ function BrandCarousel() {
   }, []);
 
   const handleClick = useCallback((brand: string) => {
-    window.location.href = `/estoque?marca=${encodeURIComponent(brand)}`;
+    window.location.href = `${ROUTES.estoque}?marca=${encodeURIComponent(brand)}`;
   }, []);
 
   if (cards.length === 0) return null;
@@ -584,7 +585,7 @@ function EstoqueDestaque() {
             <p className="section-label mb-2">Estoque</p>
             <h2 className="section-title">Veículos em Destaque</h2>
           </div>
-          <a href="/estoque" className="btn-outline-navy rounded text-sm whitespace-nowrap self-start">
+          <a href={ROUTES.estoque} className="btn-outline-navy rounded text-sm whitespace-nowrap self-start">
             Ver todos →
           </a>
         </div>
@@ -609,7 +610,7 @@ function EstoqueDestaque() {
         {!loading && displayed.length === 0 && (
           <p className="text-center text-atria-text-gray font-inter py-12">
             Nenhum veículo nessa categoria.{" "}
-            <a href="/estoque" className="text-atria-navy underline">Ver todos</a>
+            <a href={ROUTES.estoque} className="text-atria-navy underline">Ver todos</a>
           </p>
         )}
       </div>
@@ -633,7 +634,7 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
-      <a href={`/veiculo/${v.slug}`} className="block">
+      <a href={vehiclePath(v)} className="block">
         <div className="relative aspect-[4/3] overflow-hidden bg-atria-gray-light">
           {v.fotos?.[0] ? (
             <img
@@ -670,7 +671,7 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
           QUERO ESSE
         </button>
         <a
-          href={`/veiculo/${v.slug}`}
+          href={vehiclePath(v)}
           className="px-4 py-2.5 border border-atria-gray-medium text-atria-text-gray hover:border-atria-navy hover:text-atria-navy font-inter text-sm font-semibold rounded transition-all"
         >
           Detalhes
@@ -1388,7 +1389,7 @@ function CTAFinal() {
           >
             Falar com especialista
           </button>
-          <a href="/estoque" className="btn-outline-white rounded px-8">
+          <a href={ROUTES.estoque} className="btn-outline-white rounded px-8">
             Ver estoque completo
           </a>
         </div>

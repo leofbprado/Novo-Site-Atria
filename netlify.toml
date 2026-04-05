@@ -3,6 +3,26 @@
   command = "npm ci --prefer-offline --no-audit && npm run build"
 
 [[redirects]]
+  from = "/estoque"
+  to = "/estoque-carros-usados-seminovos-campinas-sp"
+  status = 301
+
+[[redirects]]
+  from = "/venda-seu-carro"
+  to = "/vender-carro-usado-campinas-sp"
+  status = 301
+
+[[redirects]]
+  from = "/financiamento"
+  to = "/financiamento-carro-usado-seminovo-campinas-sp"
+  status = 301
+
+[[redirects]]
+  from = "/sobre"
+  to = "/sobre-atria-veiculos-campinas-sp"
+  status = 301
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

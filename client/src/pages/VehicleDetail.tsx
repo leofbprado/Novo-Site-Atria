@@ -7,7 +7,8 @@ import {
   Star, Phone, CheckCircle, Car, MapPin, Mountain,
   Cog, Users, TrendingDown,
 } from "lucide-react";
-import { getVehicleBySlug, getVehicles, saveLead, type Vehicle } from "@/lib/firestore";
+import { getVehicleBySlug, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { ROUTES } from "@/lib/constants";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
@@ -28,14 +29,15 @@ import { SITE_URL } from "@/lib/constants";
 import { trackVehicleEvent } from "@/lib/vehicleAnalytics";
 
 function useVehicleSEO(v: Vehicle | null) {
+  const opcionaisStr = v?.opcionais?.slice(0, 3).join(", ") || "";
   useSEO({
     title: v
-      ? `Comprar ${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} Usado Seminovo em Campinas SP | Átria Veículos`
+      ? `Comprar ${v.marca} ${v.modelo} ${v.ano} Usado em Campinas | ${fmt(v.preco)} | Átria Veículos`
       : "Veículo | Átria Veículos",
     description: v
-      ? `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} com ${fmtKm(v.km)} por ${fmt(v.preco)}. Financiamento facilitado, garantia e procedência verificada. Átria Veículos Campinas.`
+      ? `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} com ${fmtKm(v.km)}, ${v.cambio}, ${v.combustivel}.${opcionaisStr ? ` ${opcionaisStr}.` : ""} ${fmt(v.preco)} à vista. Átria Veículos Campinas.`
       : "Veículo seminovo na Átria Veículos em Campinas SP.",
-    path: v ? `/veiculo/${v.slug}` : "/estoque",
+    path: v ? vehiclePath(v) : ROUTES.estoque,
     ogImage: v?.fotos?.[0],
     ogType: "product",
   });
@@ -44,6 +46,7 @@ function useVehicleSEO(v: Vehicle | null) {
     if (!v) return;
     const old = document.getElementById("schema-vehicle");
     if (old) old.remove();
+    const canonicalUrl = `${SITE_URL}${vehiclePath(v)}`;
     const schema = {
       "@context": "https://schema.org",
       "@type": "Car",
@@ -51,12 +54,13 @@ function useVehicleSEO(v: Vehicle | null) {
       "brand": { "@type": "Brand", "name": v.marca },
       "model": v.modelo,
       "vehicleModelDate": String(v.ano),
+      "vehicleConfiguration": v.versao || undefined,
       "color": v.cor,
       "vehicleTransmission": v.cambio,
       "fuelType": v.combustivel,
       "numberOfDoors": v.portas,
       "itemCondition": "https://schema.org/UsedCondition",
-      "url": `${SITE_URL}/veiculo/${v.slug}`,
+      "url": canonicalUrl,
       "mileageFromOdometer": { "@type": "QuantitativeValue", "value": v.km, "unitCode": "KMT" },
       "image": v.fotos,
       "description": v.descricao,
@@ -69,6 +73,13 @@ function useVehicleSEO(v: Vehicle | null) {
           "@type": "AutoDealer",
           "name": "Átria Veículos",
           "url": SITE_URL,
+          "telephone": "+55 19 99652-5211",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Campinas",
+            "addressRegion": "SP",
+            "addressCountry": "BR",
+          },
         },
       },
     };
@@ -592,7 +603,7 @@ function SimilarCard({ v }: { v: Vehicle }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
   return (
     <a
-      href={`/veiculo/${v.slug}`}
+      href={vehiclePath(v)}
       className="group bg-white border border-atria-gray-medium rounded-xl overflow-hidden hover:shadow-md transition-shadow block"
     >
       <div className="aspect-[4/3] overflow-hidden bg-atria-gray-light">
@@ -742,7 +753,7 @@ export default function VehicleDetail() {
         <Car size={56} className="text-atria-gray-medium" />
         <h1 className="font-barlow-condensed font-black text-3xl text-atria-text-dark">Veículo não encontrado</h1>
         <p className="font-inter text-atria-text-gray">Este veículo pode ter sido vendido ou o link está incorreto.</p>
-        <a href="/estoque" className="btn-navy rounded-xl mt-2">Ver estoque completo</a>
+        <a href={ROUTES.estoque} className="btn-navy rounded-xl mt-2">Ver estoque completo</a>
       </div>
     );
   }
@@ -757,7 +768,7 @@ export default function VehicleDetail() {
           <ol className="flex items-center gap-1.5 font-inter text-sm text-atria-text-gray flex-wrap">
             <li><a href="/" className="hover:text-atria-navy transition-colors">Inicio</a></li>
             <li className="opacity-40">/</li>
-            <li><a href="/estoque" className="hover:text-atria-navy transition-colors">Estoque</a></li>
+            <li><a href={ROUTES.estoque} className="hover:text-atria-navy transition-colors">Estoque</a></li>
             <li className="opacity-40">/</li>
             <li className="text-atria-text-dark font-semibold truncate max-w-[200px]">{titulo}</li>
           </ol>

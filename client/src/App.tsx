@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/lib/auth";
+import { ROUTES } from "@/lib/constants";
 
 // Eager-loaded (above the fold)
 import Home from "@/pages/Home";
@@ -28,37 +29,30 @@ function PageLoader() {
   );
 }
 
+// Client-side redirect for old URLs
+function Redirect({ to }: { to: string }) {
+  window.location.replace(to);
+  return null;
+}
+
 function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        <Route path="/" component={() => <Layout><Home /></Layout>} />
-        <Route path="/estoque" component={() => (
-          <Layout>
-            <Estoque />
-          </Layout>
-        )} />
-        <Route path="/veiculo/:slug" component={() => (
-          <Layout>
-            <VehicleDetail />
-          </Layout>
-        )} />
-        <Route path="/venda-seu-carro" component={() => (
-          <Layout>
-            <VendaSeuCarro />
-          </Layout>
-        )} />
-        <Route path="/financiamento" component={() => (
-          <Layout>
-            <Financiamento />
-          </Layout>
-        )} />
-        <Route path="/sobre" component={() => (
-          <Layout>
-            <Sobre />
-          </Layout>
-        )} />
-        <Route path="/admin" component={() => <Admin />} />
+        <Route path={ROUTES.home} component={() => <Layout><Home /></Layout>} />
+        <Route path={ROUTES.estoque} component={() => <Layout><Estoque /></Layout>} />
+        <Route path="/campinas/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
+        <Route path={ROUTES.venderCarro} component={() => <Layout><VendaSeuCarro /></Layout>} />
+        <Route path={ROUTES.financiamento} component={() => <Layout><Financiamento /></Layout>} />
+        <Route path={ROUTES.sobre} component={() => <Layout><Sobre /></Layout>} />
+        {/* Old vehicle URLs — still resolve via old_slug fallback */}
+        <Route path="/veiculo/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
+        {/* Old fixed-page URLs — client-side redirect (hosting 301 handles crawlers) */}
+        <Route path="/estoque" component={() => <Redirect to={ROUTES.estoque} />} />
+        <Route path="/venda-seu-carro" component={() => <Redirect to={ROUTES.venderCarro} />} />
+        <Route path="/financiamento" component={() => <Redirect to={ROUTES.financiamento} />} />
+        <Route path="/sobre" component={() => <Redirect to={ROUTES.sobre} />} />
+        <Route path={ROUTES.admin} component={() => <Admin />} />
         <Route component={() => <Layout><NotFound /></Layout>} />
       </Switch>
     </Suspense>
