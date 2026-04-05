@@ -1,6 +1,11 @@
 node_modules
 dist
 .DS_Store
+
+# Firebase service account credentials
+docs/legacy-data/sa-new.json
+docs/legacy-data/novo-site-atria-new.json
+docs/legacy-data/*.json.bak
 server/public
 vite.config.ts.*
 *.tar.gz
