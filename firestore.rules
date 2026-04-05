@@ -32,6 +32,17 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // === ANALYTICS (tracking público) ===
+    match /veiculos_analytics/{slug} {
+      allow read: if true;
+      allow create, update: if true;
+
+      match /historico_diario/{day} {
+        allow read: if true;
+        allow create, update: if true;
+      }
+    }
+
     // BLOQUEIO PADRÃO
     match /{document=**} {
       allow read, write: if false;
