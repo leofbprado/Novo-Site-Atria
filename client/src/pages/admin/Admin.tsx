@@ -765,6 +765,18 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
           const veiculo = d?.dados ?? d;
           fotos = veiculo?.fotos || d?.fotos || [];
           acessorios = veiculo?.acessorios || d?.acessorios || [];
+          // DEBUG: log first vehicle and target Jetta to understand API structure
+          if (v.id === 516601 || created + updated === 0) {
+            console.log(`[SYNC DEBUG] id=${v.id}`, JSON.stringify({
+              keys_d: Object.keys(d || {}),
+              keys_veiculo: Object.keys(veiculo || {}),
+              has_dados_dados: !!d?.dados,
+              acessorios_count: Array.isArray(acessorios) ? acessorios.length : 'not-array',
+              acessorios_sample: Array.isArray(acessorios) ? acessorios.slice(0, 3) : acessorios,
+              acessorios_destaque: veiculo?.acessorios_destaque?.length ?? d?.acessorios_destaque?.length ?? 'none',
+              fotos_count: Array.isArray(fotos) ? fotos.length : 'not-array',
+            }, null, 2));
+          }
         } catch { fotos = v.foto ? [v.foto] : []; }
         const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
         if (result === "created") created++; else updated++;
