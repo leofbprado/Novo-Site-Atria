@@ -81,13 +81,38 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+const CATEGORIA_MAP: Record<string, string> = {
+  "suv": "suv", "suv/utilitário esportivo": "suv", "suv/utilitario esportivo": "suv", "utilitário esportivo": "suv",
+  "hatchback": "hatch", "hatch": "hatch",
+  "sedan": "sedan", "sedã": "sedan",
+  "picape": "pickup", "pickup": "pickup", "caminhonete": "pickup",
+  "minivan": "minivan", "monovolume": "minivan",
+  "perua": "sw", "station wagon": "sw", "sw": "sw",
+  "conversível": "conversivel", "conversivel": "conversivel", "cabriolet": "conversivel",
+  "coupe": "coupe", "cupê": "coupe", "cupe": "coupe",
+};
+
+function normalizeCategoria(tipo: string): string {
+  return CATEGORIA_MAP[tipo.toLowerCase().trim()] || slugify(tipo);
+}
+
+function deduplicateVersao(modelo: string, versao: string): string {
+  const modeloLower = modelo.toLowerCase().trim();
+  const versaoLower = versao.toLowerCase().trim();
+  if (versaoLower.startsWith(modeloLower)) {
+    return versao.slice(modelo.length).trim().replace(/^[\s-]+/, "");
+  }
+  return versao;
+}
+
 function makeSeoSlug(
   v: { marca: string; modelo: string; versao: string; tipo: string; ano_fabricacao: number; autoconf_id: number },
   existingSlugs?: Set<string>,
 ): string {
   const parts = [v.marca, v.modelo];
-  if (v.versao) parts.push(v.versao);
-  if (v.tipo) parts.push(v.tipo);
+  const cleanVersao = v.versao ? deduplicateVersao(v.modelo, v.versao) : "";
+  if (cleanVersao) parts.push(cleanVersao);
+  if (v.tipo) parts.push(normalizeCategoria(v.tipo));
   const base = `comprar-${slugify(parts.join("-"))}-${v.ano_fabricacao}-usado-seminovo`;
   if (!existingSlugs || !existingSlugs.has(base)) return base;
   return `${base}-${String(v.autoconf_id).slice(-4)}`;
