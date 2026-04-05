@@ -756,7 +756,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
         let fotos: unknown[] = [], acessorios: unknown[] = [];
         try {
           const detail = await fetchAutoConfVeiculo(v.id);
-          if (detail.dados) { fotos = detail.dados.fotos || []; acessorios = detail.dados.acessorios || []; }
+          // AutoConf may nest vehicle data under detail.dados.dados (API wraps in { dados: {...} })
+          const d = detail.dados as any;
+          const veiculo = d?.dados ?? d;
+          fotos = veiculo?.fotos || d?.fotos || [];
+          acessorios = veiculo?.acessorios || d?.acessorios || [];
         } catch { fotos = v.foto ? [v.foto] : []; }
         const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
         if (result === "created") created++; else updated++;
@@ -781,7 +785,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
         let fotos: unknown[] = [], acessorios: unknown[] = [];
         try {
           const detail = await fetchAutoConfVeiculo(v.id);
-          if (detail.dados) { fotos = detail.dados.fotos || []; acessorios = detail.dados.acessorios || []; }
+          // AutoConf may nest vehicle data under detail.dados.dados (API wraps in { dados: {...} })
+          const d = detail.dados as any;
+          const veiculo = d?.dados ?? d;
+          fotos = veiculo?.fotos || d?.fotos || [];
+          acessorios = veiculo?.acessorios || d?.acessorios || [];
         } catch { fotos = v.foto ? [v.foto] : []; }
         await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
         const accNames = acessorios.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
