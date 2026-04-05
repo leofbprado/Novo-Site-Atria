@@ -97,12 +97,15 @@ function normalizeCategoria(tipo: string): string {
 }
 
 function deduplicateVersao(modelo: string, versao: string): string {
-  const modeloLower = modelo.toLowerCase().trim();
-  const versaoLower = versao.toLowerCase().trim();
-  if (versaoLower.startsWith(modeloLower)) {
-    return versao.slice(modelo.length).trim().replace(/^[\s-]+/, "");
+  const modeloSlug = slugify(modelo);
+  const versaoSlug = slugify(versao);
+  if (versaoSlug.startsWith(modeloSlug + "-")) {
+    return versaoSlug.slice(modeloSlug.length + 1);
   }
-  return versao;
+  if (versaoSlug.startsWith(modeloSlug)) {
+    return versaoSlug.slice(modeloSlug.length);
+  }
+  return versaoSlug;
 }
 
 function makeSeoSlug(
