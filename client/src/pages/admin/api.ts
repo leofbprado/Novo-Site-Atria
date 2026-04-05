@@ -211,9 +211,9 @@ export async function generateBlogPost(
 
   const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
 
-TEMA: ${params.tema}
-CATEGORIA: ${params.categoria}
-KEYWORDS SEO: ${params.keywords.join(", ")}
+${params.tema ? `TEMA: ${params.tema}` : "TEMA: Escolha voce o melhor tema baseado nos modelos do estoque e no que as pessoas pesquisam sobre carros usados em Campinas. Pense em duvidas reais de quem esta comprando."}
+${params.categoria ? `CATEGORIA: ${params.categoria}` : "CATEGORIA: Escolha a mais adequada entre: comparativo, guia-preco, review, financiamento, guia-perfil"}
+${params.keywords.length ? `KEYWORDS SEO: ${params.keywords.join(", ")}` : "KEYWORDS SEO: Escolha 3-5 keywords com potencial de busca local (inclua 'Campinas' em pelo menos 2)"}
 MODELOS QUE EXISTEM NO ESTOQUE (pra voce saber do que falar, NAO pra anunciar): ${modelosNoEstoque}
 
 REGRAS ABSOLUTAS:

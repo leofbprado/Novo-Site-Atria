@@ -1357,17 +1357,19 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
     if (!claudeKey) { setGenResult("Configure a chave Claude nas configuracoes primeiro"); return; }
     setGenerating(true); setGenResult("");
     try {
-      const relevantVehicles = published.slice(0, 10).map(toVehicleInfo);
+      // Pick a varied sample of published vehicles for context
+      const sample = published.sort(() => Math.random() - 0.5).slice(0, 15).map(toVehicleInfo);
 
       const result = await generateBlogPost(claudeKey, {
-        categoria: formCategoria,
-        tema: formTitulo || "artigo sobre carros usados em Campinas",
-        veiculos: relevantVehicles,
-        keywords: formKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+        categoria: formCategoria || "guia-perfil",
+        tema: formTitulo || "", // empty = let AI decide
+        veiculos: sample,
+        keywords: formKeywords ? formKeywords.split(",").map((k) => k.trim()).filter(Boolean) : [],
       });
 
       setFormTitulo(result.titulo);
       setFormCapa(result.capa);
+      setFormCategoria(result.keywords.some(k => k.includes("comparativo")) ? "comparativo" : formCategoria || "guia-perfil");
       setFormConteudo(result.conteudo);
       setFormMetaTitle(result.meta_title);
       setFormMetaDesc(result.meta_description);
@@ -1464,6 +1466,14 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
               <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Meta Description</label>
               <input value={formMetaDesc} onChange={(e) => setFormMetaDesc(e.target.value)}
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Description (max 155 chars)" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Imagem de capa (URL)</label>
+            <div className="flex gap-2 items-center">
+              <input value={formCapa} onChange={(e) => setFormCapa(e.target.value)}
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="https://..." />
+              {formCapa && <img src={formCapa} alt="capa" className="w-20 h-14 object-cover rounded-lg border" />}
             </div>
           </div>
           <div>
