@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut,
-  RefreshCw, CheckCircle2, Upload, Search, Filter, ChevronLeft,
+  RefreshCw, CheckCircle2, Search, Filter, ChevronLeft,
   ChevronRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
   Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu,
 } from "lucide-react";
@@ -10,7 +10,6 @@ import {
   fetchAutoConfVeiculos,
   fetchAutoConfVeiculo,
   generateDescription,
-  type AutoConfVeiculo,
 } from "./api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -666,8 +665,10 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
-  const [importingAll, setImportingAll] = useState(false);
-  const [importProgress, setImportProgress] = useState("");
+  const [enriching, setEnriching] = useState(false);
+  const [enrichResult, setEnrichResult] = useState("");
+  const [publishingAll, setPublishingAll] = useState(false);
+  const [publishAllResult, setPublishAllResult] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const PER_PAGE = 20;
 
@@ -748,7 +749,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
   const draftCount = vehicles.filter((v) => v.status === "rascunho").length;
 
   const handleSync = async () => {
-    setSyncing(true); setSyncResult("");
+    setSyncing(true); setSyncResult(""); setEnrichResult(""); setPublishAllResult("");
     try {
       const res = await fetchAutoConfVeiculos({ registros_por_pagina: 500 });
       const dados = Array.isArray(res.dados) ? res.dados : [];
@@ -757,7 +758,6 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
         let fotos: unknown[] = [], acessorios: unknown[] = [];
         try {
           const detail = await fetchAutoConfVeiculo(v.id);
-          // AutoConf may nest vehicle data under detail.dados.dados (API wraps in { dados: {...} })
           const d = detail.dados as any;
           const veiculo = d?.dados ?? d;
           fotos = veiculo?.fotos || d?.fotos || [];
@@ -768,65 +768,53 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
       }
       const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
       const despublicados = await despublishOrphanVeiculos(autoconfIds);
-      setSyncResult(`${created} novos, ${updated} atualizados, ${despublicados} despublicados (vendidos)`);
+      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados (vendidos)`);
       loadVehicles();
     } catch (err: any) { setSyncResult(`Erro: ${err.message}`); }
     setSyncing(false);
   };
 
-  const handleImportAll = async () => {
-    setImportingAll(true); setImportProgress("Buscando veiculos...");
+  const handleEnrichAI = async () => {
+    if (!openaiKey) { setEnrichResult("Erro: Configure a chave OpenAI nas configuracoes primeiro"); return; }
+    const draftsWithoutAI = vehicles.filter((v) => v.status === "rascunho" && !v.descricao_ia);
+    if (draftsWithoutAI.length === 0) { setEnrichResult("Nenhum rascunho sem descricao para enriquecer"); return; }
+    setEnriching(true); setEnrichResult(""); setSyncResult(""); setPublishAllResult("");
+    let enriched = 0;
     try {
-      const res = await fetchAutoConfVeiculos({ registros_por_pagina: 500 });
-      const dados = Array.isArray(res.dados) ? res.dados : [];
-      const total = dados.length;
-      const imported: Array<{ id: number; data: AutoConfVeiculo; acessorios: string[] }> = [];
-
-      for (let i = 0; i < total; i++) {
-        setImportProgress(`Importando ${i + 1}/${total}...`);
-        const v = dados[i];
-        let fotos: unknown[] = [], acessorios: unknown[] = [];
+      for (let i = 0; i < draftsWithoutAI.length; i++) {
+        const v = draftsWithoutAI[i];
+        setEnrichResult(`Gerando descricao ${i + 1}/${draftsWithoutAI.length}...`);
         try {
-          const detail = await fetchAutoConfVeiculo(v.id);
-          // AutoConf may nest vehicle data under detail.dados.dados (API wraps in { dados: {...} })
-          const d = detail.dados as any;
-          const veiculo = d?.dados ?? d;
-          fotos = veiculo?.fotos || d?.fotos || [];
-          acessorios = veiculo?.acessorios || d?.acessorios || [];
-        } catch { fotos = v.foto ? [v.foto] : []; }
-        await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
-        const accNames = acessorios.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
-        imported.push({ id: v.id, data: v, acessorios: accNames });
+          const desc = await generateDescription(openaiKey, {
+            marca: v.marca, modelo: v.modelo, versao: v.versao,
+            ano_fabricacao: v.ano_fabricacao, ano_modelo: v.ano_modelo,
+            km: v.km, cor: v.cor, cambio: v.cambio,
+            combustivel: v.combustivel, acessorios: v.acessorios || [],
+          });
+          await updateVeiculoDescricao(v.autoconf_id, desc);
+          enriched++;
+        } catch { /* skip */ }
+        if (i < draftsWithoutAI.length - 1) await new Promise((r) => setTimeout(r, 200));
       }
-
-      if (openaiKey) {
-        for (let i = 0; i < imported.length; i++) {
-          setImportProgress(`Gerando descricao ${i + 1}/${total}...`);
-          try {
-            const v = imported[i].data;
-            const desc = await generateDescription(openaiKey, {
-              marca: v.marca_nome, modelo: v.modelopai_nome, versao: v.modelo_nome,
-              ano_fabricacao: Number(v.anofabricacao), ano_modelo: Number(v.anomodelo),
-              km: v.km, cor: v.cor_nome, cambio: v.cambio_nome,
-              combustivel: v.combustivel_nome, acessorios: imported[i].acessorios,
-            });
-            await updateVeiculoDescricao(imported[i].id, desc);
-          } catch { /* skip */ }
-          if (i < imported.length - 1) await new Promise((r) => setTimeout(r, 200));
-        }
-      }
-
-      for (let i = 0; i < imported.length; i++) {
-        setImportProgress(`Publicando ${i + 1}/${total}...`);
-        await publishVeiculo(imported[i].id);
-      }
-
-      const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
-      const despublicados = await despublishOrphanVeiculos(autoconfIds);
-      setImportProgress(`Concluido! ${total} importados e publicados, ${despublicados} despublicados (vendidos).`);
+      setEnrichResult(`Concluido: ${enriched} veiculos enriquecidos com IA`);
       loadVehicles();
-    } catch (err: any) { setImportProgress(`Erro: ${err.message}`); }
-    setImportingAll(false);
+    } catch (err: any) { setEnrichResult(`Erro: ${err.message}`); }
+    setEnriching(false);
+  };
+
+  const handlePublishAllDrafts = async () => {
+    const drafts = vehicles.filter((v) => v.status === "rascunho");
+    if (drafts.length === 0) return;
+    setPublishingAll(true); setPublishAllResult(""); setSyncResult(""); setEnrichResult("");
+    try {
+      for (let i = 0; i < drafts.length; i++) {
+        setPublishAllResult(`Publicando ${i + 1}/${drafts.length}...`);
+        await publishVeiculo(drafts[i].autoconf_id);
+      }
+      setPublishAllResult(`Concluido: ${drafts.length} rascunhos publicados`);
+      loadVehicles();
+    } catch (err: any) { setPublishAllResult(`Erro: ${err.message}`); }
+    setPublishingAll(false);
   };
 
   const listView = (
@@ -837,35 +825,46 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
           <h1 className="text-2xl font-bold text-slate-900">Estoque</h1>
           <p className="text-slate-500 text-sm mt-0.5">{vehicles.length} veiculos ({publishedCount} publicados, {draftCount} rascunhos)</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleSync} disabled={syncing || importingAll}
+        <div className="flex flex-wrap gap-2">
+          <button onClick={handleSync} disabled={syncing || enriching || publishingAll}
             className="bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
             {syncing ? <Spinner size={14} /> : <RefreshCw size={14} />}
             {syncing ? "Sincronizando..." : "Sincronizar"}
           </button>
-          <button onClick={handleImportAll} disabled={syncing || importingAll}
-            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
-            {importingAll ? <Spinner size={14} /> : <Upload size={14} />}
-            {importingAll ? "Importando..." : "Importar Tudo"}
-          </button>
+          {draftCount > 0 && (
+            <button onClick={handleEnrichAI} disabled={syncing || enriching || publishingAll}
+              className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
+              {enriching ? <Spinner size={14} /> : <Sparkles size={14} />}
+              {enriching ? "Enriquecendo..." : "Enriquecer com IA"}
+            </button>
+          )}
+          {draftCount > 0 && (
+            <button onClick={handlePublishAllDrafts} disabled={syncing || enriching || publishingAll}
+              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
+              {publishingAll ? <Spinner size={14} /> : <Eye size={14} />}
+              {publishingAll ? "Publicando..." : `Publicar ${draftCount} rascunhos`}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Progress messages */}
-      {(syncResult || importProgress) && (
-        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border ${
-          (syncResult || importProgress).startsWith("Erro")
-            ? "bg-red-50 text-red-700 border-red-200"
-            : (syncResult || importProgress).startsWith("Concluido") || (!importProgress && syncResult)
-            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      {(() => {
+        const msg = syncResult || enrichResult || publishAllResult;
+        if (!msg) return null;
+        const isError = msg.startsWith("Erro");
+        const isDone = msg.startsWith("Sincronizado") || msg.startsWith("Concluido") || msg.startsWith("Nenhum");
+        return (
+          <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border ${
+            isError ? "bg-red-50 text-red-700 border-red-200"
+            : isDone ? "bg-emerald-50 text-emerald-700 border-emerald-200"
             : "bg-blue-50 text-blue-700 border-blue-200"
-        }`}>
-          {(syncResult || importProgress).startsWith("Erro") ? <AlertCircle size={14} /> :
-           (syncResult || importProgress).startsWith("Concluido") || (!importProgress && syncResult) ? <CheckCircle2 size={14} /> :
-           <Spinner size={14} />}
-          {importProgress || syncResult}
-        </div>
-      )}
+          }`}>
+            {isError ? <AlertCircle size={14} /> : isDone ? <CheckCircle2 size={14} /> : <Spinner size={14} />}
+            {msg}
+          </div>
+        );
+      })()}
 
       {/* Filters */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
@@ -904,7 +903,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
         <EmptyState
           icon={<Car size={48} />}
           title={vehicles.length === 0 ? "Nenhum veiculo importado" : "Nenhum resultado"}
-          description={vehicles.length === 0 ? 'Clique em "Importar Tudo" para importar veiculos do AutoConf.' : "Tente ajustar os filtros."}
+          description={vehicles.length === 0 ? 'Clique em "Sincronizar" para importar veiculos do AutoConf.' : "Tente ajustar os filtros."}
         />
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
