@@ -11,7 +11,6 @@ import {
   fetchAutoConfVeiculo,
   generateDescription,
   generateBlogPost,
-  suggestBlogTopics,
 } from "./api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -1278,7 +1277,7 @@ function toVehicleInfo(v: VeiculoAdmin) {
   return { marca: v.marca, modelo: v.modelo, versao: v.versao, ano: v.ano_fabricacao, km: v.km, preco: v.preco, cambio: v.cambio, combustivel: v.combustivel, slug: v.slug, foto: v.foto_principal };
 }
 
-function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: VeiculoAdmin[] }) {
+function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: VeiculoAdmin[] }) {
   const published = useMemo(() => vehicles.filter((v) => v.status === "publicado"), [vehicles]);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -1298,6 +1297,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
   const [formMetaDesc, setFormMetaDesc] = useState("");
   const [formKeywords, setFormKeywords] = useState("");
   const [formVeiculos, setFormVeiculos] = useState("");
+  const [formCapa, setFormCapa] = useState("");
 
   const loadPosts = useCallback(async () => {
     try { setPosts(await getAllBlogPosts()); } catch { /* ignore */ }
@@ -1311,7 +1311,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
 
   const resetForm = () => {
     setFormTitulo(""); setFormCategoria("guia-perfil"); setFormConteudo("");
-    setFormMetaTitle(""); setFormMetaDesc(""); setFormKeywords(""); setFormVeiculos("");
+    setFormMetaTitle(""); setFormMetaDesc(""); setFormKeywords(""); setFormVeiculos(""); setFormCapa("");
     setEditing(null); setCreating(false);
   };
 
@@ -1320,7 +1320,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
     setFormTitulo(post.titulo); setFormCategoria(post.categoria);
     setFormConteudo(post.conteudo); setFormMetaTitle(post.meta_title);
     setFormMetaDesc(post.meta_description);
-    setFormKeywords(post.keywords.join(", ")); setFormVeiculos(post.veiculos_relacionados.join(", "));
+    setFormKeywords(post.keywords.join(", ")); setFormVeiculos(post.veiculos_relacionados.join(", ")); setFormCapa(post.capa);
   };
 
   const makeSlug = (title: string) =>
@@ -1340,7 +1340,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
     const slug = editing ? editing.slug : makeSlug(formTitulo);
 
     const data = {
-      slug, titulo: formTitulo, categoria: formCategoria,
+      slug, titulo: formTitulo, capa: formCapa, categoria: formCategoria,
       conteudo: formConteudo, meta_title: formMetaTitle,
       meta_description: formMetaDesc, keywords, veiculos_relacionados: veiculos,
     };
@@ -1354,12 +1354,12 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
   };
 
   const handleGenerate = async () => {
-    if (!openaiKey) { setGenResult("Configure a chave OpenAI primeiro"); return; }
+    if (!claudeKey) { setGenResult("Configure a chave Claude nas configuracoes primeiro"); return; }
     setGenerating(true); setGenResult("");
     try {
       const relevantVehicles = published.slice(0, 10).map(toVehicleInfo);
 
-      const result = await generateBlogPost(openaiKey, {
+      const result = await generateBlogPost(claudeKey, {
         categoria: formCategoria,
         tema: formTitulo || "artigo sobre carros usados em Campinas",
         veiculos: relevantVehicles,
@@ -1367,6 +1367,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
       });
 
       setFormTitulo(result.titulo);
+      setFormCapa(result.capa);
       setFormConteudo(result.conteudo);
       setFormMetaTitle(result.meta_title);
       setFormMetaDesc(result.meta_description);
@@ -1378,8 +1379,8 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
   };
 
   const handleGenerate8 = async () => {
-    console.log("[BLOG] handleGenerate8 called, openaiKey:", openaiKey ? "set" : "empty", "published vehicles:", published.length);
-    if (!openaiKey) { setBatchProgress("Configure a chave OpenAI primeiro"); return; }
+    console.log("[BLOG] handleGenerate8 called, claudeKey:", claudeKey ? "set" : "empty", "published vehicles:", published.length);
+    if (!claudeKey) { setBatchProgress("Configure a chave Claude nas configuracoes primeiro"); return; }
     setBatchGenerating(true); setBatchProgress("");
     let created = 0;
     for (let i = 0; i < BLOG_8_TEMAS.length; i++) {
@@ -1388,13 +1389,13 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
       try {
         const relevantVehicles = filterVehiclesForTema(t.filter).map(toVehicleInfo);
         console.log(`[BLOG] Artigo ${i + 1}: ${t.tema.slice(0, 40)}, ${relevantVehicles.length} veiculos`);
-        const result = await generateBlogPost(openaiKey, {
+        const result = await generateBlogPost(claudeKey, {
           categoria: t.categoria, tema: t.tema, veiculos: relevantVehicles, keywords: t.keywords,
         });
         console.log(`[BLOG] Artigo ${i + 1} gerado:`, result.titulo);
         const slug = makeSlug(result.titulo);
         await createBlogPost({
-          slug, titulo: result.titulo, categoria: t.categoria,
+          slug, titulo: result.titulo, capa: result.capa, categoria: t.categoria,
           conteudo: result.conteudo, meta_title: result.meta_title,
           meta_description: result.meta_description, keywords: result.keywords,
           veiculos_relacionados: result.veiculos_slugs,
@@ -1508,7 +1509,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
             className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
             <Plus size={14} /> Novo Artigo
           </button>
-          <button onClick={handleGenerate8} disabled={batchGenerating || !openaiKey}
+          <button onClick={handleGenerate8} disabled={batchGenerating || !claudeKey}
             className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
             {batchGenerating ? <Spinner size={14} /> : <Sparkles size={14} />}
             {batchGenerating ? "Gerando..." : "Gerar 8 Artigos SEO"}
@@ -1568,13 +1569,17 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
 }
 
 // ── Config Page ──────────────────────────────────────────────────────────────
-function ConfigPage({ openaiKey, setOpenaiKey, milestoneConfig, setMilestoneConfig }: {
+function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, milestoneConfig, setMilestoneConfig }: {
   openaiKey: string; setOpenaiKey: (k: string) => void;
+  claudeKey: string; setClaudeKey: (k: string) => void;
   milestoneConfig: MilestoneConfig; setMilestoneConfig: (c: MilestoneConfig) => void;
 }) {
   const [keyInput, setKeyInput] = useState("");
+  const [claudeInput, setClaudeInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savingClaude, setSavingClaude] = useState(false);
+  const [savedClaude, setSavedClaude] = useState(false);
   const [milestoneDias, setMilestoneDias] = useState(milestoneConfig.dias.join(", "));
   const [savingMs, setSavingMs] = useState(false);
   const [savedMs, setSavedMs] = useState(false);
@@ -1636,6 +1641,45 @@ function ConfigPage({ openaiKey, setOpenaiKey, milestoneConfig, setMilestoneConf
             <p className="text-slate-400 text-xs mt-2 flex items-center gap-1">
               <CheckCircle2 size={12} className="text-emerald-500" />
               Chave configurada (****{openaiKey.slice(-4)})
+            </p>
+          )}
+        </div>
+
+        {/* Claude API */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+              <BookOpen size={18} className="text-amber-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Claude API (Blog)</h3>
+              <p className="text-slate-500 text-xs">Chave Anthropic para geracao de artigos do blog</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <input type="password" placeholder={claudeKey ? "****" + claudeKey.slice(-4) : "sk-ant-..."}
+              value={claudeInput} onChange={(e) => setClaudeInput(e.target.value)}
+              className="flex-1 border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
+            <button onClick={async () => {
+              setSavingClaude(true);
+              try {
+                await saveAdminConfig({ claude_key: claudeInput || claudeKey });
+                setClaudeKey(claudeInput || claudeKey);
+                setClaudeInput("");
+                setSavedClaude(true);
+                setTimeout(() => setSavedClaude(false), 3000);
+              } catch { /* ignore */ }
+              setSavingClaude(false);
+            }} disabled={savingClaude}
+              className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              {savingClaude ? <Spinner size={14} /> : savedClaude ? <CheckCircle2 size={14} /> : <Save size={14} />}
+              {savingClaude ? "Salvando..." : savedClaude ? "Salvo!" : "Salvar"}
+            </button>
+          </div>
+          {claudeKey && (
+            <p className="text-slate-400 text-xs mt-2 flex items-center gap-1">
+              <CheckCircle2 size={12} className="text-emerald-500" />
+              Chave configurada (****{claudeKey.slice(-4)})
             </p>
           )}
         </div>
@@ -1764,6 +1808,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openaiKey, setOpenaiKey] = useState("");
+  const [claudeKey, setClaudeKey] = useState("");
   const [analytics, setAnalytics] = useState<Map<string, VehicleAnalytics>>(new Map());
   const [dailyHistory, setDailyHistory] = useState<Map<string, DailyRecord[]>>(new Map());
   const [milestoneConfig, setMilestoneConfig] = useState<MilestoneConfig>({ dias: [7, 20, 40, 60] });
@@ -1787,7 +1832,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   }, []);
 
   useEffect(() => {
-    getAdminConfig().then((c) => setOpenaiKey(c.openai_key || "")).catch(() => {});
+    getAdminConfig().then((c) => { setOpenaiKey(c.openai_key || ""); setClaudeKey(c.claude_key || ""); }).catch(() => {});
     getAllVehicleAnalytics().then(setAnalytics).catch(() => {});
     getMilestoneConfig().then(setMilestoneConfig).catch(() => {});
   }, []);
@@ -1831,8 +1876,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
-              {page === "blog" && <BlogPage openaiKey={openaiKey} vehicles={vehicles} />}
-              {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
+              {page === "blog" && <BlogPage claudeKey={claudeKey} vehicles={vehicles} />}
+              {page === "config" && <ConfigPage openaiKey={openaiKey} setOpenaiKey={setOpenaiKey} claudeKey={claudeKey} setClaudeKey={setClaudeKey} milestoneConfig={milestoneConfig} setMilestoneConfig={setMilestoneConfig} />}
             </>
           )}
         </div>

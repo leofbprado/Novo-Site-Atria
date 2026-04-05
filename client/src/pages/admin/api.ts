@@ -159,8 +159,37 @@ export interface BlogVehicleInfo {
   foto: string;
 }
 
+// ── Claude API helper ───────────────────────────────────────────────────────
+
+async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): Promise<string> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": claudeKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Claude API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.content?.[0]?.text?.trim() || "";
+}
+
+// ── Blog generation ─────────────────────────────────────────────────────────
+
 export async function generateBlogPost(
-  openaiKey: string,
+  claudeKey: string,
   params: {
     categoria: string;
     tema: string;
@@ -169,6 +198,7 @@ export async function generateBlogPost(
   }
 ): Promise<{
   titulo: string;
+  capa: string;
   conteudo: string;
   meta_title: string;
   meta_description: string;
@@ -176,142 +206,68 @@ export async function generateBlogPost(
   veiculos_slugs: string[];
 }> {
   const veiculosList = params.veiculos
-    .map((v) => [
-      `- ${v.marca} ${v.modelo} ${v.versao} ${v.ano} | ${v.km.toLocaleString("pt-BR")} km | ${v.cambio} | ${v.combustivel} | R$${v.preco.toLocaleString("pt-BR")}`,
-      `  Foto: ![${v.marca} ${v.modelo} ${v.ano}](${v.foto})`,
-      `  Link: [Ver ${v.marca} ${v.modelo} ${v.ano} - R$${v.preco.toLocaleString("pt-BR")}](/campinas-sp/${v.slug})`,
-    ].join("\n"))
-    .join("\n\n");
+    .map((v) => `${v.marca} ${v.modelo} ${v.versao} ${v.ano} | ${v.km.toLocaleString("pt-BR")} km | ${v.cambio} | ${v.combustivel} | R$${v.preco.toLocaleString("pt-BR")} | foto: ${v.foto} | link: /campinas-sp/${v.slug}`)
+    .join("\n");
 
-  const prompt = `Voce e um consultor automotivo experiente que escreve pra um blog de uma revenda de seminovos em Campinas-SP (Atria Veiculos, atriaveiculos.com). Escreva como se estivesse explicando pra um amigo — direto, com opiniao, sem enrolacao.
+  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo: educar o leitor e gerar confianca na loja. O artigo NAO e um catalogo — e conteudo util que posiciona a Atria como autoridade.
 
 TEMA: ${params.tema}
 CATEGORIA: ${params.categoria}
+KEYWORDS SEO: ${params.keywords.join(", ")}
 
-VEICULOS DISPONIVEIS NO ESTOQUE COM DADOS REAIS:
+VEICULOS DO ESTOQUE (use apenas como referencia contextual, NAO liste todos):
 ${veiculosList}
 
-KEYWORDS PARA INCLUIR NATURALMENTE: ${params.keywords.join(", ")}
+ESTRUTURA DO ARTIGO (80% educacao, 20% estoque):
 
-ESTRUTURA OBRIGATORIA:
-1. Introducao curta (2-3 linhas) — vai direto ao ponto, sem "neste artigo vamos explorar"
-2. Uma secao ## por veiculo/topico, cada uma com:
-   - Foto do veiculo: ![Marca Modelo Ano](url_foto)
-   - Dados reais do estoque: preco, km, cambio, combustivel
-   - Fale sobre a experiencia: espaco interno, conforto na estrada, praticidade no dia a dia, acabamento, dirigibilidade
-   - Link pro veiculo: [Ver Marca Modelo Ano - R$preco](/campinas-sp/slug)
-3. Se for comparativo: tabela markdown comparando os modelos (preco, km, ano, pontos fortes)
-4. CTA final: "Visite a Atria Veiculos em Campinas ou fale com a gente pelo WhatsApp: (19) 99652-5211"
+1. INTRODUCAO (2-3 linhas): vai direto ao problema/duvida do leitor. Sem "neste artigo vamos". Ex: "Quem procura SUV usado em Campinas enfrenta um dilema: conforto vs preco. Vamos descomplicar."
 
-REGRAS DE CONTEUDO:
-- Use APENAS os dados fornecidos na lista de veiculos. NUNCA invente dados tecnicos como consumo, valor FIPE, custo de manutencao ou especificacoes que nao foram fornecidos
-- Em vez de falar sobre consumo ou FIPE (que voce nao tem), fale sobre a experiencia: espaco interno, conforto, praticidade, acabamento, dirigibilidade
-- NUNCA fale mal de nenhum veiculo, marca ou modelo — vendemos todos eles
-- Destaque os PONTOS FORTES de cada um. "Cada um atende um perfil diferente"
-- NUNCA use frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "e uma otima escolha"
-- Cada veiculo mencionado DEVE ter foto + link + dados reais do estoque
+2. CORPO EDUCATIVO (o conteudo principal):
+   - Explique O QUE o leitor precisa saber sobre o tema (o que avaliar, cuidados, diferencas entre versoes, quando vale a pena, pra quem serve)
+   - Use conhecimento automotivo real: diferenca entre tracao 4x2 e 4x4, vantagens de cambio CVT vs torque converter, quando diesel compensa, o que verificar na carroceria de uma picape usada, etc
+   - Organize por TOPICOS UTEIS (ex: "O que verificar antes de comprar", "Diesel ou flex?", "Qual versao oferece melhor custo-beneficio") — NAO por veiculo
+   - Tom: consultor explicando pra um amigo. Direto, com opiniao (mas sem falar mal de nenhum modelo)
+
+3. MENCOES AO ESTOQUE (naturais, dentro do contexto):
+   - Mencione 2-4 veiculos do estoque como EXEMPLOS dentro do texto educativo
+   - Formato: "Aqui na Atria, temos uma [Toro Ranch 4x4 diesel 2021 com 101 mil km por R$125.890](/campinas-sp/slug) — um bom exemplo de versao pra quem roda em estrada de terra."
+   - Inclua a foto quando mencionar: ![Fiat Toro Ranch 2021](url_foto)
+   - NAO faca uma secao separada por veiculo — mencione dentro do fluxo do texto
+
+4. SE FOR COMPARATIVO: inclua tabela markdown comparando os modelos (preco, km, ano, ponto forte de cada)
+
+5. CTA FINAL: "Quer ver essas opcoes de perto? Visite a Atria Veiculos em Campinas ou fale com a gente pelo WhatsApp: (19) 99652-5211"
+
+REGRAS:
+- Use APENAS dados fornecidos na lista de veiculos. NUNCA invente consumo, FIPE, custo de manutencao ou especificacoes
+- NUNCA fale mal de nenhum veiculo — todos sao boas opcoes pra perfis diferentes
+- PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "e uma otima escolha", "merece destaque"
+- Se o estoque NAO tem um modelo mencionado no tema, NAO invente dados — foque nos que tem
 - Tamanho: 1000-1500 palavras
-- Formato: markdown
-- Links internos usam path relativo: /campinas-sp/slug (sem dominio)
+- Formato: markdown com ## pra subtitulos
+- Links: path relativo /campinas-sp/slug (sem dominio)
 - Em portugues do Brasil
 
-RESPONDA EM JSON com esta estrutura exata:
+RESPONDA EM JSON:
 {
-  "titulo": "Titulo do artigo",
-  "conteudo": "Conteudo completo em markdown com fotos e links",
-  "meta_title": "Title tag SEO (max 60 chars, inclua Campinas)",
-  "meta_description": "Meta description (max 155 chars, inclua dado real como preco)",
-  "keywords": ["keyword1", "keyword2", "keyword3"]
+  "titulo": "Titulo do artigo (chamativo, com Campinas)",
+  "capa": "URL da foto do veiculo mais relevante do artigo (escolha da lista acima)",
+  "conteudo": "Artigo completo em markdown",
+  "meta_title": "Title tag SEO (max 60 chars)",
+  "meta_description": "Meta description (max 155 chars, com dado real)",
+  "keywords": ["keyword1", "keyword2"]
 }`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${openaiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 4000,
-      temperature: 0.7,
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `OpenAI error ${res.status}`);
-  }
-
-  const data = await res.json();
-  const raw = data.choices?.[0]?.message?.content?.trim() || "{}";
-  // Extract JSON from response (may be wrapped in ```json blocks)
+  const raw = await callClaude(claudeKey, prompt);
   const jsonStr = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
   const parsed = JSON.parse(jsonStr);
   return {
     titulo: parsed.titulo || params.tema,
+    capa: parsed.capa || params.veiculos[0]?.foto || "",
     conteudo: parsed.conteudo || "",
     meta_title: parsed.meta_title || "",
     meta_description: parsed.meta_description || "",
     keywords: Array.isArray(parsed.keywords) ? parsed.keywords : params.keywords,
     veiculos_slugs: params.veiculos.map((v) => v.slug),
   };
-}
-
-export async function suggestBlogTopics(
-  openaiKey: string,
-  veiculos: Array<{ marca: string; modelo: string; tipo: string; preco: number }>
-): Promise<Array<{ tema: string; categoria: string; keywords: string[] }>> {
-  const summary = veiculos
-    .reduce((acc, v) => {
-      const key = `${v.marca} ${v.modelo}`;
-      if (!acc[key]) acc[key] = { count: 0, tipo: v.tipo, preco: v.preco };
-      acc[key].count++;
-      return acc;
-    }, {} as Record<string, { count: number; tipo: string; preco: number }>);
-
-  const topModels = Object.entries(summary)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 15)
-    .map(([name, info]) => `${name} (${info.tipo}, ~R$${info.preco.toLocaleString("pt-BR")})`)
-    .join(", ");
-
-  const prompt = `Voce e um estrategista de conteudo SEO para a Atria Veiculos, revenda de seminovos em Campinas-SP.
-
-Modelos mais presentes no estoque: ${topModels}
-
-Sugira 8 temas de artigos de blog focados em SEO local (Campinas-SP). Cada tema deve:
-- Ter potencial de busca (pessoas realmente pesquisam isso)
-- Mencionar modelos do estoque
-- Incluir "Campinas" naturalmente
-
-Categorias disponiveis: comparativo, guia-preco, review, financiamento, guia-perfil
-
-RESPONDA EM JSON com array:
-[{"tema": "...", "categoria": "...", "keywords": ["...", "..."]}]`;
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${openaiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 1500,
-      temperature: 0.8,
-      response_format: { type: "json_object" },
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `OpenAI error ${res.status}`);
-  }
-
-  const data = await res.json();
-  const raw = data.choices?.[0]?.message?.content?.trim() || "[]";
-  const parsed = JSON.parse(raw);
-  return Array.isArray(parsed) ? parsed : parsed.temas || parsed.topics || [];
 }

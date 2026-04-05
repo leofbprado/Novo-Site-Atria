@@ -88,6 +88,11 @@ export default function Blog() {
             {posts.map((post) => (
               <a key={post.slug} href={`/blog/${post.slug}`}
                 className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
+                {post.capa && (
+                  <div className="aspect-[16/9] overflow-hidden">
+                    <img src={post.capa} alt={post.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  </div>
+                )}
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs font-medium bg-atria-navy/10 text-atria-navy px-2.5 py-1 rounded-full">

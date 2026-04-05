@@ -119,6 +119,13 @@ export default function BlogPostPage() {
         </div>
       </section>
 
+      {/* Cover image */}
+      {post.capa && (
+        <div className="max-w-3xl mx-auto px-4 -mt-8 relative z-10">
+          <img src={post.capa} alt={post.titulo} className="w-full aspect-[16/9] object-cover rounded-2xl shadow-lg" />
+        </div>
+      )}
+
       {/* Content */}
       <article className="max-w-3xl mx-auto px-4 py-12">
         <div

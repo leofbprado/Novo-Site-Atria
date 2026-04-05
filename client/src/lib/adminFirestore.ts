@@ -302,14 +302,17 @@ export async function unpublishVeiculo(autoconfId: number): Promise<void> {
 
 // ── Config (OpenAI key etc) ──────────────────────────────────────────────────
 
-export async function getAdminConfig(): Promise<{ openai_key: string }> {
+export async function getAdminConfig(): Promise<{ openai_key: string; claude_key: string }> {
   const firestore = requireDb();
   const snap = await getDoc(doc(firestore, CONFIG_COLLECTION, "admin"));
-  if (snap.exists()) return snap.data() as { openai_key: string };
-  return { openai_key: "" };
+  if (snap.exists()) {
+    const data = snap.data();
+    return { openai_key: (data.openai_key as string) || "", claude_key: (data.claude_key as string) || "" };
+  }
+  return { openai_key: "", claude_key: "" };
 }
 
-export async function saveAdminConfig(config: { openai_key: string }): Promise<void> {
+export async function saveAdminConfig(config: Partial<{ openai_key: string; claude_key: string }>): Promise<void> {
   const firestore = requireDb();
   await setDoc(doc(firestore, CONFIG_COLLECTION, "admin"), config, { merge: true });
 }
@@ -495,6 +498,7 @@ export type BlogCategoria = "comparativo" | "guia-preco" | "review" | "financiam
 export interface BlogPost {
   slug: string;
   titulo: string;
+  capa: string;
   conteudo: string;
   meta_title: string;
   meta_description: string;
@@ -512,6 +516,7 @@ function normalizeBlogPost(raw: Record<string, unknown>): BlogPost {
   return {
     slug: (raw.slug as string) || "",
     titulo: (raw.titulo as string) || "",
+    capa: (raw.capa as string) || "",
     conteudo: (raw.conteudo as string) || "",
     meta_title: (raw.meta_title as string) || "",
     meta_description: (raw.meta_description as string) || "",
