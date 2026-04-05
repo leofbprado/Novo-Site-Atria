@@ -1378,6 +1378,7 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
   };
 
   const handleGenerate8 = async () => {
+    console.log("[BLOG] handleGenerate8 called, openaiKey:", openaiKey ? "set" : "empty", "published vehicles:", published.length);
     if (!openaiKey) { setBatchProgress("Configure a chave OpenAI primeiro"); return; }
     setBatchGenerating(true); setBatchProgress("");
     let created = 0;
@@ -1386,9 +1387,11 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
       setBatchProgress(`Gerando artigo ${i + 1}/${BLOG_8_TEMAS.length}: ${t.tema.slice(0, 50)}...`);
       try {
         const relevantVehicles = filterVehiclesForTema(t.filter).map(toVehicleInfo);
+        console.log(`[BLOG] Artigo ${i + 1}: ${t.tema.slice(0, 40)}, ${relevantVehicles.length} veiculos`);
         const result = await generateBlogPost(openaiKey, {
           categoria: t.categoria, tema: t.tema, veiculos: relevantVehicles, keywords: t.keywords,
         });
+        console.log(`[BLOG] Artigo ${i + 1} gerado:`, result.titulo);
         const slug = makeSlug(result.titulo);
         await createBlogPost({
           slug, titulo: result.titulo, categoria: t.categoria,
@@ -1396,8 +1399,12 @@ function BlogPage({ openaiKey, vehicles }: { openaiKey: string; vehicles: Veicul
           meta_description: result.meta_description, keywords: result.keywords,
           veiculos_relacionados: result.veiculos_slugs,
         });
+        console.log(`[BLOG] Artigo ${i + 1} salvo: ${slug}`);
         created++;
-      } catch (err: any) { setBatchProgress(`Erro no artigo ${i + 1}: ${err.message}`); }
+      } catch (err: any) {
+        console.error(`[BLOG] Erro no artigo ${i + 1}:`, err);
+        setBatchProgress(`Erro no artigo ${i + 1}: ${err.message}`);
+      }
       if (i < BLOG_8_TEMAS.length - 1) await new Promise((r) => setTimeout(r, 2000));
     }
     setBatchProgress(`Concluido: ${created} artigos gerados como rascunho`);
