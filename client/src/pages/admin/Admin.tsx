@@ -1361,10 +1361,11 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
       const sample = published.sort(() => Math.random() - 0.5).slice(0, 15).map(toVehicleInfo);
 
       const result = await generateBlogPost(claudeKey, {
-        categoria: formCategoria || "",
+        categoria: "",
         tema: formTitulo || "",
         veiculos: sample,
         keywords: formKeywords ? formKeywords.split(",").map((k) => k.trim()).filter(Boolean) : [],
+        titulosExistentes: posts.map((p) => p.titulo),
       });
 
       setFormTitulo(result.titulo);
@@ -1391,8 +1392,10 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
       try {
         const relevantVehicles = filterVehiclesForTema(t.filter).map(toVehicleInfo);
         console.log(`[BLOG] Artigo ${i + 1}: ${t.tema.slice(0, 40)}, ${relevantVehicles.length} veiculos`);
+        const existingTitles = [...posts.map((p) => p.titulo), ...Array.from({ length: created }, (_, j) => BLOG_8_TEMAS[j]?.tema || "")];
         const result = await generateBlogPost(claudeKey, {
           categoria: t.categoria, tema: t.tema, veiculos: relevantVehicles, keywords: t.keywords,
+          titulosExistentes: existingTitles,
         });
         console.log(`[BLOG] Artigo ${i + 1} gerado:`, result.titulo);
         const slug = makeSlug(result.titulo);
