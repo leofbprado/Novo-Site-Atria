@@ -159,11 +159,16 @@ export interface BlogVehicleInfo {
   foto: string;
 }
 
-// ── Claude API helper ───────────────────────────────────────────────────────
+// ── Claude API helpers ──────────────────────────────────────────────────────
 
+// Opus — writes articles (no web_search, fast)
 async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): Promise<string> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       "x-api-key": claudeKey,
@@ -174,9 +179,10 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
       model: "claude-opus-4-20250514",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
     }),
   });
+
+  clearTimeout(timeoutId);
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -184,7 +190,76 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
   }
 
   const data = await res.json();
-  // web_search returns multiple content blocks — concatenate all text blocks
+  return data.content?.[0]?.text?.trim() || "";
+}
+
+// Sonnet + web_search — researches technical data
+async function researchTechnicalData(claudeKey: string, modelos: string, tema: string): Promise<string> {
+  const prompt = `Pesquise dados tecnicos reais dos seguintes modelos de carros: ${modelos}
+
+Tema do artigo: ${tema || "carros usados em Campinas"}
+
+Para cada modelo encontrado, busque:
+- Consumo cidade e estrada (km/l, gasolina e etanol)
+- Porta-malas (litros)
+- Potencia (cv)
+- Torque (kgfm)
+- Dimensoes principais (comprimento, entre-eixos)
+- Peso (kg)
+- Tipo de cambio e tracao
+
+Fontes prioritarias: CarrosNaWeb (carrosnaweb.com.br), iCarros, Quatro Rodas, Inmetro/PBE Veicular.
+
+RESPONDA APENAS com um JSON assim, sem texto antes ou depois:
+{
+  "dados": [
+    {
+      "modelo": "Marca Modelo Versao Ano",
+      "consumo_cidade_gasolina": "XX km/l",
+      "consumo_estrada_gasolina": "XX km/l",
+      "consumo_cidade_etanol": "XX km/l",
+      "consumo_estrada_etanol": "XX km/l",
+      "porta_malas": "XXX litros",
+      "potencia": "XXX cv",
+      "torque": "XX kgfm",
+      "comprimento": "X.XXX mm",
+      "entre_eixos": "X.XXX mm",
+      "peso": "X.XXX kg",
+      "cambio": "tipo",
+      "tracao": "tipo"
+    }
+  ],
+  "fontes": ["nome da fonte 1", "nome da fonte 2"]
+}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    signal: controller.signal,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": claudeKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+    }),
+  });
+
+  clearTimeout(timeoutId);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Claude API error ${res.status}`);
+  }
+
+  const data = await res.json();
   const blocks = Array.isArray(data.content) ? data.content : [];
   return blocks.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n").trim();
 }
@@ -245,8 +320,28 @@ export async function generateBlogPost(
   categoria: string;
   veiculos_slugs: string[];
 }> {
-  // Build context about what models exist (for relevance, not for listing)
   const modelosNoEstoque = [...new Set(params.veiculos.map((v) => `${v.marca} ${v.modelo}`))].join(", ");
+
+  // Step 1: Research technical data with Sonnet + web_search
+  console.log("[BLOG] Step 1: Researching technical data with Sonnet...");
+  let technicalData = "";
+  let fontes = "";
+  try {
+    const researchRaw = await researchTechnicalData(claudeKey, modelosNoEstoque, params.tema);
+    const firstB = researchRaw.indexOf("{");
+    const lastB = researchRaw.lastIndexOf("}");
+    if (firstB !== -1 && lastB > firstB) {
+      const researchJson = JSON.parse(researchRaw.slice(firstB, lastB + 1));
+      technicalData = JSON.stringify(researchJson.dados || [], null, 2);
+      fontes = (researchJson.fontes || []).join(", ");
+      console.log("[BLOG] Research OK:", (researchJson.dados || []).length, "models, fontes:", fontes);
+    }
+  } catch (e) {
+    console.warn("[BLOG] Research failed, continuing without technical data:", e);
+  }
+
+  // Step 2: Write article with Opus (no web_search)
+  console.log("[BLOG] Step 2: Writing article with Opus...");
 
   const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
 
@@ -255,6 +350,7 @@ CATEGORIA: Escolha a mais adequada entre: comparativo, guia-preco, review, finan
 ${params.keywords.length ? `KEYWORDS SEO: ${params.keywords.join(", ")}` : "KEYWORDS SEO: Escolha 3-5 keywords com potencial de busca local (inclua 'Campinas' em pelo menos 2)"}
 MODELOS QUE EXISTEM NO ESTOQUE (pra voce saber do que falar, NAO pra anunciar): ${modelosNoEstoque}
 ${params.titulosExistentes.length ? `\nARTIGOS JA PUBLICADOS (NAO repita esses temas, escreva sobre algo DIFERENTE):\n${params.titulosExistentes.map(t => `- ${t}`).join("\n")}` : ""}
+${technicalData ? `\nDADOS TECNICOS PESQUISADOS (use estes dados, sao reais e verificados):\n${technicalData}\nFontes: ${fontes}` : ""}
 
 REGRAS ABSOLUTAS:
 1. O artigo e 100% CONTEUDO EDUCATIVO. NAO e catalogo, NAO e anuncio
@@ -265,9 +361,9 @@ REGRAS ABSOLUTAS:
 6. O nome da loja e "Atria Veiculos" (com acento: Átria)
 7. NUNCA fale mal de nenhum veiculo, marca ou modelo
 8. PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "merece destaque"
-9. PESQUISE dados tecnicos reais usando web search: consumo (km/l cidade e estrada), porta-malas (litros), dimensoes, peso, potencia, torque. Fontes prioritarias: CarrosNaWeb (carrosnaweb.com.br), iCarros, Quatro Rodas
-10. No final do artigo, antes do CTA, inclua: "Dados tecnicos: [nome da fonte consultada]"
-11. Se nao encontrar o dado tecnico exato de um modelo/ano especifico, NAO invente — omita o dado ou diga "varia conforme a versao"
+9. Use os DADOS TECNICOS PESQUISADOS fornecidos acima. Eles ja foram verificados em fontes confiaveis
+10. No final do artigo, antes do CTA, inclua: "Dados tecnicos: ${fontes || "fontes especializadas"}"
+11. Se um dado tecnico NAO esta na lista pesquisada, NAO invente — omita ou diga "varia conforme a versao"
 
 ESTRUTURA:
 1. INTRODUCAO (2-3 linhas): direto ao problema/duvida do leitor. Sem "neste artigo vamos explorar"
@@ -293,41 +389,30 @@ RESPONDA EXCLUSIVAMENTE com o JSON abaixo. NENHUM texto antes ou depois do JSON.
   "keywords": ["keyword1", "keyword2"]
 }`;
 
-  console.log("[BLOG] Calling Claude API with web_search...");
   let raw: string;
   try {
-    raw = await callClaude(claudeKey, prompt, 16000);
+    raw = await callClaude(claudeKey, prompt, 8000);
   } catch (e) {
     console.error("[BLOG] callClaude failed:", e);
     throw new Error("Erro na chamada Claude API: " + (e as Error).message);
   }
 
-  console.log("[BLOG] Raw response length:", raw.length);
-  console.log("[BLOG] First 500 chars:", raw.slice(0, 500));
-  console.log("[BLOG] Last 200 chars:", raw.slice(-200));
+  console.log("[BLOG] Raw response length:", raw.length, "First 200:", raw.slice(0, 200));
 
-  // Find JSON boundaries
   const firstBrace = raw.indexOf("{");
   const lastBrace = raw.lastIndexOf("}");
-  console.log("[BLOG] First { at:", firstBrace, "Last } at:", lastBrace);
-
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    console.error("[BLOG] No JSON found in response. Full response:", raw);
     throw new Error("Claude nao retornou JSON valido. Response (" + raw.length + " chars): " + raw.slice(0, 500));
   }
 
-  const jsonStr = raw.slice(firstBrace, lastBrace + 1);
-  console.log("[BLOG] Extracted JSON length:", jsonStr.length);
-
   let parsed: any;
   try {
-    parsed = JSON.parse(jsonStr);
+    parsed = JSON.parse(raw.slice(firstBrace, lastBrace + 1));
   } catch (e) {
-    console.error("[BLOG] JSON parse failed. First 500 of extracted:", jsonStr.slice(0, 500));
+    console.error("[BLOG] JSON parse failed:", raw.slice(firstBrace, firstBrace + 500));
     throw new Error("JSON invalido: " + (e as Error).message);
   }
 
-  // Strip <cite> tags from web_search responses
   for (const key of ["conteudo", "titulo", "meta_title", "meta_description"]) {
     if (parsed[key]) parsed[key] = parsed[key].replace(/<cite[^>]*>|<\/cite>/g, "");
   }
