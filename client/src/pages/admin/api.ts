@@ -294,19 +294,23 @@ RESPONDA EXCLUSIVAMENTE com o JSON abaixo. NENHUM texto antes ou depois do JSON.
 }`;
 
   const raw = await callClaude(claudeKey, prompt, 6000);
-  // Extract JSON: find the outermost { that starts the JSON object
-  // The response may have text before/after from web_search thinking
-  let jsonStr = "";
-  const startIdx = raw.indexOf('{"');
-  if (startIdx === -1) throw new Error("Claude nao retornou JSON valido");
-  // Find matching closing brace by counting depth
-  let depth = 0;
-  for (let i = startIdx; i < raw.length; i++) {
-    if (raw[i] === "{") depth++;
-    else if (raw[i] === "}") { depth--; if (depth === 0) { jsonStr = raw.slice(startIdx, i + 1); break; } }
+  console.log("[BLOG] Raw response length:", raw.length, "First 200 chars:", raw.slice(0, 200));
+
+  // Find the JSON object — look for first { and last } in the response
+  const firstBrace = raw.indexOf("{");
+  const lastBrace = raw.lastIndexOf("}");
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    throw new Error("Claude nao retornou JSON valido. Response: " + raw.slice(0, 200));
   }
-  if (!jsonStr) throw new Error("JSON incompleto na resposta do Claude");
-  const parsed = JSON.parse(jsonStr);
+  const jsonStr = raw.slice(firstBrace, lastBrace + 1);
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch (e) {
+    console.error("[BLOG] JSON parse failed. Extracted:", jsonStr.slice(0, 500));
+    throw new Error("JSON invalido no response do Claude: " + (e as Error).message);
+  }
 
   // Strip <cite> tags from web_search responses
   for (const key of ["conteudo", "titulo", "meta_title", "meta_description"]) {
