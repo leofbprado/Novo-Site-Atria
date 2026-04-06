@@ -1453,7 +1453,6 @@ export default function Home() {
       <EstoqueDestaque />
       <VendaSeuCarro />
       <PorQueAtria />
-      <ComoFunciona />
       <Stats />
       <Depoimentos />
       <BlogSection />
