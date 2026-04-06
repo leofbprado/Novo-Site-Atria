@@ -174,6 +174,7 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
       model: "claude-opus-4-20250514",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
     }),
   });
 
@@ -183,7 +184,9 @@ async function callClaude(claudeKey: string, prompt: string, maxTokens = 4096): 
   }
 
   const data = await res.json();
-  return data.content?.[0]?.text?.trim() || "";
+  // web_search returns multiple content blocks — concatenate all text blocks
+  const blocks = Array.isArray(data.content) ? data.content : [];
+  return blocks.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n").trim();
 }
 
 // ── Cover images (Unsplash, permanent URLs) ────────────────────────────────
@@ -260,9 +263,11 @@ REGRAS ABSOLUTAS:
 4. NUNCA insira fotos de veiculos do estoque no corpo do artigo
 5. No MAXIMO, no final do artigo, uma unica frase: "Confira nosso estoque se quiser ver algum desses modelos de perto."
 6. O nome da loja e "Atria Veiculos" (com acento: Átria)
-7. NUNCA invente dados tecnicos (consumo, FIPE, custo de manutencao). Se nao sabe o numero exato, nao coloque
-8. NUNCA fale mal de nenhum veiculo, marca ou modelo
-9. PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "merece destaque"
+7. NUNCA fale mal de nenhum veiculo, marca ou modelo
+8. PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "merece destaque"
+9. PESQUISE dados tecnicos reais usando web search: consumo (km/l cidade e estrada), porta-malas (litros), dimensoes, peso, potencia, torque. Fontes prioritarias: CarrosNaWeb (carrosnaweb.com.br), iCarros, Quatro Rodas
+10. No final do artigo, antes do CTA, inclua: "Dados tecnicos: [nome da fonte consultada]"
+11. Se nao encontrar o dado tecnico exato de um modelo/ano especifico, NAO invente — omita o dado ou diga "varia conforme a versao"
 
 ESTRUTURA:
 1. INTRODUCAO (2-3 linhas): direto ao problema/duvida do leitor. Sem "neste artigo vamos explorar"
