@@ -294,10 +294,19 @@ RESPONDA EXCLUSIVAMENTE com o JSON abaixo. NENHUM texto antes ou depois do JSON.
 }`;
 
   const raw = await callClaude(claudeKey, prompt, 6000);
-  // Extract JSON object from response (may have text before/after from web_search)
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("Claude nao retornou JSON valido");
-  const parsed = JSON.parse(jsonMatch[0]);
+  // Extract JSON: find the outermost { that starts the JSON object
+  // The response may have text before/after from web_search thinking
+  let jsonStr = "";
+  const startIdx = raw.indexOf('{"');
+  if (startIdx === -1) throw new Error("Claude nao retornou JSON valido");
+  // Find matching closing brace by counting depth
+  let depth = 0;
+  for (let i = startIdx; i < raw.length; i++) {
+    if (raw[i] === "{") depth++;
+    else if (raw[i] === "}") { depth--; if (depth === 0) { jsonStr = raw.slice(startIdx, i + 1); break; } }
+  }
+  if (!jsonStr) throw new Error("JSON incompleto na resposta do Claude");
+  const parsed = JSON.parse(jsonStr);
 
   // Strip <cite> tags from web_search responses
   for (const key of ["conteudo", "titulo", "meta_title", "meta_description"]) {
