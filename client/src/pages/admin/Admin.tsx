@@ -256,7 +256,10 @@ function VehicleDetailPage({
     if (t && !tags.includes(t)) {
       const updated = [...tags, t];
       setTags(updated);
-      updateVeiculoTags(vehicle.autoconf_id, updated);
+      console.log("[TAGS] Salvando tags para", vehicle.autoconf_id, ":", updated);
+      updateVeiculoTags(vehicle.autoconf_id, updated)
+        .then(() => console.log("[TAGS] Salvo com sucesso"))
+        .catch((err) => console.error("[TAGS] Erro ao salvar:", err));
     }
     setNewTag("");
   };
@@ -264,7 +267,9 @@ function VehicleDetailPage({
   const handleRemoveTag = (tag: string) => {
     const updated = tags.filter((t) => t !== tag);
     setTags(updated);
-    updateVeiculoTags(vehicle.autoconf_id, updated);
+    updateVeiculoTags(vehicle.autoconf_id, updated)
+      .then(() => console.log("[TAGS] Removido com sucesso"))
+      .catch((err) => console.error("[TAGS] Erro ao remover:", err));
   };
 
   const handleGenerateAI = async () => {
