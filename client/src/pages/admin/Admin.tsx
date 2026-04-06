@@ -1477,7 +1477,7 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Imagem de capa (URL)</label>
+            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Imagem de capa (URL) — 1200 x 675 px (16:9), max 500 KB</label>
             <div className="flex gap-2 items-center">
               <input value={formCapa} onChange={(e) => setFormCapa(e.target.value)}
                 className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="https://..." />
