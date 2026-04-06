@@ -296,6 +296,14 @@ RESPONDA EM JSON:
   const raw = await callClaude(claudeKey, prompt, 6000);
   const jsonStr = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
   const parsed = JSON.parse(jsonStr);
+
+  // Strip <cite> tags from web_search responses
+  const stripCite = (s: string) => s.replace(/<cite[^>]*>|<\/cite>/g, "");
+  if (parsed.conteudo) parsed.conteudo = stripCite(parsed.conteudo);
+  if (parsed.titulo) parsed.titulo = stripCite(parsed.titulo);
+  if (parsed.meta_description) parsed.meta_description = stripCite(parsed.meta_description);
+  if (parsed.meta_title) parsed.meta_title = stripCite(parsed.meta_title);
+
   const categoria = parsed.categoria || params.categoria || "guia-perfil";
 
   return {
