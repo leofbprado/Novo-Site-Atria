@@ -283,7 +283,7 @@ TAMANHO: 1000-1500 palavras
 FORMATO: markdown com ## pra subtitulos
 IDIOMA: portugues do Brasil
 
-RESPONDA EM JSON:
+RESPONDA EXCLUSIVAMENTE com o JSON abaixo. NENHUM texto antes ou depois do JSON. Sem explicacoes, sem comentarios, sem markdown fences. Apenas o objeto JSON puro:
 {
   "titulo": "Titulo chamativo com Campinas",
   "categoria": "comparativo ou guia-preco ou review ou financiamento ou guia-perfil",
@@ -294,15 +294,15 @@ RESPONDA EM JSON:
 }`;
 
   const raw = await callClaude(claudeKey, prompt, 6000);
-  const jsonStr = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "");
-  const parsed = JSON.parse(jsonStr);
+  // Extract JSON object from response (may have text before/after from web_search)
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("Claude nao retornou JSON valido");
+  const parsed = JSON.parse(jsonMatch[0]);
 
   // Strip <cite> tags from web_search responses
-  const stripCite = (s: string) => s.replace(/<cite[^>]*>|<\/cite>/g, "");
-  if (parsed.conteudo) parsed.conteudo = stripCite(parsed.conteudo);
-  if (parsed.titulo) parsed.titulo = stripCite(parsed.titulo);
-  if (parsed.meta_description) parsed.meta_description = stripCite(parsed.meta_description);
-  if (parsed.meta_title) parsed.meta_title = stripCite(parsed.meta_title);
+  for (const key of ["conteudo", "titulo", "meta_title", "meta_description"]) {
+    if (parsed[key]) parsed[key] = parsed[key].replace(/<cite[^>]*>|<\/cite>/g, "");
+  }
 
   const categoria = parsed.categoria || params.categoria || "guia-perfil";
 
