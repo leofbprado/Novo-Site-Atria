@@ -293,14 +293,14 @@ RESPONDA EXCLUSIVAMENTE com o JSON abaixo. NENHUM texto antes ou depois do JSON.
   "keywords": ["keyword1", "keyword2"]
 }`;
 
-  const raw = await callClaude(claudeKey, prompt, 6000);
-  console.log("[BLOG] Raw response length:", raw.length, "First 200 chars:", raw.slice(0, 200));
+  const raw = await callClaude(claudeKey, prompt, 16000);
+  console.log("[BLOG] Raw response length:", raw.length, "First 500 chars:", raw.slice(0, 500));
 
   // Find the JSON object — look for first { and last } in the response
   const firstBrace = raw.indexOf("{");
   const lastBrace = raw.lastIndexOf("}");
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error("Claude nao retornou JSON valido. Response: " + raw.slice(0, 200));
+    throw new Error("Claude nao retornou JSON valido. Response (" + raw.length + " chars): " + raw.slice(0, 500));
   }
   const jsonStr = raw.slice(firstBrace, lastBrace + 1);
 
