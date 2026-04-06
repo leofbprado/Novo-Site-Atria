@@ -1178,34 +1178,56 @@ function Depoimentos() {
 }
 
 // ─── Blog ─────────────────────────────────────────────────────────────────────
-const POSTS = [
-  { titulo: "Como escolher o melhor financiamento para seu carro", resumo: "Entenda as diferenças entre CDC, leasing e consórcio.", tag: "Financiamento", href: "/blog/financiamento-carro" },
-  { titulo: "SUV ou Sedan: qual o melhor para sua família?", resumo: "Comparamos os dois tipos mais populares para você escolher.", tag: "Dicas", href: "/blog/suv-ou-sedan" },
-  { titulo: "5 coisas a verificar antes de comprar um seminovo", resumo: "Checklist completo para não cair em armadilhas.", tag: "Guia", href: "/blog/checklist-usado" },
-];
+import { getPublishedBlogPosts, type BlogPost } from "@/lib/adminFirestore";
 
-function Blog() {
+const CATEGORIA_LABELS: Record<string, string> = {
+  comparativo: "Comparativo",
+  "guia-preco": "Guia de Preço",
+  review: "Review",
+  financiamento: "Financiamento",
+  "guia-perfil": "Guia",
+};
+
+function blogExcerpt(md: string, max = 120): string {
+  return md.replace(/[#*_\[\]()>`-]/g, "").replace(/\n+/g, " ").trim().slice(0, max) + "...";
+}
+
+function BlogSection() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+
+  useEffect(() => {
+    getPublishedBlogPosts().then((p) => setPosts(p.slice(0, 3))).catch(() => {});
+  }, []);
+
+  if (posts.length === 0) return null;
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <p className="section-label mb-2">Dicas & Conteúdo</p>
-            <h2 className="section-title">Blog Átria</h2>
+            <p className="section-label mb-2">Dicas & Conteudo</p>
+            <h2 className="section-title">Blog Atria</h2>
           </div>
-          <a href="/blog" className="btn-outline-navy rounded text-sm whitespace-nowrap self-start">Ver todos →</a>
+          <a href={ROUTES.blog} className="btn-outline-navy rounded text-sm whitespace-nowrap self-start">Ver todos →</a>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {POSTS.map((p) => (
-            <a key={p.titulo} href={p.href}
+          {posts.map((p) => (
+            <a key={p.slug} href={`/blog/${p.slug}`}
               className="group block border border-atria-gray-medium rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-              <div className="bg-atria-gray-light h-40 flex items-center justify-center">
-                <span className="font-barlow-condensed font-black text-5xl text-atria-gray-medium">{p.tag[0]}</span>
-              </div>
+              {p.capa ? (
+                <div className="h-40 overflow-hidden">
+                  <img src={p.capa} alt={p.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                </div>
+              ) : (
+                <div className="bg-atria-gray-light h-40 flex items-center justify-center">
+                  <span className="font-barlow-condensed font-black text-5xl text-atria-gray-medium">{(CATEGORIA_LABELS[p.categoria] || "B")[0]}</span>
+                </div>
+              )}
               <div className="p-5">
-                <span className="font-inter text-xs font-semibold text-atria-yellow uppercase tracking-wider">{p.tag}</span>
+                <span className="font-inter text-xs font-semibold text-atria-yellow uppercase tracking-wider">{CATEGORIA_LABELS[p.categoria] || p.categoria}</span>
                 <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark mt-1 mb-2 leading-tight group-hover:text-atria-navy transition-colors">{p.titulo}</h3>
-                <p className="font-inter text-sm text-atria-text-gray">{p.resumo}</p>
+                <p className="font-inter text-sm text-atria-text-gray">{blogExcerpt(p.conteudo)}</p>
               </div>
             </a>
           ))}
@@ -1434,7 +1456,7 @@ export default function Home() {
       <ComoFunciona />
       <Stats />
       <Depoimentos />
-      <Blog />
+      <BlogSection />
       <FAQ />
       <Contato />
       <CTAFinal />
