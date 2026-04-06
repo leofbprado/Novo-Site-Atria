@@ -293,29 +293,46 @@ RESPONDA EXCLUSIVAMENTE com o JSON abaixo. NENHUM texto antes ou depois do JSON.
   "keywords": ["keyword1", "keyword2"]
 }`;
 
-  const raw = await callClaude(claudeKey, prompt, 16000);
-  console.log("[BLOG] Raw response length:", raw.length, "First 500 chars:", raw.slice(0, 500));
+  console.log("[BLOG] Calling Claude API with web_search...");
+  let raw: string;
+  try {
+    raw = await callClaude(claudeKey, prompt, 16000);
+  } catch (e) {
+    console.error("[BLOG] callClaude failed:", e);
+    throw new Error("Erro na chamada Claude API: " + (e as Error).message);
+  }
 
-  // Find the JSON object — look for first { and last } in the response
+  console.log("[BLOG] Raw response length:", raw.length);
+  console.log("[BLOG] First 500 chars:", raw.slice(0, 500));
+  console.log("[BLOG] Last 200 chars:", raw.slice(-200));
+
+  // Find JSON boundaries
   const firstBrace = raw.indexOf("{");
   const lastBrace = raw.lastIndexOf("}");
+  console.log("[BLOG] First { at:", firstBrace, "Last } at:", lastBrace);
+
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    console.error("[BLOG] No JSON found in response. Full response:", raw);
     throw new Error("Claude nao retornou JSON valido. Response (" + raw.length + " chars): " + raw.slice(0, 500));
   }
+
   const jsonStr = raw.slice(firstBrace, lastBrace + 1);
+  console.log("[BLOG] Extracted JSON length:", jsonStr.length);
 
   let parsed: any;
   try {
     parsed = JSON.parse(jsonStr);
   } catch (e) {
-    console.error("[BLOG] JSON parse failed. Extracted:", jsonStr.slice(0, 500));
-    throw new Error("JSON invalido no response do Claude: " + (e as Error).message);
+    console.error("[BLOG] JSON parse failed. First 500 of extracted:", jsonStr.slice(0, 500));
+    throw new Error("JSON invalido: " + (e as Error).message);
   }
 
   // Strip <cite> tags from web_search responses
   for (const key of ["conteudo", "titulo", "meta_title", "meta_description"]) {
     if (parsed[key]) parsed[key] = parsed[key].replace(/<cite[^>]*>|<\/cite>/g, "");
   }
+
+  console.log("[BLOG] Parse OK. Titulo:", parsed.titulo?.slice(0, 80));
 
   const categoria = parsed.categoria || params.categoria || "guia-perfil";
 
