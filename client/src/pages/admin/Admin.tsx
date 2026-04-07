@@ -12,6 +12,7 @@ import {
   generateDescription,
   generateBlogPost,
   enrichVehicleWithSearch,
+  fetchVehicleSpecs,
 } from "./api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -231,9 +232,9 @@ const SPEC_FIELDS = [
 ];
 
 function VehicleDetailPage({
-  vehicle, openaiKey, onBack, onUpdate,
+  vehicle, openaiKey, claudeKey, onBack, onUpdate,
 }: {
-  vehicle: VeiculoAdmin; openaiKey: string; onBack: () => void; onUpdate: () => void;
+  vehicle: VeiculoAdmin; openaiKey: string; claudeKey: string; onBack: () => void; onUpdate: () => void;
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const [tags, setTags] = useState<string[]>(vehicle.tags || []);
@@ -273,6 +274,11 @@ function VehicleDetailPage({
       .catch((err) => console.error("[TAGS] Erro ao remover:", err));
   };
 
+  const [searchingSpecs, setSearchingSpecs] = useState(false);
+  const [doingAll, setDoingAll] = useState(false);
+
+  const acessoriosNomes = (vehicle.acessorios || []).map((a: any) => typeof a === "string" ? a : a?.nome || "").filter(Boolean);
+
   const handleGenerateAI = async () => {
     if (!openaiKey) { setAiError("Configure a chave OpenAI nas configuracoes primeiro"); return; }
     setGenerating(true); setAiError("");
@@ -281,11 +287,53 @@ function VehicleDetailPage({
         marca: vehicle.marca, modelo: vehicle.modelo, versao: vehicle.versao,
         ano_fabricacao: vehicle.ano_fabricacao, ano_modelo: vehicle.ano_modelo,
         km: vehicle.km, cor: vehicle.cor, cambio: vehicle.cambio,
-        combustivel: vehicle.combustivel, acessorios: vehicle.acessorios || [],
+        combustivel: vehicle.combustivel, acessorios: acessoriosNomes,
       });
       setDescricao(text);
+      await updateVeiculoDescricao(vehicle.autoconf_id, text);
     } catch (err: any) { setAiError(err.message || "Erro ao gerar descricao"); }
     setGenerating(false);
+  };
+
+  const handleSearchSpecs = async () => {
+    if (!claudeKey) { setAiError("Configure a chave Claude nas configuracoes primeiro"); return; }
+    setSearchingSpecs(true); setAiError("");
+    try {
+      const fetched = await fetchVehicleSpecs(claudeKey, {
+        marca: vehicle.marca, modelo: vehicle.modelo, versao: vehicle.versao,
+        ano_fabricacao: vehicle.ano_fabricacao, ano_modelo: vehicle.ano_modelo,
+        cambio: vehicle.cambio, combustivel: vehicle.combustivel,
+      });
+      if (Object.keys(fetched).length === 0) {
+        setAiError("Nenhum dado verídico encontrado para esse modelo");
+      } else {
+        setSpecs((prev) => ({ ...prev, ...fetched }));
+        await updateVeiculoTechnicalSpecs(vehicle.autoconf_id, fetched);
+      }
+    } catch (err: any) { setAiError(err.message || "Erro ao pesquisar specs"); }
+    setSearchingSpecs(false);
+  };
+
+  const handleDoEverything = async () => {
+    if (!claudeKey) { setAiError("Configure a chave Claude nas configuracoes primeiro"); return; }
+    setDoingAll(true); setAiError("");
+    try {
+      const result = await enrichVehicleWithSearch(claudeKey, {
+        marca: vehicle.marca, modelo: vehicle.modelo, versao: vehicle.versao,
+        ano_fabricacao: vehicle.ano_fabricacao, ano_modelo: vehicle.ano_modelo,
+        km: vehicle.km, cor: vehicle.cor, cambio: vehicle.cambio,
+        combustivel: vehicle.combustivel, acessorios: acessoriosNomes,
+      });
+      if (result.descricao) {
+        setDescricao(result.descricao);
+        await updateVeiculoDescricao(vehicle.autoconf_id, result.descricao);
+      }
+      if (Object.keys(result.technical_specs).length > 0) {
+        setSpecs((prev) => ({ ...prev, ...result.technical_specs }));
+        await updateVeiculoTechnicalSpecs(vehicle.autoconf_id, result.technical_specs);
+      }
+    } catch (err: any) { setAiError(err.message || "Erro ao processar"); }
+    setDoingAll(false);
   };
 
   const handleSaveDescricao = async () => {
@@ -330,6 +378,12 @@ function VehicleDetailPage({
         </div>
         <div className="flex items-center gap-3">
           <Badge status={vehicle.status} />
+          <button onClick={handleDoEverything} disabled={doingAll || generating || searchingSpecs}
+            title="Pesquisa specs verídicas + gera descrição comercial em uma chamada (Sonnet + web_search)"
+            className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            {doingAll ? <Spinner size={14} /> : <Sparkles size={14} />}
+            {doingAll ? "Processando..." : "Fazer tudo com IA"}
+          </button>
           <button onClick={handlePublish} disabled={publishing}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
               vehicle.status === "publicado"
@@ -495,9 +549,16 @@ function VehicleDetailPage({
         {/* Column 3: Technical Specs */}
         <div className="xl:col-span-1 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-3">
-              Especificações Técnicas
-            </label>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium">
+                Especificações Técnicas
+              </label>
+              <button onClick={handleSearchSpecs} disabled={searchingSpecs || doingAll}
+                title="Pesquisa specs verídicas em CarrosNaWeb, iCarros, Quatro Rodas (Sonnet + web_search)"
+                className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
+                {searchingSpecs ? <><Spinner size={12} /> Pesquisando...</> : <><Sparkles size={12} /> Pesquisar specs</>}
+              </button>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               {SPEC_FIELDS.map(({ key, label, placeholder }) => (
                 <div key={key}>
@@ -804,36 +865,68 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
     setSyncing(false);
   };
 
-  const handleEnrichAI = async () => {
+  // Lote: pesquisa specs verídicas (Sonnet+web_search) só nos rascunhos sem technical_specs
+  const handleEnrichSpecs = async () => {
     if (!claudeKey) { setEnrichResult("Erro: Configure a chave Claude nas configuracoes primeiro"); return; }
-    const draftsWithoutAI = vehicles.filter((v) => v.status === "rascunho" && !v.descricao_ia);
-    if (draftsWithoutAI.length === 0) { setEnrichResult("Nenhum rascunho sem descricao para enriquecer"); return; }
+    const targets = vehicles.filter((v) => v.status === "rascunho" && (!v.technical_specs || Object.keys(v.technical_specs).length === 0));
+    if (targets.length === 0) { setEnrichResult("Nenhum rascunho sem specs para pesquisar"); return; }
     setEnriching(true); setEnrichResult(""); setSyncResult(""); setPublishAllResult("");
-    let enriched = 0;
-    let failed = 0;
+    let ok = 0, failed = 0;
     try {
-      for (let i = 0; i < draftsWithoutAI.length; i++) {
-        const v = draftsWithoutAI[i];
-        setEnrichResult(`Pesquisando dados verídicos ${i + 1}/${draftsWithoutAI.length} (${v.marca} ${v.modelo})...`);
+      for (let i = 0; i < targets.length; i++) {
+        const v = targets[i];
+        setEnrichResult(`Pesquisando specs ${i + 1}/${targets.length} (${v.marca} ${v.modelo})...`);
         try {
-          const result = await enrichVehicleWithSearch(claudeKey, {
+          const specs = await fetchVehicleSpecs(claudeKey, {
+            marca: v.marca, modelo: v.modelo, versao: v.versao,
+            ano_fabricacao: v.ano_fabricacao, ano_modelo: v.ano_modelo,
+            cambio: v.cambio, combustivel: v.combustivel,
+          });
+          if (Object.keys(specs).length > 0) {
+            await updateVeiculoTechnicalSpecs(v.autoconf_id, specs);
+            ok++;
+          } else {
+            failed++;
+          }
+        } catch (e) {
+          console.error("[SPECS] falhou para", v.autoconf_id, e);
+          failed++;
+        }
+        if (i < targets.length - 1) await new Promise((r) => setTimeout(r, 500));
+      }
+      setEnrichResult(`Specs: ${ok} pesquisados${failed ? `, ${failed} falharam` : ""}`);
+      loadVehicles();
+    } catch (err: any) { setEnrichResult(`Erro: ${err.message}`); }
+    setEnriching(false);
+  };
+
+  // Lote: gera descricao comercial (OpenAI, rapido/barato) nos rascunhos sem descricao_ia
+  const handleEnrichDescriptions = async () => {
+    if (!openaiKey) { setEnrichResult("Erro: Configure a chave OpenAI nas configuracoes primeiro"); return; }
+    const targets = vehicles.filter((v) => v.status === "rascunho" && !v.descricao_ia);
+    if (targets.length === 0) { setEnrichResult("Nenhum rascunho sem descricao"); return; }
+    setEnriching(true); setEnrichResult(""); setSyncResult(""); setPublishAllResult("");
+    let ok = 0, failed = 0;
+    try {
+      for (let i = 0; i < targets.length; i++) {
+        const v = targets[i];
+        setEnrichResult(`Gerando descricao ${i + 1}/${targets.length} (${v.marca} ${v.modelo})...`);
+        try {
+          const desc = await generateDescription(openaiKey, {
             marca: v.marca, modelo: v.modelo, versao: v.versao,
             ano_fabricacao: v.ano_fabricacao, ano_modelo: v.ano_modelo,
             km: v.km, cor: v.cor, cambio: v.cambio,
-            combustivel: v.combustivel, acessorios: (v.acessorios || []).map((a: any) => typeof a === "string" ? a : a?.nome || "").filter(Boolean),
+            combustivel: v.combustivel,
+            acessorios: (v.acessorios || []).map((a: any) => typeof a === "string" ? a : a?.nome || "").filter(Boolean),
           });
-          if (result.descricao) await updateVeiculoDescricao(v.autoconf_id, result.descricao);
-          if (Object.keys(result.technical_specs).length > 0) {
-            await updateVeiculoTechnicalSpecs(v.autoconf_id, result.technical_specs);
-          }
-          enriched++;
+          if (desc) { await updateVeiculoDescricao(v.autoconf_id, desc); ok++; } else failed++;
         } catch (e) {
-          console.error("[ENRICH] falhou para", v.autoconf_id, e);
+          console.error("[DESC] falhou para", v.autoconf_id, e);
           failed++;
         }
-        if (i < draftsWithoutAI.length - 1) await new Promise((r) => setTimeout(r, 500));
+        if (i < targets.length - 1) await new Promise((r) => setTimeout(r, 200));
       }
-      setEnrichResult(`Concluido: ${enriched} enriquecidos${failed ? `, ${failed} falharam` : ""} (Sonnet + web_search)`);
+      setEnrichResult(`Descricoes: ${ok} geradas${failed ? `, ${failed} falharam` : ""}`);
       loadVehicles();
     } catch (err: any) { setEnrichResult(`Erro: ${err.message}`); }
     setEnriching(false);
@@ -869,10 +962,19 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             {syncing ? "Sincronizando..." : "Sincronizar"}
           </button>
           {draftCount > 0 && (
-            <button onClick={handleEnrichAI} disabled={syncing || enriching || publishingAll}
+            <button onClick={handleEnrichSpecs} disabled={syncing || enriching || publishingAll}
+              title="Pesquisa specs verídicas (Sonnet + web_search) nos rascunhos sem technical_specs"
               className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
               {enriching ? <Spinner size={14} /> : <Sparkles size={14} />}
-              {enriching ? "Enriquecendo..." : "Enriquecer com IA"}
+              {enriching ? "Processando..." : "Pesquisar specs"}
+            </button>
+          )}
+          {draftCount > 0 && (
+            <button onClick={handleEnrichDescriptions} disabled={syncing || enriching || publishingAll}
+              title="Gera descrição comercial (OpenAI) nos rascunhos sem descricao_ia"
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm shadow-sm">
+              {enriching ? <Spinner size={14} /> : <Sparkles size={14} />}
+              {enriching ? "Processando..." : "Gerar descrições"}
             </button>
           )}
           {draftCount > 0 && (
@@ -1074,6 +1176,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       <VehicleDetailPage
         vehicle={selectedVehicle}
         openaiKey={openaiKey}
+        claudeKey={claudeKey}
         onBack={() => setSelectedVehicle(null)}
         onUpdate={() => { loadVehicles(); setSelectedVehicle(null); }}
       />
