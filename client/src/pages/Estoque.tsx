@@ -26,12 +26,12 @@ type SortKey = typeof SORT_OPTIONS[number]["key"];
 
 // ─── Brand Logos (Wikimedia Commons) ─────────────────────────────────────────
 const POPULAR_BRANDS = [
-  { name: "Toyota",     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Toyota_carlogo.svg/80px-Toyota_carlogo.svg.png" },
-  { name: "Volkswagen", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Volkswagen_logo_2019.svg/80px-Volkswagen_logo_2019.svg.png" },
-  { name: "Chevrolet",  logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Chevrolet_Gold_Bowtie_logo.svg/80px-Chevrolet_Gold_Bowtie_logo.svg.png" },
-  { name: "Hyundai",    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Hyundai_Motor_Company_logo.svg/80px-Hyundai_Motor_Company_logo.svg.png" },
-  { name: "BMW",        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/80px-BMW.svg.png" },
-  { name: "Honda",      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Honda_Logo.svg/80px-Honda_Logo.svg.png" },
+  { name: "Toyota",     logo: "https://www.carlogos.org/car-logos/toyota-logo.png" },
+  { name: "Volkswagen", logo: "https://www.carlogos.org/car-logos/volkswagen-logo.png" },
+  { name: "Chevrolet",  logo: "https://www.carlogos.org/car-logos/chevrolet-logo.png" },
+  { name: "Hyundai",    logo: "https://www.carlogos.org/car-logos/hyundai-logo.png" },
+  { name: "BMW",        logo: "https://www.carlogos.org/car-logos/bmw-logo.png" },
+  { name: "Honda",      logo: "https://www.carlogos.org/car-logos/honda-logo.png" },
 ];
 
 const TIPO_ICONS: Record<string, JSX.Element> = {
@@ -367,16 +367,17 @@ function BrandLogoCard({
           : "border-atria-gray-medium hover:border-atria-navy bg-white"
       }`}
     >
-      <div className="h-8 flex items-center justify-center">
+      <div className="h-12 flex items-center justify-center">
         {imgError ? (
-          <span className="font-barlow-condensed font-black text-xl text-atria-navy">
+          <span className="font-barlow-condensed font-black text-2xl text-atria-navy">
             {name.slice(0, 2).toUpperCase()}
           </span>
         ) : (
           <img
             src={logo}
             alt={`Logo ${name}`}
-            className="max-h-8 max-w-[52px] object-contain"
+            className="max-h-12 max-w-[72px] object-contain"
+            loading="lazy"
             onError={() => setImgError(true)}
           />
         )}
