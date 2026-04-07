@@ -177,6 +177,7 @@ Cambio: ${v.cambio} | Combustivel: ${v.combustivel}
 
 REGRAS CRITICAS:
 - NUNCA invente numeros. Se nao encontrar um dado, deixe vazio.
+- Se o veiculo for PICAPE/PICKUP/CAMINHONETE, no campo "portaMalasLitros" use a capacidade da CACAMBA em litros (ex: "1.200 litros"). Se a fonte so trouxer em kg, converta usando densidade media de carga ou deixe em kg explicito (ex: "1.000 kg").
 - Use APENAS valores publicados em fontes reais.
 - Numeros em formato brasileiro (ponto como milhar: "4.361"; virgula como decimal: "12,5").
 
@@ -252,6 +253,7 @@ Cambio: ${v.cambio} | Combustivel: ${v.combustivel}
 
 REGRAS CRITICAS:
 - NUNCA invente numeros. Se nao encontrar um dado, deixe vazio.
+- Se o veiculo for PICAPE/PICKUP/CAMINHONETE, no campo "portaMalasLitros" use a capacidade da CACAMBA em litros (ex: "1.200 litros"). Se a fonte so trouxer em kg, converta usando densidade media de carga ou deixe em kg explicito (ex: "1.000 kg").
 - Use APENAS valores publicados em fontes reais (cite nas fontes).
 - Numeros em formato brasileiro (ponto como milhar: "4.361"; virgula como decimal: "12,5").
 
