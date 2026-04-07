@@ -144,6 +144,109 @@ A descricao deve:
   return data.choices?.[0]?.message?.content?.trim() || "";
 }
 
+// ── Vehicle enrichment (Sonnet + web_search) ────────────────────────────────
+// Pesquisa dados verídicos do modelo em fontes reais e devolve specs + descrição.
+
+export interface VehicleEnrichmentInput {
+  marca: string;
+  modelo: string;
+  versao: string;
+  ano_fabricacao: number;
+  ano_modelo: number;
+  km: number;
+  cor: string;
+  cambio: string;
+  combustivel: string;
+  acessorios: string[];
+}
+
+export interface VehicleEnrichmentResult {
+  descricao: string;
+  technical_specs: Record<string, string>;
+}
+
+export async function enrichVehicleWithSearch(
+  claudeKey: string,
+  v: VehicleEnrichmentInput,
+): Promise<VehicleEnrichmentResult> {
+  const prompt = `Voce e um especialista em automoveis. Pesquise dados tecnicos VERIDICOS do veiculo abaixo em fontes confiaveis (CarrosNaWeb, iCarros, Quatro Rodas, Inmetro/PBE Veicular, sites das montadoras).
+
+Veiculo: ${v.marca} ${v.modelo} ${v.versao} ${v.ano_fabricacao}/${v.ano_modelo}
+Cambio: ${v.cambio} | Combustivel: ${v.combustivel}
+
+REGRAS CRITICAS:
+- NUNCA invente numeros. Se nao encontrar um dado, deixe vazio.
+- Use APENAS valores publicados em fontes reais (cite nas fontes).
+- Numeros em formato brasileiro (ponto como milhar: "4.361"; virgula como decimal: "12,5").
+
+Retorne APENAS um JSON valido nesse formato (sem texto antes ou depois, sem markdown):
+{
+  "specs": {
+    "potenciaCv": "",
+    "torqueKgfM": "",
+    "comprimentoMm": "",
+    "larguraMm": "",
+    "alturaMm": "",
+    "entreEixosMm": "",
+    "pesoKg": "",
+    "portaMalasLitros": "",
+    "tanqueLitros": "",
+    "consumoCidadeKmL": "",
+    "consumoEstradaKmL": ""
+  },
+  "descricao": "Descricao comercial de 3 a 5 frases em portugues do Brasil, persuasiva e profissional, destacando os diferenciais reais do modelo (com base nos dados pesquisados) e mencionando: ${v.km.toLocaleString("pt-BR")} km, cor ${v.cor}, ${v.cambio}, ${v.combustivel}, acessorios: ${(v.acessorios || []).slice(0, 10).join(", ") || "n/d"}. NAO incluir preco.",
+  "fontes": ["url1", "url2"]
+}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    signal: controller.signal,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": claudeKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+    }),
+  });
+
+  clearTimeout(timeoutId);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Claude API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  const blocks = Array.isArray(data.content) ? data.content : [];
+  const text = blocks.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n").trim();
+
+  // Extrai JSON (pode vir cercado de markdown ou texto residual)
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Resposta sem JSON valido");
+  const parsed = JSON.parse(match[0]);
+
+  const specsRaw = (parsed.specs || {}) as Record<string, unknown>;
+  const technical_specs: Record<string, string> = {};
+  for (const [k, val] of Object.entries(specsRaw)) {
+    const s = String(val ?? "").trim();
+    if (s) technical_specs[k] = s;
+  }
+
+  return {
+    descricao: String(parsed.descricao || "").trim(),
+    technical_specs,
+  };
+}
+
 // ── Blog AI ─────────────────────────────────────────────────────────────────
 
 export interface BlogVehicleInfo {

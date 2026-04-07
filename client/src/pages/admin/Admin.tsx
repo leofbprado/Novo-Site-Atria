@@ -11,6 +11,7 @@ import {
   fetchAutoConfVeiculo,
   generateDescription,
   generateBlogPost,
+  enrichVehicleWithSearch,
 } from "./api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -668,8 +669,8 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
 }
 
 // ── Estoque Page ─────────────────────────────────────────────────────────────
-function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistory, milestoneConfig }: {
-  vehicles: VeiculoAdmin[]; loadVehicles: () => void; openaiKey: string;
+function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, dailyHistory, milestoneConfig }: {
+  vehicles: VeiculoAdmin[]; loadVehicles: () => void; openaiKey: string; claudeKey: string;
   analytics: Map<string, VehicleAnalytics>; dailyHistory: Map<string, DailyRecord[]>;
   milestoneConfig: MilestoneConfig;
 }) {
@@ -804,28 +805,35 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, analytics, dailyHistor
   };
 
   const handleEnrichAI = async () => {
-    if (!openaiKey) { setEnrichResult("Erro: Configure a chave OpenAI nas configuracoes primeiro"); return; }
+    if (!claudeKey) { setEnrichResult("Erro: Configure a chave Claude nas configuracoes primeiro"); return; }
     const draftsWithoutAI = vehicles.filter((v) => v.status === "rascunho" && !v.descricao_ia);
     if (draftsWithoutAI.length === 0) { setEnrichResult("Nenhum rascunho sem descricao para enriquecer"); return; }
     setEnriching(true); setEnrichResult(""); setSyncResult(""); setPublishAllResult("");
     let enriched = 0;
+    let failed = 0;
     try {
       for (let i = 0; i < draftsWithoutAI.length; i++) {
         const v = draftsWithoutAI[i];
-        setEnrichResult(`Gerando descricao ${i + 1}/${draftsWithoutAI.length}...`);
+        setEnrichResult(`Pesquisando dados verídicos ${i + 1}/${draftsWithoutAI.length} (${v.marca} ${v.modelo})...`);
         try {
-          const desc = await generateDescription(openaiKey, {
+          const result = await enrichVehicleWithSearch(claudeKey, {
             marca: v.marca, modelo: v.modelo, versao: v.versao,
             ano_fabricacao: v.ano_fabricacao, ano_modelo: v.ano_modelo,
             km: v.km, cor: v.cor, cambio: v.cambio,
-            combustivel: v.combustivel, acessorios: v.acessorios || [],
+            combustivel: v.combustivel, acessorios: (v.acessorios || []).map((a: any) => typeof a === "string" ? a : a?.nome || "").filter(Boolean),
           });
-          await updateVeiculoDescricao(v.autoconf_id, desc);
+          if (result.descricao) await updateVeiculoDescricao(v.autoconf_id, result.descricao);
+          if (Object.keys(result.technical_specs).length > 0) {
+            await updateVeiculoTechnicalSpecs(v.autoconf_id, result.technical_specs);
+          }
           enriched++;
-        } catch { /* skip */ }
-        if (i < draftsWithoutAI.length - 1) await new Promise((r) => setTimeout(r, 200));
+        } catch (e) {
+          console.error("[ENRICH] falhou para", v.autoconf_id, e);
+          failed++;
+        }
+        if (i < draftsWithoutAI.length - 1) await new Promise((r) => setTimeout(r, 500));
       }
-      setEnrichResult(`Concluido: ${enriched} veiculos enriquecidos com IA`);
+      setEnrichResult(`Concluido: ${enriched} enriquecidos${failed ? `, ${failed} falharam` : ""} (Sonnet + web_search)`);
       loadVehicles();
     } catch (err: any) { setEnrichResult(`Erro: ${err.message}`); }
     setEnriching(false);
@@ -1891,7 +1899,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           ) : (
             <>
               {page === "dashboard" && <DashboardPage vehicles={vehicles} leads={leads} />}
-              {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
+              {page === "estoque" && <EstoquePage vehicles={vehicles} loadVehicles={loadVehicles} openaiKey={openaiKey} claudeKey={claudeKey} analytics={analytics} dailyHistory={dailyHistory} milestoneConfig={milestoneConfig} />}
               {page === "leads" && <LeadsPage />}
               {page === "whatsapp" && <WhatsAppPage />}
               {page === "blog" && <BlogPage claudeKey={claudeKey} vehicles={vehicles} />}
