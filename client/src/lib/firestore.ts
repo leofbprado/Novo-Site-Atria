@@ -68,6 +68,22 @@ function normalizeAcessorios(raw: unknown): string[] {
   return raw.map((a: any) => (typeof a === "string" ? a : a?.nome || "")).filter(Boolean);
 }
 
+// Mapa de normalização: modelo → tipo correto. Sobrescreve tipos errados vindos do autoconf.
+const MODELO_TIPO_MAP: Array<{ rx: RegExp; tipo: string }> = [
+  { rx: /\b(jetta|civic|corolla|virtus|voyage|cobalt|prisma|onix plus|versa|sentra|cruze sedan|fluence|logan|cronos|fastback sedan|polo sedan|ka sedan|fiesta sedan|focus sedan|hb20s|grand siena|siena|linea|passat|fusion|altima|accord|camry)\b/i, tipo: "Sedan" },
+  { rx: /\b(hr-v|hrv|wr-v|wrv|compass|renegade|tracker|kicks|creta|t-cross|tcross|nivus|taos|tiguan|kuga|ecosport|duster|captur|territory|pulse|fastback|2008|3008|5008|sw4|trailblazer|outlander|asx|rav4|cr-v|crv|tucson|santa fe|xv|forester|q3|q5|x1|x3)\b/i, tipo: "SUV" },
+  { rx: /\b(toro|s10|hilux|ranger|amarok|saveiro|strada|frontier|l200|montana|maverick|gladiator|f-?250|silverado|ram)\b/i, tipo: "Pickup" },
+  { rx: /\b(onix|hb20|polo|gol|ka|fiesta|fox|fit|march|sandero|i30|golf|up|argo|mobi|uno|palio|celta|punto|bravo|focus|astra|corsa|c3|208|clio|swift|yaris hatch)\b/i, tipo: "Hatch" },
+];
+
+function normalizeTipo(modelo: string, tipoOriginal: string): string {
+  const m = (modelo || "").toLowerCase();
+  for (const { rx, tipo } of MODELO_TIPO_MAP) {
+    if (rx.test(m)) return tipo;
+  }
+  return tipoOriginal || "";
+}
+
 function adminToVehicle(v: VeiculoAdmin): Vehicle {
   const fotos = normalizeFotos(v.fotos);
   const fotoPrincipal = v.foto_principal || fotos[0] || "";
@@ -76,7 +92,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     marca: v.marca || "",
     modelo: v.modelo || "",
     versao: v.versao || "",
-    tipo: v.tipo || "",
+    tipo: normalizeTipo(v.modelo || "", v.tipo || ""),
     portas: v.portas || 0,
     ano: v.ano_fabricacao || 0,
     preco: v.preco || 0,
