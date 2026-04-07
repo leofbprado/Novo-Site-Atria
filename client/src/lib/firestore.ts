@@ -284,8 +284,7 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
     const snap = await getDocs(
       query(
         collection(db, ADMIN_COLLECTION),
-        where("status", "==", "publicado"),
-        where("tags", "array-contains", "destaque")
+        where("status", "==", "publicado")
       )
     );
     const vehicles = snap.docs
@@ -295,6 +294,7 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
         const db_ = (b as any).data_importacao?.toMillis?.() ?? 0;
         return db_ - da;
       })
+      .slice(0, 12)
       .map((d) => adminToVehicle(d));
     if (vehicles.length === 0) return MOCK_VEHICLES.filter((v) => v.destaque);
     return vehicles;
