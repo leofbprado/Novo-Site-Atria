@@ -737,9 +737,6 @@ function VehicleCard({ v }: { v: Vehicle }) {
             {v.destaque && (
               <span className="bg-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
             )}
-            {v.tipo && (
-              <span className="bg-atria-navy/80 text-white text-xs font-inter uppercase px-2.5 py-1 rounded">{v.tipo}</span>
-            )}
           </div>
           <span className="absolute top-3 right-3 bg-black/50 text-white text-xs font-inter font-bold px-2.5 py-1 rounded">
             {v.ano}
