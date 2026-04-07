@@ -269,12 +269,21 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
       query(
         collection(db, ADMIN_COLLECTION),
         where("status", "==", "publicado"),
-        where("tags", "array-contains", "destaque"),
-        orderBy("data_importacao", "desc")
+        where("tags", "array-contains", "destaque")
       )
     );
-    return snap.docs.map((d) => adminToVehicle(d.data() as VeiculoAdmin));
-  } catch {
+    const vehicles = snap.docs
+      .map((d) => d.data() as VeiculoAdmin)
+      .sort((a, b) => {
+        const da = (a as any).data_importacao?.toMillis?.() ?? 0;
+        const db_ = (b as any).data_importacao?.toMillis?.() ?? 0;
+        return db_ - da;
+      })
+      .map((d) => adminToVehicle(d));
+    if (vehicles.length === 0) return MOCK_VEHICLES.filter((v) => v.destaque);
+    return vehicles;
+  } catch (e) {
+    console.error("[getFeaturedVehicles] erro:", e);
     return MOCK_VEHICLES.filter((v) => v.destaque);
   }
 }
