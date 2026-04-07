@@ -542,11 +542,16 @@ export async function getPublishedBlogPosts(): Promise<BlogPost[]> {
   const snap = await getDocs(
     query(
       collection(firestore, BLOG_COLLECTION),
-      where("status", "==", "publicado"),
-      orderBy("data_publicacao", "desc")
+      where("status", "==", "publicado")
     )
   );
-  return snap.docs.map((d) => normalizeBlogPost(d.data()));
+  return snap.docs
+    .map((d) => normalizeBlogPost(d.data()))
+    .sort((a, b) => {
+      const da = (a.data_publicacao as any)?.toMillis?.() ?? 0;
+      const db = (b.data_publicacao as any)?.toMillis?.() ?? 0;
+      return db - da;
+    });
 }
 
 export async function getPublishedBlogPostBySlug(slug: string): Promise<BlogPost | null> {

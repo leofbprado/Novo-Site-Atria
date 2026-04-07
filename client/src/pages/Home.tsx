@@ -1196,7 +1196,9 @@ function BlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    getPublishedBlogPosts().then((p) => setPosts(p.slice(0, 3))).catch(() => {});
+    getPublishedBlogPosts()
+      .then((p) => setPosts(p.slice(0, 3)))
+      .catch((e) => console.error("[BlogSection] erro:", e));
   }, []);
 
   if (posts.length === 0) return null;
