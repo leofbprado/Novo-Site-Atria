@@ -1,8 +1,8 @@
 // Service Worker - Cache Strategy for Átria Veículos
-const CACHE_NAME = 'atria-veiculos-v4.0';
-const STATIC_CACHE = 'atria-static-v4.0';
-const DYNAMIC_CACHE = 'atria-dynamic-v4.0';
-const IMAGE_CACHE = 'atria-images-v4.0';
+const CACHE_NAME = 'atria-veiculos-v5.0';
+const STATIC_CACHE = 'atria-static-v5.0';
+const DYNAMIC_CACHE = 'atria-dynamic-v5.0';
+const IMAGE_CACHE = 'atria-images-v5.0';
 
 // Resources to cache immediately
 const STATIC_ASSETS = [
@@ -152,22 +152,14 @@ async function handleAPIRequest(request) {
   }
 }
 
-// Handle static assets - Cache First
+// Handle static assets - Network First (evita servir JS/CSS desatualizado após deploy)
 async function handleStaticRequest(request) {
   try {
-    const cache = await caches.open(STATIC_CACHE);
-    const cached = await cache.match(request);
-    
-    if (cached) {
-      return cached;
-    }
-    
     const response = await fetch(request);
-    
     if (response.ok) {
+      const cache = await caches.open(STATIC_CACHE);
       cache.put(request, response.clone());
     }
-    
     return response;
   } catch (error) {
     const cache = await caches.open(STATIC_CACHE);
