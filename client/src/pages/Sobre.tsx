@@ -184,7 +184,7 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 
 function Numeros() {
   const stats = [
-    { icon: <Award size={24} />, label: "Anos no mercado", value: 13, suffix: "+" },
+    { icon: <Award size={24} />, label: "Anos no mercado", value: 12, suffix: "+" },
     { icon: <Car size={24} />, label: "Veículos vendidos", value: 10000, suffix: "+" },
     { icon: <Store size={24} />, label: "Veículos em estoque", value: 200, suffix: "+" },
     { icon: <MapPin size={24} />, label: "Lojas em Campinas", value: 3, suffix: "" },
