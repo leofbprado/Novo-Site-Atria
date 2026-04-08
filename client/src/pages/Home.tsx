@@ -360,15 +360,29 @@ function calcularFaixa(entrada: number, parcela: number) {
   return { valorBase, precoMin, precoMax };
 }
 
+const LOADING_MESSAGES = [
+  "Calculando sua faixa de preço...",
+  "Cruzando com nosso estoque...",
+  "Encontrando os melhores carros pra você...",
+];
+
 function SimuladorResultModal({
   entrada, parcela, source, onClose,
 }: { entrada: number; parcela: number; source: string; onClose: () => void }) {
-  const [step, setStep] = useState<"form" | "resultado">("form");
+  const [step, setStep] = useState<"loading" | "form" | "resultado">("loading");
+  const [loadingIdx, setLoadingIdx] = useState(0);
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [sending, setSending] = useState(false);
 
   const { precoMin, precoMax } = calcularFaixa(entrada, parcela);
+
+  useEffect(() => {
+    if (step !== "loading") return;
+    const rotate = setInterval(() => setLoadingIdx((i) => (i + 1) % LOADING_MESSAGES.length), 700);
+    const advance = setTimeout(() => setStep("form"), 2100);
+    return () => { clearInterval(rotate); clearTimeout(advance); };
+  }, [step]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -409,12 +423,22 @@ function SimuladorResultModal({
           <X size={20} />
         </button>
 
-        {step === "form" ? (
+        {step === "loading" ? (
+          <div className="p-10 text-center">
+            <div className="w-14 h-14 mx-auto mb-5 rounded-full border-4 border-atria-navy/15 border-t-atria-navy animate-spin" />
+            <p className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-1">
+              Simulando valores
+            </p>
+            <p className="font-inter text-sm text-atria-text-gray min-h-[20px]">
+              {LOADING_MESSAGES[loadingIdx]}
+            </p>
+          </div>
+        ) : step === "form" ? (
           <>
             <div className="bg-atria-navy px-6 py-5">
-              <h3 className="font-barlow-condensed font-black text-xl text-white">Simulação personalizada 💰</h3>
+              <h3 className="font-barlow-condensed font-black text-xl text-white">Pronto! Falta só um passo 🎯</h3>
               <p className="font-inter text-white/70 text-sm mt-1">
-                Veja em segundos quais carros cabem no seu bolso.
+                Deixe seu nome e WhatsApp para ver os carros que combinam com seu plano.
               </p>
             </div>
             <form className="px-6 py-5 space-y-4" onSubmit={handleSubmit}>
@@ -488,9 +512,9 @@ function Simulador() {
         <div className="text-center mb-12">
           <p className="section-label mb-2">Simulador</p>
           <h2 className="section-title">
-            Quanto Cabe
+            Encontre o Carro
             <br />
-            no Seu Bolso?
+            Ideal Pro Seu Plano
           </h2>
           <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
             Diga quanto pode dar de entrada e quanto cabe na parcela. Em segundos mostramos os carros que combinam com você.
