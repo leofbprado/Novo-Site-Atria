@@ -517,7 +517,7 @@ function Simulador() {
             Ideal Pro Seu Plano
           </h2>
           <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
-            Diga quanto pode dar de entrada e quanto cabe na parcela. Em segundos mostramos os carros que combinam com você.
+            Diga quanto deseja dar de entrada e o valor da parcela ideal. Em segundos mostramos os carros que combinam com você.
           </p>
         </div>
 
