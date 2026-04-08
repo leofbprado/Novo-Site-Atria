@@ -132,7 +132,6 @@ exports.sitemap = onRequest({ region: "southamerica-east1" }, async (req, res) =
 });
 
 // ─── Google Reviews ──────────────────────────────────────────────────────────
-const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || "";
 const PLACES = [
   { id: "ChIJHfOghtjOyJQRdL4Zsnxwsis", loja: "Abolição" },
   { id: "ChIJL6nIwhrGyJQRVjPLf7OBAsU", loja: "Guanabara" },
@@ -141,7 +140,7 @@ const PLACES = [
 const REVIEWS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
 let reviewsCache = null;
 
-async function fetchGoogleReviews() {
+async function fetchGoogleReviews(apiKey) {
   const results = await Promise.all(
     PLACES.map(async (place) => {
       try {
@@ -149,7 +148,7 @@ async function fetchGoogleReviews() {
           `https://places.googleapis.com/v1/places/${place.id}`,
           {
             headers: {
-              "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+              "X-Goog-Api-Key": apiKey,
               "X-Goog-FieldMask": "reviews,rating,userRatingCount",
             },
           }
@@ -221,31 +220,38 @@ async function fetchGoogleReviews() {
   };
 }
 
-exports.googleReviews = onRequest({ region: "southamerica-east1" }, async (req, res) => {
-  cors(res);
-  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+exports.googleReviews = onRequest(
+  {
+    region: "southamerica-east1",
+    secrets: ["GOOGLE_PLACES_API_KEY"],
+  },
+  async (req, res) => {
+    cors(res);
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
 
-  if (!GOOGLE_PLACES_API_KEY) {
-    res.json({ reviews: [], averageRating: 4.8, totalReviews: 0 });
-    return;
-  }
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY || "";
+    if (!apiKey) {
+      res.json({ reviews: [], averageRating: 4.8, totalReviews: 0, error: "API key não configurada" });
+      return;
+    }
 
-  if (reviewsCache && Date.now() - reviewsCache.ts < REVIEWS_CACHE_TTL) {
-    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
-    res.json(reviewsCache.data);
-    return;
-  }
-
-  try {
-    const data = await fetchGoogleReviews();
-    reviewsCache = { ts: Date.now(), data };
-    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
-    res.json(data);
-  } catch (e) {
-    if (reviewsCache) {
+    if (reviewsCache && Date.now() - reviewsCache.ts < REVIEWS_CACHE_TTL) {
+      res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
       res.json(reviewsCache.data);
       return;
     }
-    res.status(500).json({ error: e.message, reviews: [], averageRating: 4.8, totalReviews: 0 });
+
+    try {
+      const data = await fetchGoogleReviews(apiKey);
+      reviewsCache = { ts: Date.now(), data };
+      res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
+      res.json(data);
+    } catch (e) {
+      if (reviewsCache) {
+        res.json(reviewsCache.data);
+        return;
+      }
+      res.status(500).json({ error: e.message, reviews: [], averageRating: 4.8, totalReviews: 0 });
+    }
   }
-});
+);
