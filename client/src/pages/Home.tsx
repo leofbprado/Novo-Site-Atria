@@ -223,7 +223,6 @@ const HERO_BG = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?au
 
 function Hero() {
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"compre" | "venda" | "financie">("compre");
   const [showLeadModal, setShowLeadModal] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -231,7 +230,7 @@ function Hero() {
     if (query.trim()) {
       setShowLeadModal(true);
     } else {
-      window.location.href = "/estoque";
+      window.location.href = ROUTES.estoque;
     }
   };
 
@@ -251,34 +250,33 @@ function Hero() {
         >
           <p className="section-label mb-4 text-atria-yellow">Campinas • SP</p>
           <h1 className="font-barlow-condensed font-black text-5xl md:text-7xl uppercase text-white leading-none mb-4">
-            Carros Seminovos e
+            Guiada por você.
             <br />
-            <span className="text-atria-yellow">Usados em Campinas</span>
+            <span className="text-atria-yellow">+10.000 escolhas certas.</span>
           </h1>
           <p className="font-inter text-white/70 text-lg mb-8 max-w-xl mx-auto">
-            Mais de 200 veículos selecionados com garantia, procedência e as melhores condições de financiamento.
+            200+ seminovos com garantia, perícia e financiamento facilitado. 3 lojas em Campinas há mais de 12 anos.
           </p>
         </motion.div>
 
         <motion.div
-          className="flex items-center justify-center gap-2 mb-5"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          {(["compre", "venda", "financie"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2.5 font-inter font-bold uppercase tracking-wider text-sm rounded transition-all ${
-                activeTab === tab
-                  ? "bg-atria-yellow text-atria-navy"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-              }`}
-            >
-              {tab === "compre" ? "Compre" : tab === "venda" ? "Venda" : "Financie"}
-            </button>
-          ))}
+          <a
+            href={ROUTES.estoque}
+            className="bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-7 py-4 rounded transition-colors"
+          >
+            Ver estoque completo
+          </a>
+          <a
+            href={ROUTES.venderCarro}
+            className="bg-white/10 hover:bg-white/20 text-white font-inter font-bold uppercase tracking-wider text-sm px-7 py-4 rounded border border-white/30 transition-colors"
+          >
+            Quero vender meu carro
+          </a>
         </motion.div>
 
         <motion.form
@@ -297,7 +295,7 @@ function Hero() {
           />
           <button
             type="submit"
-            className="bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
+            className="bg-atria-navy hover:bg-atria-navy/90 text-white px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
           >
             <Search size={18} />
             Buscar
@@ -310,7 +308,7 @@ function Hero() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          {["SUV", "Sedan", "Hatch", "Pickup", "Elétrico"].map((tag) => (
+          {["SUV", "Sedan", "Hatch", "Pickup"].map((tag) => (
             <a
               key={tag}
               href={`${ROUTES.estoque}?tipo=${tag.toLowerCase()}`}
