@@ -115,7 +115,7 @@ interface FilterState {
 }
 
 const DEFAULT_RANGES = {
-  preco: [0, 1000000] as [number, number],
+  preco: [0, 500000] as [number, number],
   ano: [2005, 2026] as [number, number],
   km: [0, 300000] as [number, number],
 };
@@ -240,10 +240,10 @@ function RangeSlider({
 }
 
 // ─── PriceHistogram ───────────────────────────────────────────────────────────
-function PriceHistogram({ vehicles, range }: { vehicles: Vehicle[]; range: [number, number] }) {
+function PriceHistogram({ vehicles, range, max }: { vehicles: Vehicle[]; range: [number, number]; max: number }) {
   const BINS = 14;
-  const allMin = DEFAULT_RANGES.preco[0];
-  const allMax = DEFAULT_RANGES.preco[1];
+  const allMin = 0;
+  const allMax = max;
   const binW = (allMax - allMin) / BINS;
 
   const counts = useMemo(() =>
@@ -558,21 +558,27 @@ function Sidebar({
   const toggleArr = <T,>(arr: T[], val: T): T[] =>
     arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 
+  // Preço máximo dinâmico: arredonda o carro mais caro do estoque pra próxima dezena de milhar
+  const precoMaxStock = useMemo(() => {
+    const maxPreco = vehicles.reduce((m, v) => v.preco > m ? v.preco : m, 0);
+    return Math.max(10000, Math.ceil(maxPreco / 10000) * 10000);
+  }, [vehicles]);
+
   return (
     <div className="space-y-0">
       {/* ── Preço ── */}
       <FilterAccordion
         title="Preço"
         defaultOpen
-        hasActive={filters.preco[0] > DEFAULT_RANGES.preco[0] || filters.preco[1] < DEFAULT_RANGES.preco[1]}
+        hasActive={filters.preco[0] > 0 || filters.preco[1] < precoMaxStock}
       >
-        <PriceHistogram vehicles={vehicles} range={filters.preco} />
+        <PriceHistogram vehicles={vehicles} range={filters.preco} max={precoMaxStock} />
         <RangeSlider
-          min={DEFAULT_RANGES.preco[0]}
-          max={DEFAULT_RANGES.preco[1]}
-          value={filters.preco}
+          min={0}
+          max={precoMaxStock}
+          value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
           onChange={(v) => set({ preco: v })}
-          step={5000}
+          step={10000}
           formatValue={fmt}
         />
       </FilterAccordion>
