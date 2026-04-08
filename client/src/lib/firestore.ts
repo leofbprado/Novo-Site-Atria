@@ -71,7 +71,7 @@ function normalizeAcessorios(raw: unknown): string[] {
 // Mapa de normalização: modelo → tipo correto. Sobrescreve tipos errados vindos do autoconf.
 const MODELO_TIPO_MAP: Array<{ rx: RegExp; tipo: string }> = [
   { rx: /\b(jetta|civic|corolla|virtus|voyage|cobalt|prisma|onix plus|versa|sentra|cruze sedan|fluence|logan|cronos|fastback sedan|polo sedan|ka sedan|fiesta sedan|focus sedan|hb20s|grand siena|siena|linea|passat|fusion|altima|accord|camry)\b/i, tipo: "Sedan" },
-  { rx: /\b(hr-v|hrv|wr-v|wrv|compass|renegade|tracker|kicks|creta|t-cross|tcross|nivus|taos|tiguan|kuga|ecosport|duster|captur|territory|pulse|fastback|2008|3008|5008|sw4|trailblazer|outlander|asx|rav4|cr-v|crv|tucson|santa fe|xv|forester|q3|q5|x1|x3)\b/i, tipo: "SUV" },
+  { rx: /\b(hr-v|hrv|wr-v|wrv|compass|renegade|tracker|kicks|creta|t-cross|tcross|nivus|taos|tiguan|kuga|ecosport|duster|captur|territory|pulse|fastback|2008|3008|5008|sw4|trailblazer|outlander|asx|rav4|cr-v|crv|tucson|santa fe|xv|forester|q3|q5|q7|q8|x1|x3|x5|x6|x7|h6|h2|jolion|dargo|f7|tiggo|song plus|yuan plus|seal|atto|cherokee|grand cherokee|wrangler|bronco|edge|explorer|pajero|eclipse cross|xc40|xc60|xc90|glc|gla|glb|gle|gls|macan|cayenne|nx|rx|ux)\b/i, tipo: "SUV" },
   { rx: /\b(toro|s10|hilux|ranger|amarok|saveiro|strada|frontier|l200|montana|maverick|gladiator|f-?250|silverado|ram)\b/i, tipo: "Pickup" },
   { rx: /\b(onix|hb20|polo|gol|ka|fiesta|fox|fit|march|sandero|i30|golf|up|argo|mobi|uno|palio|celta|punto|bravo|focus|astra|corsa|c3|208|clio|swift|yaris hatch)\b/i, tipo: "Hatch" },
 ];
