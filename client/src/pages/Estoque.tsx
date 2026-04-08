@@ -864,11 +864,17 @@ export default function Estoque() {
   // Read URL on mount
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
+    const min = Number(p.get("precoMin"));
+    const max = Number(p.get("precoMax"));
     setFilters((f) => ({
       ...f,
       busca: p.get("q") ?? "",
       tipos: p.get("tipo") ? [p.get("tipo")!] : [],
       marcas: p.get("marca") ? p.get("marca")!.split(",") : [],
+      preco: [
+        Number.isFinite(min) && min > 0 ? min : f.preco[0],
+        Number.isFinite(max) && max > 0 ? max : f.preco[1],
+      ],
     }));
   }, []);
 

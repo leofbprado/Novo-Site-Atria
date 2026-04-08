@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown, TrendingDown, Clock, CreditCard, Calendar,
-  FileText, CheckCircle, Car, Send, Shield,
+  FileText, CheckCircle, Car, Send, Shield, X,
 } from "lucide-react";
 import { saveLead } from "@/lib/firestore";
 
@@ -46,38 +46,140 @@ function Hero() {
 }
 
 // ---- Simulador (inline) ----------------------------------------------------
+const PRAZO_FIXO = 48;
+const FAIXA_MARGEM = 0.10;
+
+const fmtBRL = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+function calcularFaixa(entrada: number, parcela: number) {
+  const valorBase = entrada + parcela * PRAZO_FIXO;
+  const precoMin = Math.max(0, Math.round((valorBase * (1 - FAIXA_MARGEM)) / 1000) * 1000);
+  const precoMax = Math.round((valorBase * (1 + FAIXA_MARGEM)) / 1000) * 1000;
+  return { valorBase, precoMin, precoMax };
+}
+
+function SimuladorResultModal({
+  entrada, parcela, source, onClose,
+}: { entrada: number; parcela: number; source: string; onClose: () => void }) {
+  const [step, setStep] = useState<"form" | "resultado">("form");
+  const [nome, setNome] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const { precoMin, precoMax } = calcularFaixa(entrada, parcela);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    try {
+      await saveLead({
+        nome,
+        whatsapp,
+        source,
+        query: `Simulação: entrada ${fmtBRL(entrada)}, parcela ${fmtBRL(parcela)}/mês, faixa ${fmtBRL(precoMin)}–${fmtBRL(precoMax)}`,
+        dados: { entrada, parcela, prazo: PRAZO_FIXO, precoMin, precoMax },
+      });
+    } catch (err) {
+      console.error("[Simulador] erro ao salvar lead:", err);
+    }
+    setSending(false);
+    setStep("resultado");
+  };
+
+  const handleVerEstoque = () => {
+    window.location.href = `${ROUTES.estoque}?precoMin=${precoMin}&precoMax=${precoMax}`;
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        initial={{ opacity: 0, scale: 0.92, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-atria-text-gray hover:text-atria-text-dark transition-colors z-10"
+        >
+          <X size={20} />
+        </button>
+
+        {step === "form" ? (
+          <>
+            <div className="bg-atria-navy px-6 py-5">
+              <h3 className="font-barlow-condensed font-black text-xl text-white">Simulação personalizada 💰</h3>
+              <p className="font-inter text-white/70 text-sm mt-1">
+                Veja em segundos quais carros cabem no seu bolso.
+              </p>
+            </div>
+            <form className="px-6 py-5 space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Seu nome</label>
+                <input
+                  type="text"
+                  placeholder="João Silva"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  required
+                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                />
+              </div>
+              <div>
+                <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">WhatsApp</label>
+                <input
+                  type="tel"
+                  placeholder="(19) 99652-5211"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  required
+                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={sending}
+                className="w-full bg-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-lg hover:brightness-95 transition-all disabled:opacity-60"
+              >
+                {sending ? "Calculando..." : "Ver minha faixa de preço →"}
+              </button>
+              <p className="text-atria-text-gray text-[11px] text-center">
+                Seus dados são tratados com sigilo. Não enviamos spam.
+              </p>
+            </form>
+          </>
+        ) : (
+          <div className="p-7 text-center">
+            <p className="font-inter text-atria-text-gray text-xs uppercase tracking-widest mb-3">Sua faixa de preço</p>
+            <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark leading-tight mb-2">
+              Com esse investimento você pode comprar carros entre
+            </h3>
+            <p className="font-barlow-condensed font-black text-3xl text-atria-navy mb-6">
+              {fmtBRL(precoMin)} <span className="text-atria-text-gray text-xl font-bold">e</span> {fmtBRL(precoMax)}
+            </p>
+            <button
+              onClick={handleVerEstoque}
+              className="w-full bg-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-lg hover:brightness-95 transition-all"
+            >
+              Ver o que tem nessa faixa de valor →
+            </button>
+            <p className="text-atria-text-gray text-[11px] mt-4 leading-relaxed">
+              * Simulação indicativa. Sujeito à aprovação de crédito. Taxas e condições finais sob consulta.
+            </p>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
 function Simulador() {
   const [parcela, setParcela] = useState(1500);
   const [entrada, setEntrada] = useState(10000);
-  const [prazo, setPrazo] = useState(48);
-  const [showCTA, setShowCTA] = useState(false);
-  const [showLead, setShowLead] = useState(false);
-  const interacted = useRef(false);
-
-  const valorVeiculo = Math.round(parcela * prazo + entrada);
-
-  const fmt = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-  const handleInteraction = () => {
-    if (!interacted.current) {
-      interacted.current = true;
-      setTimeout(() => setShowCTA(true), 2000);
-    }
-  };
-
-  const handleLead = async () => {
-    await saveLead({
-      source: "financiamento-simulador",
-      whatsapp: "",
-      query: `Simulação: parcela ${fmt(parcela)}, entrada ${fmt(entrada)}, prazo ${prazo}x, veículo ${fmt(valorVeiculo)}`,
-    });
-    setShowLead(false);
-    window.open(
-      waLink(`Olá! Fiz uma simulação no site: parcela ${fmt(parcela)}, entrada ${fmt(entrada)}, ${prazo}x. Veículo até ${fmt(valorVeiculo)}. Quero saber mais!`),
-      "_blank"
-    );
-  };
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <section className="py-20 bg-atria-gray-light">
@@ -88,110 +190,60 @@ function Simulador() {
             Quanto Cabe no Seu Bolso?
           </h2>
           <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
-            Ajuste os parâmetros e descubra o valor do veículo ideal para você.
+            Diga quanto pode dar de entrada e quanto cabe na parcela. Em segundos mostramos os carros que combinam com você.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          <div className="bg-white rounded-xl p-8 shadow-sm space-y-7" onChange={handleInteraction}>
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="font-inter font-semibold text-sm text-atria-text-dark">Parcela desejada</label>
-                <span className="font-barlow-condensed font-bold text-lg text-atria-navy">{fmt(parcela)}</span>
-              </div>
-              <input type="range" min={500} max={5000} step={100} value={parcela}
-                onChange={(e) => { setParcela(Number(e.target.value)); handleInteraction(); }}
-                className="w-full accent-atria-navy" />
-              <div className="flex justify-between text-xs text-atria-text-gray mt-1">
-                <span>{fmt(500)}</span><span>{fmt(5000)}</span>
-              </div>
+        <div className="bg-white rounded-2xl p-8 md:p-10 shadow-sm space-y-7 max-w-2xl mx-auto">
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="font-inter font-semibold text-sm text-atria-text-dark">Valor de entrada</label>
+              <span className="font-barlow-condensed font-bold text-xl text-atria-navy">{fmtBRL(entrada)}</span>
             </div>
-
-            <div>
-              <div className="flex justify-between mb-2">
-                <label className="font-inter font-semibold text-sm text-atria-text-dark">Valor de entrada</label>
-                <span className="font-barlow-condensed font-bold text-lg text-atria-navy">{fmt(entrada)}</span>
-              </div>
-              <input type="range" min={0} max={50000} step={1000} value={entrada}
-                onChange={(e) => { setEntrada(Number(e.target.value)); handleInteraction(); }}
-                className="w-full accent-atria-navy" />
-              <div className="flex justify-between text-xs text-atria-text-gray mt-1">
-                <span>{fmt(0)}</span><span>{fmt(50000)}</span>
-              </div>
+            <input type="range" min={0} max={50000} step={1000} value={entrada}
+              onChange={(e) => setEntrada(Number(e.target.value))}
+              className="w-full accent-atria-navy" />
+            <div className="flex justify-between text-xs text-atria-text-gray mt-1">
+              <span>{fmtBRL(0)}</span><span>{fmtBRL(50000)}</span>
             </div>
-
-            <div>
-              <label className="font-inter font-semibold text-sm text-atria-text-dark block mb-2">Prazo</label>
-              <div className="flex gap-2">
-                {[24, 36, 48, 60].map((p) => (
-                  <button key={p} onClick={() => { setPrazo(p); handleInteraction(); }}
-                    className={`flex-1 py-2 font-inter text-sm font-semibold rounded transition-all ${
-                      prazo === p ? "bg-atria-navy text-white" : "bg-atria-gray-light text-atria-text-dark hover:bg-atria-gray-medium"
-                    }`}>{p}x</button>
-                ))}
-              </div>
-            </div>
-
           </div>
 
-          <div className="bg-atria-navy rounded-xl p-8 flex flex-col justify-between text-white">
-            <div>
-              <p className="font-inter text-white/60 text-sm uppercase tracking-widest mb-6">Resultado da simulação</p>
-              <div className="space-y-5">
-                <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                  <span className="font-inter text-white/70">Veículo estimado até:</span>
-                  <span className="font-barlow-condensed font-black text-4xl text-atria-yellow">{fmt(valorVeiculo)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Parcela</span>
-                  <span className="font-semibold">{fmt(parcela)}/mês</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Entrada</span>
-                  <span className="font-semibold">{fmt(entrada)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Prazo</span>
-                  <span className="font-semibold">{prazo} meses</span>
-                </div>
-              </div>
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="font-inter font-semibold text-sm text-atria-text-dark">Parcela desejada</label>
+              <span className="font-barlow-condensed font-bold text-xl text-atria-navy">{fmtBRL(parcela)}</span>
             </div>
-
-            <AnimatePresence>
-              {showCTA && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 space-y-3"
-                >
-                  <button
-                    onClick={() => setShowLead(true)}
-                    className="w-full bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-sm py-4 rounded-xl transition-colors"
-                  >
-                    Quero financiar!
-                  </button>
-                  <a href={ROUTES.estoque} className="block text-center font-inter text-white/60 hover:text-white text-sm underline underline-offset-2">
-                    Ver veículos nessa faixa
-                  </a>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {showLead && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-black/60" onClick={() => setShowLead(false)} />
-                <div className="relative bg-white rounded-2xl p-8 max-w-sm w-full text-atria-text-dark">
-                  <h3 className="font-barlow-condensed font-black text-2xl mb-2">Falar com especialista</h3>
-                  <p className="font-inter text-sm text-atria-text-gray mb-4">Vamos encaminhar você ao WhatsApp com os dados da simulação.</p>
-                  <button onClick={handleLead} className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase text-sm py-3 rounded-xl transition-colors">
-                    Abrir WhatsApp
-                  </button>
-                </div>
-              </div>
-            )}
+            <input type="range" min={500} max={5000} step={100} value={parcela}
+              onChange={(e) => setParcela(Number(e.target.value))}
+              className="w-full accent-atria-navy" />
+            <div className="flex justify-between text-xs text-atria-text-gray mt-1">
+              <span>{fmtBRL(500)}</span><span>{fmtBRL(5000)}</span>
+            </div>
           </div>
+
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-lg transition-all"
+          >
+            Simular agora →
+          </button>
+
+          <p className="text-atria-text-gray text-[11px] text-center">
+            * Simulação indicativa. Sujeito à aprovação de crédito.
+          </p>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showModal && (
+          <SimuladorResultModal
+            entrada={entrada}
+            parcela={parcela}
+            source="simulador-financiamento"
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
