@@ -1517,7 +1517,7 @@ function CTAFinal() {
 export default function Home() {
   useSEO({
     title: "Átria Veículos | Carros Seminovos e Usados em Campinas SP",
-    description: "Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 13 anos de mercado. Mais de 200 veículos, 3 lojas e financiamento facilitado. BMW, Mercedes, Audi, Toyota e mais.",
+    description: "Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 12 anos de mercado e +10.000 carros vendidos. Mais de 200 veículos, 3 lojas e financiamento facilitado. BMW, Mercedes, Audi, Toyota e mais.",
     path: "/",
   });
 

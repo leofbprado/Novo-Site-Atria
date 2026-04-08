@@ -15,8 +15,8 @@ import { ROUTES } from "@/lib/constants";
 
 function usePageSEO() {
   useSEO({
-    title: "Sobre a Átria Veículos | Loja de Seminovos em Campinas SP há 13 Anos",
-    description: "Átria Veículos: há mais de 13 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 10.000 veículos vendidos. Confiança e transparência.",
+    title: "Sobre a Átria Veículos | Loja de Seminovos em Campinas SP há 12 Anos",
+    description: "Átria Veículos: há mais de 12 anos no mercado automotivo em Campinas-SP. 3 lojas, mais de 10.000 carros vendidos. Confiança e transparência.",
     path: ROUTES.sobre,
   });
 }
@@ -37,7 +37,7 @@ function Hero() {
             Sobre a <span className="text-atria-yellow">Átria Veículos</span>
           </h1>
           <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            Há mais de 13 anos guiando você na melhor escolha
+            +10.000 carros vendidos · 12 anos guiando você na melhor escolha
           </p>
         </motion.div>
       </div>
@@ -67,8 +67,8 @@ function Historia() {
               revendas da região.
             </p>
             <p>
-              Com mais de <strong className="text-atria-text-dark">13 anos de mercado</strong>, já são mais de{" "}
-              <strong className="text-atria-text-dark">10.000 veículos vendidos</strong> e{" "}
+              Com mais de <strong className="text-atria-text-dark">12 anos de mercado</strong>, já são mais de{" "}
+              <strong className="text-atria-text-dark">10.000 carros vendidos</strong> e{" "}
               <strong className="text-atria-text-dark">3 lojas para atendimento</strong> em Campinas:
               Abolição, Campos Elíseos e Guanabara.
             </p>

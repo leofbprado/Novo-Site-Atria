@@ -445,8 +445,8 @@ function PurchaseForm() {
 // ---- Social Proof -------------------------------------------------------
 function SocialProof() {
   const stats = [
-    { value: "13.000+", label: "carros negociados" },
-    { value: "11", label: "anos de mercado" },
+    { value: "10.000+", label: "carros vendidos" },
+    { value: "12", label: "anos de mercado" },
     { value: "3", label: "lojas em Campinas" },
   ];
 

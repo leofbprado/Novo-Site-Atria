@@ -28,7 +28,7 @@ export default function Blog() {
 
   useSEO({
     title: "Blog | Atria Veiculos — Dicas de Carros Usados e Seminovos em Campinas SP",
-    description: "Dicas, comparativos e guias para comprar carros usados e seminovos em Campinas SP. Atria Veiculos, ha mais de 13 anos no mercado.",
+    description: "Dicas, comparativos e guias para comprar carros usados e seminovos em Campinas SP. Atria Veiculos, ha mais de 12 anos no mercado e +10.000 carros vendidos.",
     path: ROUTES.blog,
   });
 

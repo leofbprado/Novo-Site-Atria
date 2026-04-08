@@ -11,7 +11,7 @@ interface SEOProps {
 
 const DEFAULTS = {
   title: "Átria Veículos | Seminovos em Campinas-SP | Compre, Venda e Financie",
-  description: "Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 13 anos de mercado. Mais de 200 veículos, 3 lojas e financiamento facilitado.",
+  description: "Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 12 anos de mercado e mais de 10.000 carros vendidos. Mais de 200 veículos, 3 lojas e financiamento facilitado.",
   ogImage: `${SITE_URL}/og-image.jpg`,
 };
 
