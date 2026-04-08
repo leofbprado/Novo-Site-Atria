@@ -250,7 +250,8 @@ function PriceHistogram({ vehicles, range, max }: { vehicles: Vehicle[]; range: 
     Array.from({ length: BINS }, (_, i) => {
       const lo = allMin + i * binW;
       const hi = lo + binW;
-      return vehicles.filter((v) => v.preco >= lo && v.preco < hi).length;
+      // Última barra inclui o limite superior (carro mais caro)
+      return vehicles.filter((v) => v.preco >= lo && (i === BINS - 1 ? v.preco <= hi : v.preco < hi)).length;
     }),
     [vehicles, binW, allMin]
   );
@@ -258,22 +259,30 @@ function PriceHistogram({ vehicles, range, max }: { vehicles: Vehicle[]; range: 
   const maxCount = Math.max(...counts, 1);
 
   return (
-    <div className="flex items-end gap-px h-10 mb-1" aria-hidden="true">
+    <div className="flex items-end gap-px h-12 mb-1" aria-hidden="true">
       {counts.map((count, i) => {
         const binLo = allMin + i * binW;
         const binHi = binLo + binW;
         const active = binHi >= range[0] && binLo <= range[1];
+        const heightPct = count === 0 ? 4 : Math.max(12, (count / maxCount) * 100);
         return (
           <div
             key={i}
-            className={`flex-1 rounded-sm transition-colors duration-150 ${active ? "bg-atria-navy" : "bg-atria-gray-medium"}`}
-            style={{ height: `${Math.max(8, (count / maxCount) * 100)}%` }}
-            title={`${count} veículo${count !== 1 ? "s" : ""}`}
+            className={`flex-1 rounded-sm transition-colors duration-150 ${
+              count === 0 ? "bg-atria-gray-medium/40" : active ? "bg-atria-navy" : "bg-atria-gray-medium"
+            }`}
+            style={{ height: `${heightPct}%` }}
+            title={`${fmtBins(binLo)}–${fmtBins(binHi)}: ${count} veículo${count !== 1 ? "s" : ""}`}
           />
         );
       })}
     </div>
   );
+}
+
+function fmtBins(v: number): string {
+  if (v >= 1000) return `R$ ${Math.round(v / 1000)}k`;
+  return `R$ ${v}`;
 }
 
 // ─── FilterAccordion ──────────────────────────────────────────────────────────
