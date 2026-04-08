@@ -830,12 +830,6 @@ function VendaSeuCarro() {
                 </li>
               ))}
             </ul>
-            <img
-              src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=600&h=400&fit=crop"
-              alt="Pessoa sorrindo ao lado do carro"
-              className="mt-8 rounded-xl shadow-md w-full object-cover h-48 lg:h-56 hidden md:block"
-              loading="lazy"
-            />
           </div>
 
           <div className="bg-white rounded-xl p-8">
