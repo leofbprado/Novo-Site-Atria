@@ -130,3 +130,122 @@ exports.sitemap = onRequest({ region: "southamerica-east1" }, async (req, res) =
     res.status(500).send(`<!-- Sitemap error: ${e.message} -->`);
   }
 });
+
+// ─── Google Reviews ──────────────────────────────────────────────────────────
+const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || "";
+const PLACES = [
+  { id: "ChIJHfOghtjOyJQRdL4Zsnxwsis", loja: "Abolição" },
+  { id: "ChIJL6nIwhrGyJQRVjPLf7OBAsU", loja: "Guanabara" },
+  { id: "ChIJ1yAZp0TJyJQR_81hXZHa3j8", loja: "Campos Elíseos" },
+];
+const REVIEWS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+let reviewsCache = null;
+
+async function fetchGoogleReviews() {
+  const results = await Promise.all(
+    PLACES.map(async (place) => {
+      try {
+        const r = await fetch(
+          `https://places.googleapis.com/v1/places/${place.id}`,
+          {
+            headers: {
+              "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+              "X-Goog-FieldMask": "reviews,rating,userRatingCount",
+            },
+          }
+        );
+        if (!r.ok) return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
+        const data = await r.json();
+        const reviews = (data.reviews || []).map((rv) => ({
+          authorName: rv.authorAttribution?.displayName || "Cliente",
+          authorPhoto: rv.authorAttribution?.photoUri || "",
+          rating: rv.rating ?? 0,
+          text: rv.text?.text || rv.originalText?.text || "",
+          relativeTime: rv.relativePublishTimeDescription || "",
+          publishTime: rv.publishTime || "",
+          loja: place.loja,
+        }));
+        return {
+          reviews,
+          rating: data.rating ?? 0,
+          totalCount: data.userRatingCount ?? 0,
+          loja: place.loja,
+        };
+      } catch {
+        return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
+      }
+    })
+  );
+
+  const allReviews = results.flatMap((r) => r.reviews);
+  // Filtra APENAS 5 estrelas
+  const fiveStars = allReviews.filter((r) => r.rating === 5);
+
+  fiveStars.sort((a, b) => {
+    if (a.publishTime && b.publishTime) {
+      return new Date(b.publishTime).getTime() - new Date(a.publishTime).getTime();
+    }
+    return 0;
+  });
+
+  // Distribui até 6 reviews, 2 por loja, completando com mais recentes
+  const selected = [];
+  const byStore = new Map();
+  for (const r of fiveStars) {
+    if (!byStore.has(r.loja)) byStore.set(r.loja, []);
+    byStore.get(r.loja).push(r);
+  }
+  for (const [, storeReviews] of byStore) {
+    selected.push(...storeReviews.slice(0, 2));
+  }
+  if (selected.length < 6) {
+    for (const r of fiveStars) {
+      if (selected.length >= 6) break;
+      if (!selected.includes(r)) selected.push(r);
+    }
+  }
+  const finalReviews = selected.slice(0, 6);
+
+  const validStores = results.filter((r) => r.rating > 0);
+  const avgRating =
+    validStores.length > 0
+      ? validStores.reduce((s, r) => s + r.rating * r.totalCount, 0) /
+        validStores.reduce((s, r) => s + r.totalCount, 0)
+      : 4.8;
+  const totalReviews = results.reduce((s, r) => s + r.totalCount, 0);
+
+  return {
+    reviews: finalReviews,
+    averageRating: Math.round(avgRating * 10) / 10,
+    totalReviews,
+  };
+}
+
+exports.googleReviews = onRequest({ region: "southamerica-east1" }, async (req, res) => {
+  cors(res);
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  if (!GOOGLE_PLACES_API_KEY) {
+    res.json({ reviews: [], averageRating: 4.8, totalReviews: 0 });
+    return;
+  }
+
+  if (reviewsCache && Date.now() - reviewsCache.ts < REVIEWS_CACHE_TTL) {
+    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
+    res.json(reviewsCache.data);
+    return;
+  }
+
+  try {
+    const data = await fetchGoogleReviews();
+    reviewsCache = { ts: Date.now(), data };
+    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400");
+    res.json(data);
+  } catch (e) {
+    if (reviewsCache) {
+      res.json(reviewsCache.data);
+      return;
+    }
+    res.status(500).json({ error: e.message, reviews: [], averageRating: 4.8, totalReviews: 0 });
+  }
+});
