@@ -25,6 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Functions dependencies
+        run: npm install
+        working-directory: functions
+
       - name: Build client
         run: npx vite build --config vite.config.ts
         env:
@@ -51,3 +55,12 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NOVO_SITE_ATRIA }}
           channelId: live
           projectId: novo-site-atria
+
+      - name: Deploy Firebase Functions (live)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions --force
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NOVO_SITE_ATRIA }}
+          PROJECT_ID: novo-site-atria
