@@ -25,14 +25,48 @@ const SORT_OPTIONS = [
 type SortKey = typeof SORT_OPTIONS[number]["key"];
 
 // ─── Brand Logos (Wikimedia Commons) ─────────────────────────────────────────
-const POPULAR_BRANDS = [
-  { name: "Toyota",     logo: "https://www.carlogos.org/car-logos/toyota-logo.png" },
-  { name: "Volkswagen", logo: "https://www.carlogos.org/car-logos/volkswagen-logo.png" },
-  { name: "Chevrolet",  logo: "https://www.carlogos.org/car-logos/chevrolet-logo.png" },
-  { name: "Hyundai",    logo: "https://www.carlogos.org/car-logos/hyundai-logo.png" },
-  { name: "BMW",        logo: "https://www.carlogos.org/car-logos/bmw-logo.png" },
-  { name: "Honda",      logo: "https://www.carlogos.org/car-logos/honda-logo.png" },
-];
+// Logo lookup por marca (chave normalizada lowercase). Se a marca top 6 não estiver
+// aqui, o BrandLogoCard cai no fallback de iniciais.
+const BRAND_LOGOS: Record<string, string> = {
+  toyota:      "https://www.carlogos.org/car-logos/toyota-logo.png",
+  volkswagen:  "https://www.carlogos.org/car-logos/volkswagen-logo.png",
+  vw:          "https://www.carlogos.org/car-logos/volkswagen-logo.png",
+  chevrolet:   "https://www.carlogos.org/car-logos/chevrolet-logo.png",
+  gm:          "https://www.carlogos.org/car-logos/chevrolet-logo.png",
+  hyundai:     "https://www.carlogos.org/car-logos/hyundai-logo.png",
+  bmw:         "https://www.carlogos.org/car-logos/bmw-logo.png",
+  honda:       "https://www.carlogos.org/car-logos/honda-logo.png",
+  fiat:        "https://www.carlogos.org/car-logos/fiat-logo.png",
+  ford:        "https://www.carlogos.org/car-logos/ford-logo.png",
+  jeep:        "https://www.carlogos.org/car-logos/jeep-logo.png",
+  renault:     "https://www.carlogos.org/car-logos/renault-logo.png",
+  nissan:      "https://www.carlogos.org/car-logos/nissan-logo.png",
+  peugeot:     "https://www.carlogos.org/car-logos/peugeot-logo.png",
+  citroen:     "https://www.carlogos.org/car-logos/citroen-logo.png",
+  citroën:     "https://www.carlogos.org/car-logos/citroen-logo.png",
+  mitsubishi:  "https://www.carlogos.org/car-logos/mitsubishi-logo.png",
+  audi:        "https://www.carlogos.org/car-logos/audi-logo.png",
+  mercedes:    "https://www.carlogos.org/car-logos/mercedes-benz-logo.png",
+  "mercedes-benz": "https://www.carlogos.org/car-logos/mercedes-benz-logo.png",
+  kia:         "https://www.carlogos.org/car-logos/kia-logo.png",
+  volvo:       "https://www.carlogos.org/car-logos/volvo-logo.png",
+  suzuki:      "https://www.carlogos.org/car-logos/suzuki-logo.png",
+  caoa:        "https://www.carlogos.org/car-logos/chery-logo.png",
+  chery:       "https://www.carlogos.org/car-logos/chery-logo.png",
+  byd:         "https://www.carlogos.org/car-logos/byd-logo.png",
+  ram:         "https://www.carlogos.org/car-logos/ram-trucks-logo.png",
+  dodge:       "https://www.carlogos.org/car-logos/dodge-logo.png",
+  jac:         "https://www.carlogos.org/car-logos/jac-motors-logo.png",
+  gwm:         "https://www.carlogos.org/car-logos/great-wall-logo.png",
+  "land rover":"https://www.carlogos.org/car-logos/land-rover-logo.png",
+  porsche:     "https://www.carlogos.org/car-logos/porsche-logo.png",
+  lexus:       "https://www.carlogos.org/car-logos/lexus-logo.png",
+  subaru:      "https://www.carlogos.org/car-logos/subaru-logo.png",
+};
+
+function brandLogoFor(name: string): string {
+  return BRAND_LOGOS[name.trim().toLowerCase()] || "";
+}
 
 const TIPO_ICONS: Record<string, JSX.Element> = {
   SUV: (
@@ -403,18 +437,20 @@ function MarcaFilter({
     return Object.entries(counts).sort((a, b) => b[1] - a[1]);
   }, [vehicles]);
 
-  // Brands NOT in the popular 6 grid
-  const popularNames = POPULAR_BRANDS.map((b) => b.name);
-  const otherBrands = allBrandCounts.filter(([m]) => !popularNames.includes(m));
+  // Top 6 marcas com maior volume no estoque atual
+  const topBrands = useMemo(() => allBrandCounts.slice(0, 6).map(([name]) => ({
+    name,
+    logo: brandLogoFor(name),
+  })), [allBrandCounts]);
 
   return (
     <div>
-      {/* Popular grid 2×3 */}
+      {/* Popular grid 2×3 — top 6 do estoque */}
       <p className="font-inter text-[11px] font-semibold uppercase tracking-wider text-atria-text-gray mb-2">
         Mais populares
       </p>
       <div className="grid grid-cols-2 gap-2 mb-4">
-        {POPULAR_BRANDS.map((b) => (
+        {topBrands.map((b) => (
           <BrandLogoCard
             key={b.name}
             name={b.name}
@@ -434,11 +470,6 @@ function MarcaFilter({
         selected={selected}
         onChange={onChange}
       />
-
-      {/* Show extra brands that appear in data but aren't in the list (safety net) */}
-      {otherBrands.length > 0 && (
-        <div className="mt-0" /> // already included in allBrandCounts
-      )}
     </div>
   );
 }
