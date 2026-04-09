@@ -10,6 +10,27 @@ import { saveLead } from "@/lib/firestore";
 const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
 
+// Round-robin entre os 2 consignadores. Alterna a cada clique pra balancear leads.
+const CONSIGNACAO_NUMBERS = ["5519953216269", "5519971456051"];
+const CONSIGNACAO_LS_KEY = "atria_consignacao_idx";
+
+function nextConsignacaoNumber(): string {
+  let idx = 0;
+  try {
+    const stored = Number(localStorage.getItem(CONSIGNACAO_LS_KEY));
+    idx = Number.isFinite(stored) ? (stored + 1) % CONSIGNACAO_NUMBERS.length : 0;
+    localStorage.setItem(CONSIGNACAO_LS_KEY, String(idx));
+  } catch {
+    idx = Math.floor(Math.random() * CONSIGNACAO_NUMBERS.length);
+  }
+  return CONSIGNACAO_NUMBERS[idx];
+}
+
+function openConsignacaoWa(msg: string) {
+  const num = nextConsignacaoNumber();
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+}
+
 // ---- SEO ----------------------------------------------------------------
 import { useSEO } from "@/hooks/useSEO";
 import { ROUTES } from "@/lib/constants";
@@ -272,15 +293,14 @@ function ConsignmentBlock() {
           viewport={{ once: true }}
           className="text-center mt-10"
         >
-          <a
-            href={waLink("Olá! Quero saber mais sobre consignação do meu carro.")}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
             className="inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors shadow-lg shadow-atria-navy/20"
           >
             <Handshake size={18} />
             Quero consignar meu carro
-          </a>
+          </button>
         </motion.div>
       </div>
     </section>
@@ -596,15 +616,14 @@ function BottomCTA() {
               <DollarSign size={18} />
               Proposta de compra
             </a>
-            <a
-              href={waLink("Olá! Quero saber mais sobre consignação do meu carro.")}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
               className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
             >
               <Handshake size={18} />
               Consignar meu carro
-            </a>
+            </button>
           </div>
         </motion.div>
       </div>
