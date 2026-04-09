@@ -1,0 +1,246 @@
+{
+  "total": 176,
+  "byMarca": {
+    "Ford": 14,
+    "Chevrolet": 18,
+    "Peugeot": 16,
+    "Fiat": 19,
+    "Jeep": 19,
+    "VolksWagen": 28,
+    "CHERY": 12,
+    "Citroën": 5,
+    "Hyundai": 9,
+    "Renault": 11,
+    "GWM": 6,
+    "Mitsubishi": 1,
+    "Nissan": 4,
+    "Toyota": 5,
+    "Honda": 8,
+    "Mercedes": 1
+  },
+  "faixas": {
+    "ate_40k": 1,
+    "40_80k": 98,
+    "80_150k": 71,
+    "150k_mais": 6
+  },
+  "topModelos": [
+    [
+      "Jeep Renegade",
+      10
+    ],
+    [
+      "Peugeot 208",
+      8
+    ],
+    [
+      "Jeep COMPASS",
+      8
+    ],
+    [
+      "VolksWagen T-Cross",
+      8
+    ],
+    [
+      "Chevrolet TRACKER",
+      8
+    ],
+    [
+      "CHERY Tiggo",
+      8
+    ],
+    [
+      "Ford EcoSport",
+      7
+    ],
+    [
+      "Peugeot 2008",
+      7
+    ],
+    [
+      "Fiat ARGO",
+      6
+    ],
+    [
+      "Chevrolet ONIX",
+      6
+    ],
+    [
+      "Renault CAPTUR",
+      5
+    ],
+    [
+      "Fiat CRONOS",
+      4
+    ],
+    [
+      "CHERY ARRIZO",
+      4
+    ],
+    [
+      "Citroën C4",
+      4
+    ],
+    [
+      "Ford KA",
+      4
+    ],
+    [
+      "Hyundai HB20S",
+      4
+    ],
+    [
+      "GWM Haval",
+      4
+    ],
+    [
+      "Honda HR-V",
+      4
+    ],
+    [
+      "VolksWagen Nivus",
+      3
+    ],
+    [
+      "VolksWagen Fox",
+      3
+    ],
+    [
+      "VolksWagen Polo",
+      3
+    ],
+    [
+      "Renault Kwid",
+      3
+    ],
+    [
+      "Fiat Toro",
+      3
+    ],
+    [
+      "Nissan KICKS",
+      3
+    ],
+    [
+      "Honda Civic",
+      3
+    ],
+    [
+      "Fiat PULSE",
+      3
+    ],
+    [
+      "Chevrolet CRUZE",
+      2
+    ],
+    [
+      "VolksWagen JETTA",
+      2
+    ],
+    [
+      "Ford Fiesta",
+      2
+    ],
+    [
+      "VolksWagen up!",
+      2
+    ],
+    [
+      "VolksWagen Saveiro",
+      2
+    ],
+    [
+      "VolksWagen VIRTUS",
+      2
+    ],
+    [
+      "Hyundai Creta",
+      2
+    ],
+    [
+      "Fiat Fiorino",
+      2
+    ],
+    [
+      "Hyundai Tucson",
+      2
+    ],
+    [
+      "Toyota YARIS",
+      2
+    ],
+    [
+      "GWM Ora",
+      2
+    ],
+    [
+      "Toyota Corolla",
+      2
+    ],
+    [
+      "Hyundai HB20",
+      1
+    ],
+    [
+      "Renault DUSTER",
+      1
+    ],
+    [
+      "VolksWagen Gol",
+      1
+    ],
+    [
+      "Peugeot 308",
+      1
+    ],
+    [
+      "Mitsubishi ASX",
+      1
+    ],
+    [
+      "Renault SANDERO",
+      1
+    ],
+    [
+      "Nissan VERSA",
+      1
+    ],
+    [
+      "Chevrolet PRISMA",
+      1
+    ],
+    [
+      "Ford Focus",
+      1
+    ],
+    [
+      "Toyota ETIOS",
+      1
+    ],
+    [
+      "VolksWagen TIGUAN",
+      1
+    ],
+    [
+      "Honda Fit",
+      1
+    ]
+  ],
+  "byAno": {
+    "2012": 1,
+    "2013": 3,
+    "2014": 2,
+    "2015": 2,
+    "2016": 4,
+    "2017": 11,
+    "2018": 22,
+    "2019": 37,
+    "2020": 15,
+    "2021": 21,
+    "2022": 29,
+    "2023": 18,
+    "2024": 7,
+    "2025": 4
+  },
+  "timestamp": "2026-04-09T18:48:44.648Z"
+}
