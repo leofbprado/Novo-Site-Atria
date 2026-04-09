@@ -25,11 +25,6 @@ function usePageSEO() {
 function Hero() {
   return (
     <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&h=600&fit=crop)" }}
-      />
-      <div className="absolute inset-0 bg-atria-navy/80" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Financiamento</p>
@@ -332,14 +327,6 @@ function ComoFunciona() {
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
             Como Funciona
           </h2>
-        </div>
-        <div className="mb-10">
-          <img
-            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop"
-            alt="Consultor atendendo cliente"
-            className="w-full max-w-3xl mx-auto h-48 md:h-64 object-cover rounded-2xl shadow-md"
-            loading="lazy"
-          />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {steps.map((s, i) => (

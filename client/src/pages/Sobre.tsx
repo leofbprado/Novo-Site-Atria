@@ -25,11 +25,6 @@ function usePageSEO() {
 function Hero() {
   return (
     <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(https://images.unsplash.com/photo-1562141961-b5d1980713c0?w=1200&h=600&fit=crop)" }}
-      />
-      <div className="absolute inset-0 bg-atria-navy/80" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Sobre Nós</p>
