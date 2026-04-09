@@ -144,15 +144,15 @@ async function fetchGoogleReviews(apiKey) {
   const results = await Promise.all(
     PLACES.map(async (place) => {
       try {
-        const r = await fetch(
-          `https://places.googleapis.com/v1/places/${place.id}`,
-          {
-            headers: {
-              "X-Goog-Api-Key": apiKey,
-              "X-Goog-FieldMask": "reviews,rating,userRatingCount",
-            },
-          }
-        );
+        // reviews_sort=NEWEST = pede reviews mais recentes em vez de "most relevant"
+        // (Places API API New, lançado 2024)
+        const url = `https://places.googleapis.com/v1/places/${place.id}?reviews_sort=NEWEST&languageCode=pt-BR&regionCode=BR`;
+        const r = await fetch(url, {
+          headers: {
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "reviews,rating,userRatingCount",
+          },
+        });
         if (!r.ok) return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
         const data = await r.json();
         const reviews = (data.reviews || []).map((rv) => ({
@@ -177,17 +177,19 @@ async function fetchGoogleReviews(apiKey) {
   );
 
   const allReviews = results.flatMap((r) => r.reviews);
-  // Filtra APENAS 5 estrelas
-  const fiveStars = allReviews.filter((r) => r.rating === 5);
 
+  // Filtra APENAS 5 estrelas com texto não vazio
+  const fiveStars = allReviews.filter((r) => r.rating === 5 && r.text && r.text.trim().length > 10);
+
+  // Ordena pelas MAIS RECENTES primeiro (publishTime desc)
   fiveStars.sort((a, b) => {
-    if (a.publishTime && b.publishTime) {
-      return new Date(b.publishTime).getTime() - new Date(a.publishTime).getTime();
-    }
-    return 0;
+    const ta = a.publishTime ? new Date(a.publishTime).getTime() : 0;
+    const tb = b.publishTime ? new Date(b.publishTime).getTime() : 0;
+    return tb - ta;
   });
 
-  // Distribui até 6 reviews, 2 por loja, completando com mais recentes
+  // Distribui até 9 reviews mesclando lojas: pega as 3 mais recentes de cada loja
+  // (3 lojas × 3 = 9 max). Garante variedade geográfica + frescor temporal.
   const selected = [];
   const byStore = new Map();
   for (const r of fiveStars) {
@@ -195,15 +197,25 @@ async function fetchGoogleReviews(apiKey) {
     byStore.get(r.loja).push(r);
   }
   for (const [, storeReviews] of byStore) {
-    selected.push(...storeReviews.slice(0, 2));
+    selected.push(...storeReviews.slice(0, 3));
   }
-  if (selected.length < 6) {
+
+  // Se ainda sobrar espaço, completa com as mais recentes restantes
+  if (selected.length < 9) {
     for (const r of fiveStars) {
-      if (selected.length >= 6) break;
+      if (selected.length >= 9) break;
       if (!selected.includes(r)) selected.push(r);
     }
   }
-  const finalReviews = selected.slice(0, 6);
+
+  // Re-ordena o resultado final por data (mais recente primeiro) pra exibição
+  selected.sort((a, b) => {
+    const ta = a.publishTime ? new Date(a.publishTime).getTime() : 0;
+    const tb = b.publishTime ? new Date(b.publishTime).getTime() : 0;
+    return tb - ta;
+  });
+
+  const finalReviews = selected.slice(0, 9);
 
   const validStores = results.filter((r) => r.rating > 0);
   const avgRating =
