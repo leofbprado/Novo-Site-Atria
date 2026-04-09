@@ -6,7 +6,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { SITE_URL, ROUTES } from "@/lib/constants";
 
 const WA_NUMBER = "5519996525211";
-const WA_MSG = "Ola! Vim pelo blog da Atria e gostaria de saber mais sobre os veiculos.";
+const WA_MSG = "Olá! Vim pelo blog da Átria e gostaria de saber mais sobre os veículos.";
 
 function fmtDate(ts: { toDate?: () => Date } | null) {
   if (!ts || !ts.toDate) return "";
@@ -36,7 +36,7 @@ export default function BlogPostPage() {
   const [notFound, setNotFound] = useState(false);
 
   useSEO({
-    title: post?.meta_title || "Blog | Atria Veiculos",
+    title: post?.meta_title || "Blog | Átria Veículos",
     description: post?.meta_description || "Artigo sobre carros usados e seminovos em Campinas SP.",
     path: post ? `/blog/${post.slug}` : "/blog",
     ogType: "article",
@@ -63,10 +63,10 @@ export default function BlogPostPage() {
       "url": `${SITE_URL}/blog/${post.slug}`,
       "datePublished": post.data_publicacao?.toDate?.()?.toISOString() || "",
       "dateCreated": post.data_criacao?.toDate?.()?.toISOString() || "",
-      "author": { "@type": "Organization", "name": "Atria Veiculos" },
+      "author": { "@type": "Organization", "name": "Átria Veículos" },
       "publisher": {
         "@type": "Organization",
-        "name": "Atria Veiculos",
+        "name": "Átria Veículos",
         "url": SITE_URL,
       },
       "keywords": post.keywords.join(", "),

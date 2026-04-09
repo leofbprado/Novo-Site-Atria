@@ -27,8 +27,8 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title: "Blog | Atria Veiculos — Dicas de Carros Usados e Seminovos em Campinas SP",
-    description: "Dicas, comparativos e guias para comprar carros usados e seminovos em Campinas SP. Atria Veiculos, ha mais de 12 anos no mercado e +10.000 carros vendidos.",
+    title: "Blog | Átria Veículos — Dicas de Carros Usados e Seminovos em Campinas SP",
+    description: "Dicas, comparativos e guias para comprar carros usados e seminovos em Campinas SP. Átria Veículos, há mais de 12 anos no mercado e +10.000 carros vendidos.",
     path: ROUTES.blog,
   });
 
@@ -44,7 +44,7 @@ export default function Blog() {
     const schema = {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      "name": "Blog Atria Veiculos",
+      "name": "Blog Átria Veículos",
       "itemListElement": posts.map((p, i) => ({
         "@type": "ListItem",
         "position": i + 1,

@@ -1251,7 +1251,7 @@ function Depoimentos() {
         {/* CTA: Ver todas no Google */}
         <div className="text-center mt-8">
           <a
-            href="https://www.google.com/maps/search/Atria+Veiculos+Campinas"
+            href="https://www.google.com/maps/search/%C3%81tria+Ve%C3%ADculos+Campinas"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 font-inter text-sm font-semibold text-atria-navy hover:underline"
@@ -1297,7 +1297,7 @@ function BlogSection() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
             <p className="section-label mb-2">Dicas & Conteudo</p>
-            <h2 className="section-title">Blog Atria</h2>
+            <h2 className="section-title">Blog Átria</h2>
           </div>
           <a href={ROUTES.blog} className="btn-outline-navy rounded text-sm whitespace-nowrap self-start">Ver todos →</a>
         </div>

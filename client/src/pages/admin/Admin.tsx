@@ -125,7 +125,7 @@ function LoginScreen() {
         className="bg-white/[0.03] backdrop-blur-2xl rounded-2xl p-8 w-full max-w-sm shadow-2xl border border-white/10"
       >
         <div className="flex justify-center mb-5">
-          <img src={LOGO_BRANCO} alt="Atria Veiculos" className="h-12 object-contain" />
+          <img src={LOGO_BRANCO} alt="Átria Veículos" className="h-12 object-contain" />
         </div>
         <h1 className="text-lg font-semibold text-white mb-0.5 text-center">Painel Administrativo</h1>
         <p className="text-slate-500 text-sm text-center mb-8">Acesso restrito</p>
@@ -617,7 +617,7 @@ function Sidebar({ page, setPage, onLogout, collapsed, setCollapsed }: {
     <aside className={`fixed top-0 left-0 h-full bg-slate-900 border-r border-slate-800 z-30 flex flex-col transition-all duration-200 ${collapsed ? "w-16" : "w-56"}`}>
       {/* Logo */}
       <div className="flex items-center justify-between px-4 h-16 border-b border-slate-800">
-        {!collapsed && <img src={LOGO_BRANCO} alt="Atria" className="h-7 object-contain" />}
+        {!collapsed && <img src={LOGO_BRANCO} alt="Átria" className="h-7 object-contain" />}
         <button onClick={() => setCollapsed(!collapsed)} className="text-slate-400 hover:text-white p-1 rounded transition">
           <Menu size={18} />
         </button>
@@ -1052,7 +1052,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Veiculo</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Veículo</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Ano</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">KM</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Preco</th>
@@ -1336,7 +1336,7 @@ function WhatsAppPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Veiculo</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Veículo</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Pagina</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Data/Hora</th>
                 </tr>
@@ -1596,7 +1596,7 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Veiculos relacionados (slugs, separados por virgula)</label>
+            <label className="block text-xs font-medium text-slate-500 uppercase mb-1">Veículos relacionados (slugs, separados por vírgula)</label>
             <input value={formVeiculos} onChange={(e) => setFormVeiculos(e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="comprar-honda-civic-..., comprar-toyota-corolla-..." />
           </div>
@@ -1850,7 +1850,7 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
           <div className="bg-slate-50 rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">Empresa</span>
-              <span className="text-slate-700 font-medium">Atria Veiculos</span>
+              <span className="text-slate-700 font-medium">Átria Veículos</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">Cidade</span>

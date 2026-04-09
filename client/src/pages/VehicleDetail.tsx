@@ -810,7 +810,7 @@ export default function VehicleDetail() {
             {/* Description */}
             <section>
               <h2 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-3 uppercase tracking-wide">
-                Sobre o veiculo
+                Sobre o veículo
               </h2>
               <p className="font-inter text-base text-atria-text-dark leading-relaxed">{vehicle.descricao}</p>
             </section>

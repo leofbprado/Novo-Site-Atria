@@ -236,7 +236,7 @@ function ConsignmentBlock() {
             Recomendado
           </span>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Consignação: venda pelo melhor valor com apoio da Atria
+            Consignação: venda pelo melhor valor com apoio da Átria
           </h2>
         </motion.div>
 

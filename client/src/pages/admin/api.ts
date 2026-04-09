@@ -524,7 +524,7 @@ export async function generateBlogPost(
   // Step 2: Write article with Opus (no web_search)
   console.log("[BLOG] Step 2: Writing article with Opus...");
 
-  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Atria Veiculos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
+  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Átria Veículos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
 
 ${params.tema ? `TEMA: ${params.tema}` : "TEMA: Escolha voce o melhor tema baseado nos modelos do estoque e no que as pessoas pesquisam sobre carros usados em Campinas. Pense em duvidas reais de quem esta comprando. VARIE entre sedans, hatches, SUVs, picapes, financiamento, manutencao, etc."}
 CATEGORIA: Escolha a mais adequada entre: comparativo, guia-preco, review, financiamento, guia-perfil. ALTERNE entre elas — nao repita a mesma categoria dos artigos anteriores.
@@ -539,7 +539,7 @@ REGRAS ABSOLUTAS:
 3. NUNCA liste veiculos com preco, km ou ficha tecnica — isso e trabalho da pagina de estoque
 4. NUNCA insira fotos de veiculos do estoque no corpo do artigo
 5. No MAXIMO, no final do artigo, uma unica frase: "Confira nosso estoque se quiser ver algum desses modelos de perto."
-6. O nome da loja e "Atria Veiculos" (com acento: Átria)
+6. O nome da loja e SEMPRE "Átria Veículos" — com acento agudo no Á e í. Nunca escreva sem acento.
 7. NUNCA fale mal de nenhum veiculo, marca ou modelo
 8. PROIBIDO frases genericas: "excelente opcao", "nao pode ser ignorado", "ideal para quem busca", "merece destaque"
 9. Use os DADOS TECNICOS PESQUISADOS fornecidos acima. Eles ja foram verificados em fontes confiaveis
