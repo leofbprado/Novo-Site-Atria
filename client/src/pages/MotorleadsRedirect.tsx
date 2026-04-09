@@ -121,8 +121,9 @@ export default function MotorleadsRedirect() {
           return;
         }
 
-        // 3. Fallback final: estoque com filtro de marca (preserva intenção)
-        if (marca) {
+        // 3. Fallback final: só aplica filtro de marca SE houver carros dessa marca.
+        // Senão joga pro estoque geral (evita tela "Nenhum veículo encontrado").
+        if (marca && vehicles.length > 0) {
           window.location.replace(`${ROUTES.estoque}?marca=${encodeURIComponent(marca)}`);
         } else {
           window.location.replace(ROUTES.estoque);
