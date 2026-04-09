@@ -13,6 +13,6 @@ vite.config.ts.*
 
 # Local data outputs (scripts/)
 scripts/refetch-run.log
-scripts/specs-audit-report.json
-scripts/specs-audit-report.csv
+scripts/specs-audit-report*.json
+scripts/specs-audit-report*.csv
 scripts/*.log
