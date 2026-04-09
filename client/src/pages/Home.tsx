@@ -762,6 +762,7 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
 
 // ─── Venda seu Carro ─────────────────────────────────────────────────────────
 function VendaSeuCarro() {
+  const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState({ placa: "", nome: "", telefone: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -780,8 +781,12 @@ function VendaSeuCarro() {
     return `${h}:${m}:${sec}`;
   };
 
+  const canAdvance1 = form.placa.trim().length >= 6;
+  const canSubmit = form.nome.trim().length > 1 && form.telefone.trim().length >= 8;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) return;
     setSending(true);
     await saveLead({ nome: form.nome, whatsapp: form.telefone, source: "venda-carro", dados: { placa: form.placa } });
     setSending(false);
@@ -841,34 +846,121 @@ function VendaSeuCarro() {
               </div>
             ) : (
               <>
-                <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark mb-6">
+                <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark mb-2">
                   Avalie Seu Veículo
                 </h3>
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                  <div>
-                    <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Placa do veículo</label>
-                    <input type="text" placeholder="ABC-1234" value={form.placa}
-                      onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })}
-                      required className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors" />
+                <p className="font-inter text-sm text-atria-text-gray mb-5">
+                  Em 30 segundos. Sem compromisso.
+                </p>
+
+                {/* Barra de progresso */}
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-inter text-[11px] font-semibold text-atria-text-gray uppercase tracking-wider">
+                      Passo {step} de 2
+                    </span>
+                    <span className="font-inter text-[11px] text-atria-text-gray">
+                      {step === 1 ? "O carro" : "Seu contato"}
+                    </span>
                   </div>
-                  <div>
-                    <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Seu nome</label>
-                    <input type="text" placeholder="João Silva" value={form.nome}
-                      onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                      required className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors" />
+                  <div className="h-1 bg-atria-gray-medium rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-atria-navy rounded-full transition-all duration-300"
+                      style={{ width: `${(step / 2) * 100}%` }}
+                    />
                   </div>
-                  <div>
-                    <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Telefone / WhatsApp</label>
-                    <input type="tel" placeholder="(19) 99652-5211" value={form.telefone}
-                      onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-                      required className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors" />
-                  </div>
-                  <button type="submit" disabled={sending} className="btn-yellow w-full rounded mt-2 disabled:opacity-60">
-                    {sending ? "Enviando..." : "QUERO VENDER MEU CARRO"}
-                  </button>
-                  <p className="text-xs text-atria-text-gray text-center">
-                    Seus dados são usados apenas para a avaliação do veículo.
-                  </p>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  {step === 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">
+                          Qual a placa do seu carro?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ABC-1234"
+                          value={form.placa}
+                          autoFocus
+                          onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })}
+                          required
+                          className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors uppercase tracking-wider"
+                        />
+                        <p className="font-inter text-xs text-atria-text-gray mt-2">
+                          Usamos a placa pra identificar o modelo automaticamente.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setStep(2)}
+                        disabled={!canAdvance1}
+                        className="btn-yellow w-full rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Continuar →
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {step === 2 && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="space-y-4"
+                    >
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="font-inter text-xs text-atria-navy">
+                          <strong>Falta só seu contato</strong> pra enviar a avaliação.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Seu nome</label>
+                        <input
+                          type="text"
+                          placeholder="João Silva"
+                          value={form.nome}
+                          autoFocus
+                          onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                          required
+                          className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">WhatsApp</label>
+                        <input
+                          type="tel"
+                          placeholder="(19) 99652-5211"
+                          value={form.telefone}
+                          onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+                          required
+                          className="w-full border border-atria-gray-medium rounded px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setStep(1)}
+                          className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-3 rounded transition-all"
+                        >
+                          ← Voltar
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={!canSubmit || sending}
+                          className="flex-[2] btn-yellow rounded disabled:opacity-50"
+                        >
+                          {sending ? "Enviando..." : "QUERO VENDER MEU CARRO"}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-atria-text-gray text-center">
+                        Seus dados são usados apenas para a avaliação do veículo.
+                      </p>
+                    </motion.div>
+                  )}
                 </form>
               </>
             )}

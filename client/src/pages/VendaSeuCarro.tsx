@@ -287,14 +287,20 @@ function ConsignmentBlock() {
   );
 }
 
-// ---- Purchase Form Block ------------------------------------------------
+// ---- Purchase Form Block (Multi-step) -----------------------------------
+type PurchaseStep = 1 | 2 | 3;
+
 function PurchaseForm() {
+  const [step, setStep] = useState<PurchaseStep>(1);
   const [form, setForm] = useState({ nome: "", whatsapp: "", marcaModelo: "", ano: "", km: "" });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const goNext = () => setStep((s) => (s < 3 ? ((s + 1) as PurchaseStep) : s));
+  const goBack = () => setStep((s) => (s > 1 ? ((s - 1) as PurchaseStep) : s));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -308,7 +314,6 @@ function PurchaseForm() {
         dados: { nome: form.nome, marcaModelo: form.marcaModelo, ano: form.ano, km: form.km },
       });
       setSent(true);
-      // Also open WhatsApp as backup
       setTimeout(() => {
         window.open(
           waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`),
@@ -316,7 +321,6 @@ function PurchaseForm() {
         );
       }, 500);
     } catch {
-      // Fallback: open WhatsApp directly
       window.open(
         waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`),
         "_blank"
@@ -326,6 +330,14 @@ function PurchaseForm() {
       setSending(false);
     }
   };
+
+  // Validações por etapa
+  const canAdvance1 = form.marcaModelo.trim().length > 1;
+  const canAdvance2 = true; // ano e km são opcionais
+  const canSubmit = form.nome.trim().length > 1 && form.whatsapp.trim().length >= 8;
+
+  const inputClass = "w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors";
+  const labelClass = "font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider block mb-1.5";
 
   return (
     <section id="formulario-compra" className="py-16 bg-atria-gray-light scroll-mt-20">
@@ -341,7 +353,7 @@ function PurchaseForm() {
               Quer vender rápido?
             </h2>
             <p className="font-inter text-atria-text-gray mt-2">
-              A Átria faz uma proposta de compra. Preencha os dados abaixo — nosso time entra em contato em até 24h.
+              A Átria faz uma proposta de compra em até 24h. Leva 30 segundos.
             </p>
           </div>
 
@@ -358,82 +370,165 @@ function PurchaseForm() {
               </p>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-white border border-atria-gray-medium rounded-xl p-6 md:p-8 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider block mb-1.5">
-                    Nome *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={form.nome}
-                    onChange={handleChange("nome")}
-                    placeholder="Seu nome"
-                    className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
-                  />
+            <form onSubmit={handleSubmit} className="bg-white border border-atria-gray-medium rounded-xl p-6 md:p-8">
+              {/* Barra de progresso */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider">
+                    Passo {step} de 3
+                  </span>
+                  <span className="font-inter text-xs text-atria-text-gray">
+                    {step === 1 ? "Sobre o carro" : step === 2 ? "Detalhes" : "Seu contato"}
+                  </span>
                 </div>
-                <div>
-                  <label className="font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider block mb-1.5">
-                    WhatsApp *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={form.whatsapp}
-                    onChange={handleChange("whatsapp")}
-                    placeholder="(19) 99652-5211"
-                    className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
+                <div className="h-1.5 bg-atria-gray-medium rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-atria-navy rounded-full transition-all duration-300"
+                    style={{ width: `${(step / 3) * 100}%` }}
                   />
                 </div>
               </div>
-              <div>
-                <label className="font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider block mb-1.5">
-                  Marca / Modelo *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.marcaModelo}
-                  onChange={handleChange("marcaModelo")}
-                  placeholder="Ex: Honda Civic EXL"
-                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider block mb-1.5">
-                    Ano
-                  </label>
-                  <input
-                    type="text"
-                    value={form.ano}
-                    onChange={handleChange("ano")}
-                    placeholder="Ex: 2021"
-                    className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="font-inter text-xs font-semibold text-atria-text-gray uppercase tracking-wider block mb-1.5">
-                    Quilometragem
-                  </label>
-                  <input
-                    type="text"
-                    value={form.km}
-                    onChange={handleChange("km")}
-                    placeholder="Ex: 45.000"
-                    className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={sending}
-                className="w-full bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                <Send size={16} />
-                {sending ? "Enviando..." : "Quero receber uma proposta"}
-              </button>
+
+              {/* Etapa 1: marca/modelo */}
+              {step === 1 && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className={labelClass}>Qual carro você quer vender?</label>
+                    <input
+                      type="text"
+                      required
+                      autoFocus
+                      value={form.marcaModelo}
+                      onChange={handleChange("marcaModelo")}
+                      placeholder="Ex: Honda Civic EXL"
+                      className={inputClass}
+                    />
+                    <p className="font-inter text-xs text-atria-text-gray mt-2">
+                      Marca, modelo e versão se souber. Ex: Honda Civic EXL ou Toyota Corolla XEi.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    disabled={!canAdvance1}
+                    className="w-full bg-atria-yellow hover:bg-atria-yellow-dark disabled:opacity-50 disabled:cursor-not-allowed text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                  >
+                    Continuar →
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Etapa 2: ano + km */}
+              {step === 2 && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Ano</label>
+                      <input
+                        type="text"
+                        autoFocus
+                        value={form.ano}
+                        onChange={handleChange("ano")}
+                        placeholder="2021"
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Quilometragem aproximada</label>
+                      <input
+                        type="text"
+                        value={form.km}
+                        onChange={handleChange("km")}
+                        placeholder="45.000"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                  <p className="font-inter text-xs text-atria-text-gray">
+                    Se não souber exato, sem problema — pode aproximar.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                    >
+                      ← Voltar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goNext}
+                      disabled={!canAdvance2}
+                      className="flex-[2] bg-atria-yellow hover:bg-atria-yellow-dark disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                    >
+                      Continuar →
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Etapa 3: nome + whatsapp */}
+              {step === 3 && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <p className="font-inter text-xs text-atria-navy">
+                      <strong>Falta só seu contato</strong> pra enviar a proposta. Não enviamos spam.
+                    </p>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Seu nome *</label>
+                    <input
+                      type="text"
+                      required
+                      autoFocus
+                      value={form.nome}
+                      onChange={handleChange("nome")}
+                      placeholder="João Silva"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>WhatsApp *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={form.whatsapp}
+                      onChange={handleChange("whatsapp")}
+                      placeholder="(19) 99652-5211"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                    >
+                      ← Voltar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!canSubmit || sending}
+                      className="flex-[2] bg-atria-yellow hover:bg-atria-yellow-dark disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                    >
+                      <Send size={16} />
+                      {sending ? "Enviando..." : "Receber proposta"}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </form>
           )}
         </motion.div>
