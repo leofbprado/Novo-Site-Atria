@@ -181,7 +181,7 @@ function usePageSEO(vehicles: Vehicle[]) {
           "model": v.modelo, "vehicleModelDate": String(v.ano),
           "mileageFromOdometer": { "@type": "QuantitativeValue", "value": v.km, "unitCode": "KMT" },
           "offers": { "@type": "Offer", "price": v.preco, "priceCurrency": "BRL", "availability": "https://schema.org/InStock" },
-          "url": `https://www.atriaveiculos.com/veiculo/${v.slug}`,
+          "url": `${SITE_URL}/campinas-sp/${v.slug}`,
         },
       })),
     };
