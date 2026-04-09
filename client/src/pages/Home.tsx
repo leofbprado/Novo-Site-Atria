@@ -1185,7 +1185,7 @@ function ReviewCard({ r }: { r: import("@/hooks/useGoogleReviews").GoogleReview 
 }
 
 function Depoimentos() {
-  const { reviews, averageRating, totalReviews, loading, isReal } = useGoogleReviews();
+  const { reviews, loading } = useGoogleReviews();
 
   return (
     <section className="py-20 bg-atria-gray-light">
@@ -1194,25 +1194,6 @@ function Depoimentos() {
         <div className="text-center mb-10">
           <p className="section-label mb-2">Depoimentos</p>
           <h2 className="section-title">O que Nossos Clientes Dizem</h2>
-          {/* Rating summary */}
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={18} className={i < Math.round(averageRating) ? "text-[#FBBC05] fill-[#FBBC05]" : "text-gray-200 fill-gray-200"} />
-              ))}
-            </div>
-            <span className="font-inter font-bold text-lg text-atria-text-dark">{averageRating}</span>
-            {isReal && totalReviews > 0 && (
-              <span className="font-inter text-sm text-atria-text-gray">
-                ({totalReviews} avaliações no Google)
-              </span>
-            )}
-            {!isReal && (
-              <span className="font-inter text-sm text-atria-text-gray">
-                estrelas no Google
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Reviews */}

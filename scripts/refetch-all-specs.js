@@ -83,11 +83,11 @@ const db = getFirestore();
 async function loadClaudeKey() {
   // 1. .env
   if (process.env.CLAUDE_API_KEY) return process.env.CLAUDE_API_KEY;
-  // 2. Firestore admin_config
-  const snap = await db.collection("admin_config").doc("admin").get();
+  // 2. Firestore config/admin
+  const snap = await db.collection("config").doc("admin").get();
   const data = snap.data();
   if (data?.claude_key) return data.claude_key;
-  throw new Error("Sem chave Claude. Defina CLAUDE_API_KEY no env ou em admin_config/admin.claude_key");
+  throw new Error("Sem chave Claude. Defina CLAUDE_API_KEY no env ou em config/admin.claude_key");
 }
 
 // ─── Sonnet + web_search ─────────────────────────────────────────────────────
