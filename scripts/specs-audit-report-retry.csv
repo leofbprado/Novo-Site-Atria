@@ -1,0 +1,84 @@
+marca,modelo,ano,id,status,campo,antes_gpt,depois_sonnet,tipo_mudanca
+Jeep,COMPASS,2018,497519,OK,Potência (cv),,"<cite index=""1-2"">166</cite>",added
+Jeep,COMPASS,2018,497519,OK,Torque (kgf·m),,"<cite index=""1-2"">20,5</cite>",added
+Jeep,COMPASS,2018,497519,OK,Comprimento (mm),,"<cite index=""15-1,15-16"">4.416</cite>",added
+Jeep,COMPASS,2018,497519,OK,Largura (mm),,"<cite index=""15-1,15-16"">1.819</cite>",added
+Jeep,COMPASS,2018,497519,OK,Altura (mm),,"<cite index=""15-1,15-16"">1.630</cite>",added
+Jeep,COMPASS,2018,497519,OK,Entre-eixos (mm),,"<cite index=""15-1,15-16"">2.636</cite>",added
+Jeep,COMPASS,2018,497519,OK,Peso (kg),,"<cite index=""33-1"">1.541</cite>",added
+Jeep,COMPASS,2018,497519,OK,Porta-malas (L),,"<cite index=""15-2,15-17"">410</cite>",added
+Jeep,COMPASS,2018,497519,OK,Tanque (L),,"<cite index=""25-1,30-1"">60</cite>",added
+Jeep,COMPASS,2018,497519,OK,Consumo urbano (km/l),,"<cite index=""1-2,15-35"">8,1</cite>",added
+Jeep,COMPASS,2018,497519,OK,Consumo rodov. (km/l),,"<cite index=""1-1,1-5,15-36"">10,5</cite>",added
+VolksWagen,T-Cross,2021,739262,OK,Potência (cv),128,116,changed
+VolksWagen,T-Cross,2021,739262,OK,Torque (kgf·m),20.4,"20,4",changed
+VolksWagen,T-Cross,2021,739262,OK,Tanque (L),41,52,changed
+VolksWagen,T-Cross,2021,739262,OK,Consumo urbano (km/l),12,"11,2",changed
+VolksWagen,T-Cross,2021,739262,OK,Consumo rodov. (km/l),14,"13,5",changed
+VolksWagen,T-Cross,2021,739262,OK,Entre-eixos (mm),2651,2.651,changed
+VolksWagen,T-Cross,2021,739262,OK,Comprimento (mm),4118,4.199,changed
+VolksWagen,T-Cross,2021,739262,OK,Largura (mm),1760,1.760,changed
+VolksWagen,T-Cross,2021,739262,OK,Altura (mm),1584,1.570,changed
+VolksWagen,T-Cross,2021,739262,OK,Peso (kg),1260,1.292,changed
+Chevrolet,TRACKER,2014,825683,OK,Torque (kgf·m),18.9,"17,8",changed
+Chevrolet,TRACKER,2014,825683,OK,Tanque (L),44,53,changed
+Chevrolet,TRACKER,2014,825683,OK,Consumo urbano (km/l),8.5,"8,3",changed
+Chevrolet,TRACKER,2014,825683,OK,Consumo rodov. (km/l),10.5,"11,9",changed
+Chevrolet,TRACKER,2014,825683,OK,Entre-eixos (mm),2570,2.555,changed
+Chevrolet,TRACKER,2014,825683,OK,Comprimento (mm),4270,4.248,changed
+Chevrolet,TRACKER,2014,825683,OK,Largura (mm),1791,1.776,changed
+Chevrolet,TRACKER,2014,825683,OK,Altura (mm),1620,1.647,changed
+Chevrolet,TRACKER,2014,825683,OK,Peso (kg),1300,1.355,changed
+Chevrolet,TRACKER,2014,825683,OK,Porta-malas (L),393,306,changed
+VolksWagen,VIRTUS,2020,836694,OK,Torque (kgf·m),20.4,"20,4",changed
+VolksWagen,VIRTUS,2020,836694,OK,Consumo urbano (km/l),10.8,"7,8",changed
+VolksWagen,VIRTUS,2020,836694,OK,Consumo rodov. (km/l),13.6,"10,2",changed
+VolksWagen,VIRTUS,2020,836694,OK,Entre-eixos (mm),2650,2.651,changed
+VolksWagen,VIRTUS,2020,836694,OK,Comprimento (mm),4482,4.482,changed
+VolksWagen,VIRTUS,2020,836694,OK,Largura (mm),1757,1.751,changed
+VolksWagen,VIRTUS,2020,836694,OK,Altura (mm),1472,1.472,changed
+VolksWagen,VIRTUS,2020,836694,OK,Peso (kg),1230,1.192,changed
+Citroën,C4,2022,848578,OK,Potência (cv),173,113/120,changed
+Citroën,C4,2022,848578,OK,Torque (kgf·m),24.5,"15,4/15,6",changed
+Citroën,C4,2022,848578,OK,Tanque (L),50,55,changed
+Citroën,C4,2022,848578,OK,Consumo urbano (km/l),8.5,"11,2",changed
+Citroën,C4,2022,848578,OK,Consumo rodov. (km/l),10.5,"12,7",changed
+Citroën,C4,2022,848578,OK,Entre-eixos (mm),2600,2.600,changed
+Citroën,C4,2022,848578,OK,Comprimento (mm),4157,4.170,changed
+Citroën,C4,2022,848578,OK,Largura (mm),1729,1.714,changed
+Citroën,C4,2022,848578,OK,Altura (mm),1480,1.534,changed
+Citroën,C4,2022,848578,OK,Peso (kg),1200,1.204,changed
+Citroën,C4,2022,848578,OK,Porta-malas (L),358,320,changed
+Peugeot,208,2022,926634,OK,Potência (cv),118,"<cite index=""1-1,24-2,28-2"">118 (etanol) / 115 (gasolina)</cite>",changed
+Peugeot,208,2022,926634,OK,Torque (kgf·m),16.4,"<cite index=""1-1,24-2,28-2"">15,5 (etanol) / 15,4 (gasolina)</cite>",changed
+Peugeot,208,2022,926634,OK,Tanque (L),50,"<cite index=""15-6"">55</cite>",changed
+Peugeot,208,2022,926634,OK,Consumo urbano (km/l),10.5,"<cite index=""13-1,13-5"">7,5 (etanol) / 10,9 (gasolina)</cite>",changed
+Peugeot,208,2022,926634,OK,Consumo rodov. (km/l),12.5,"<cite index=""13-1,13-5"">9,0 (etanol) / 13,1 (gasolina)</cite>",changed
+Peugeot,208,2022,926634,OK,Entre-eixos (mm),2540,"<cite index=""1-4,30-3"">2.538</cite>",changed
+Peugeot,208,2022,926634,OK,Comprimento (mm),3960,"<cite index=""1-4,30-3"">4.055</cite>",changed
+Peugeot,208,2022,926634,OK,Largura (mm),1740,"<cite index=""1-4,30-3"">1.738</cite>",changed
+Peugeot,208,2022,926634,OK,Altura (mm),1460,"<cite index=""1-4,24-3,28-3,30-3"">1.453</cite>",changed
+Peugeot,208,2022,926634,OK,Peso (kg),1100,"<cite index=""2-5"">1.227</cite>",changed
+Peugeot,208,2022,926634,OK,Porta-malas (L),300,"<cite index=""1-4"">265</cite>",changed
+Jeep,Renegade,2019,926643,OK,Potência (cv),139,"<cite index=""7-1,11-2,15-2"">135/139</cite>",changed
+Jeep,Renegade,2019,926643,OK,Torque (kgf·m),19.2,"<cite index=""7-1,11-3,15-2"">18,8/19,3</cite>",changed
+Jeep,Renegade,2019,926643,OK,Tanque (L),50,"<cite index=""7-11,11-14,13-2,14-2,15-2"">60</cite>",changed
+Jeep,Renegade,2019,926643,OK,Consumo urbano (km/l),8.5,"<cite index=""27-2"">9,5</cite>",changed
+Jeep,Renegade,2019,926643,OK,Consumo rodov. (km/l),10.5,"<cite index=""27-2"">10,7</cite>",changed
+Jeep,Renegade,2019,926643,OK,Entre-eixos (mm),2570,"<cite index=""7-10,11-13,13-2,14-2,15-2"">2.570</cite>",changed
+Jeep,Renegade,2019,926643,OK,Comprimento (mm),4236,"<cite index=""7-10,11-13,13-2,14-2,15-2"">4.232</cite>",changed
+Jeep,Renegade,2019,926643,OK,Largura (mm),1804,"<cite index=""7-10,11-13,13-2,14-2,15-2"">1.805</cite>",changed
+Jeep,Renegade,2019,926643,OK,Altura (mm),1660,"<cite index=""7-10,11-13,14-2,15-2"">1.658</cite>",changed
+Jeep,Renegade,2019,926643,OK,Peso (kg),1340,"<cite index=""11-3,14-2,15-2"">1.448</cite>",changed
+Jeep,Renegade,2019,926643,OK,Porta-malas (L),320,"<cite index=""7-11,11-14,13-2,14-2,15-2"">320</cite>",changed
+Jeep,COMPASS,2020,965393,OK,Potência (cv),,166,added
+Jeep,COMPASS,2020,965393,OK,Torque (kgf·m),,"20,5",added
+Jeep,COMPASS,2020,965393,OK,Comprimento (mm),,4.416,added
+Jeep,COMPASS,2020,965393,OK,Largura (mm),,1.819,added
+Jeep,COMPASS,2020,965393,OK,Altura (mm),,1.654,added
+Jeep,COMPASS,2020,965393,OK,Entre-eixos (mm),,2.636,added
+Jeep,COMPASS,2020,965393,OK,Peso (kg),,1.541,added
+Jeep,COMPASS,2020,965393,OK,Porta-malas (L),,388,added
+Jeep,COMPASS,2020,965393,OK,Tanque (L),,60,added
+Jeep,COMPASS,2020,965393,OK,Consumo urbano (km/l),,"6,1",added
+Jeep,COMPASS,2020,965393,OK,Consumo rodov. (km/l),,"7,5",added

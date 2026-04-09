@@ -37,11 +37,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const COLLECTION = "veiculos_admin";
 const REPORT_JSON = path.join(__dirname, "specs-audit-report.json");
 const REPORT_CSV = path.join(__dirname, "specs-audit-report.csv");
+const REPORT_JSON_RETRY = path.join(__dirname, "specs-audit-report-retry.json");
+const REPORT_CSV_RETRY = path.join(__dirname, "specs-audit-report-retry.csv");
 
 // ─── Args ────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run");
 const FORCE = args.includes("--force");
+const RETRY_FAILED = args.includes("--retry-failed");
 const LIMIT = parseInt(args.find((a) => a.startsWith("--limit="))?.split("=")[1] || "0", 10);
 const FROM = parseInt(args.find((a) => a.startsWith("--from="))?.split("=")[1] || "0", 10);
 
@@ -197,13 +200,34 @@ async function main() {
   const claudeKey = await loadClaudeKey();
   console.log(`✓ Chave Claude carregada (${claudeKey.slice(0, 12)}...)`);
 
-  const snap = await db
-    .collection(COLLECTION)
-    .where("status", "==", "publicado")
-    .get();
-
-  let vehicles = snap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
-  console.log(`✓ ${vehicles.length} veículos publicados encontrados`);
+  let vehicles;
+  if (RETRY_FAILED) {
+    // Lê IDs das falhas do relatório anterior e re-busca só esses no Firestore
+    if (!fs.existsSync(REPORT_JSON)) {
+      throw new Error("--retry-failed exige relatório anterior em " + REPORT_JSON);
+    }
+    const prev = JSON.parse(fs.readFileSync(REPORT_JSON, "utf8"));
+    const failedIds = prev.vehicles.filter((v) => v.status === "error").map((v) => v.id);
+    console.log(`✓ ${failedIds.length} IDs com falha no relatório anterior`);
+    if (failedIds.length === 0) {
+      console.log("Nada pra re-rodar. Tudo já passou.");
+      return;
+    }
+    const docs = await Promise.all(
+      failedIds.map((id) => db.collection(COLLECTION).doc(id).get())
+    );
+    vehicles = docs
+      .filter((d) => d.exists)
+      .map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
+    console.log(`✓ ${vehicles.length} ainda existem no Firestore`);
+  } else {
+    const snap = await db
+      .collection(COLLECTION)
+      .where("status", "==", "publicado")
+      .get();
+    vehicles = snap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
+    console.log(`✓ ${vehicles.length} veículos publicados encontrados`);
+  }
 
   // Aplica from + limit
   if (FROM > 0) vehicles = vehicles.slice(FROM);
@@ -292,7 +316,7 @@ async function main() {
 
     // Salva o relatório a cada 5 veículos (resilência)
     if ((i + 1) % 5 === 0) {
-      fs.writeFileSync(REPORT_JSON, JSON.stringify(report, null, 2));
+      fs.writeFileSync(RETRY_FAILED ? REPORT_JSON_RETRY : REPORT_JSON, JSON.stringify(report, null, 2));
     }
 
     // Pausa pra não estourar rate limit (Sonnet é generoso mas web_search é mais lento)
@@ -304,8 +328,10 @@ async function main() {
   report.finishedAt = new Date().toISOString();
 
   // Salva relatório final
-  fs.writeFileSync(REPORT_JSON, JSON.stringify(report, null, 2));
-  writeCsv(report);
+  const jsonPath = RETRY_FAILED ? REPORT_JSON_RETRY : REPORT_JSON;
+  const csvPath = RETRY_FAILED ? REPORT_CSV_RETRY : REPORT_CSV;
+  fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+  writeCsv(report, csvPath);
 
   console.log(`\n${"=".repeat(60)}`);
   console.log(`CONCLUÍDO`);
@@ -314,11 +340,11 @@ async function main() {
   console.log(`Sucesso:      ${report.succeeded}`);
   console.log(`Vazios:       ${report.skipped}`);
   console.log(`Falhas:       ${report.failed}`);
-  console.log(`\nRelatório JSON: ${REPORT_JSON}`);
-  console.log(`Relatório CSV:  ${REPORT_CSV}`);
+  console.log(`\nRelatório JSON: ${jsonPath}`);
+  console.log(`Relatório CSV:  ${csvPath}`);
 }
 
-function writeCsv(report) {
+function writeCsv(report, csvPath) {
   const lines = [];
   // Header
   lines.push([
@@ -344,7 +370,7 @@ function writeCsv(report) {
     }
   }
 
-  fs.writeFileSync(REPORT_CSV, lines.join("\n"));
+  fs.writeFileSync(csvPath, lines.join("\n"));
 }
 
 function csvEscape(s) {
