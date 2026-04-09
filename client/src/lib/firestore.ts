@@ -4,6 +4,8 @@ import {
   where,
   orderBy,
   getDocs,
+  getDoc,
+  doc,
   addDoc,
   serverTimestamp,
   QueryConstraint,
@@ -246,6 +248,23 @@ export async function getVehicles(
 
 export function vehiclePath(v: Vehicle): string {
   return `/campinas-sp/${v.slug}`;
+}
+
+/**
+ * Lookup direto pelo autoconf_id (que é o doc.id do Firestore).
+ * Usado pelo redirect Motorleads — match exato em uma única leitura.
+ */
+export async function getVehicleByAutoconfId(autoconfId: string | number): Promise<Vehicle | null> {
+  if (!db) return null;
+  try {
+    const snap = await getDoc(doc(db, ADMIN_COLLECTION, String(autoconfId)));
+    if (!snap.exists()) return null;
+    const data = snap.data() as VeiculoAdmin;
+    if (data.status !== "publicado") return null;
+    return adminToVehicle(data);
+  } catch {
+    return null;
+  }
 }
 
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {

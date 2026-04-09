@@ -1,22 +1,25 @@
 import { useEffect } from "react";
 import { useRoute } from "wouter";
-import { getVehicles, vehiclePath } from "@/lib/firestore";
+import { getVehicles, getVehicleByAutoconfId, vehiclePath } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
 
 /**
- * Captura URLs antigas do Motorleads no padrão:
- *   /campinas-sp/veiculo-seminovo-usado-atria/comprar-MODELO-MARCA-ID-usado-seminovo-campinas-sp
- *   /campinas-sp/veiculo-seminovo-usado-atria/comprar-CRUZE-CHEVROLET-12345-usado-seminovo-campinas-sp
+ * Captura URLs antigas do Motorleads no padrão real (confirmado por amostras):
+ *   /campinas-sp/veiculo-seminovo-usado-atria/comprar-{MODELO}-{MARCA}-{ID}-usado-seminovo-campinas-sp
  *
- * Estratégia:
- *   1. Tenta extrair marca e modelo do slug Motorleads (regex tolerante).
- *   2. Busca no Firestore o veículo equivalente publicado.
- *   3. Se achar → window.location.replace para a URL nova (soft 301).
- *   4. Se não achar → redireciona pro Estoque com filtro de marca pré-aplicado
- *      (preserva intenção de busca, evita 404).
+ * Exemplos reais:
+ *   comprar-arrizo-chery-1096972-usado-seminovo-campinas-sp
+ *   comprar-cruze-chevrolet-1104499-usado-seminovo-campinas-sp
+ *   comprar-renegade-jeep-1108303-usado-seminovo-campinas-sp
  *
- * Marcas conhecidas (padrão Motorleads tem marca em CAIXA ALTA — ex: CHEVROLET, FIAT).
- * Lista mantida pequena de propósito, são as marcas que a Átria opera.
+ * Estratégia em 3 níveis:
+ *   1. **MATCH EXATO POR ID** — extrai o ID numérico (ex: 1096972) e busca direto
+ *      no Firestore. O `autoconf_id` é o próprio doc.id, então é uma única leitura.
+ *      Funciona pra qualquer carro publicado, mesmo que slug ou modelo tenham mudado.
+ *   2. **FALLBACK FUZZY** — se ID não achou (carro vendido / despublicado), parseia
+ *      marca+modelo e busca no estoque atual. Pode achar um carro similar.
+ *   3. **FALLBACK FINAL** — sem nenhum match, redireciona pro estoque com filtro
+ *      de marca pré-aplicado (preserva intenção de busca).
  */
 const KNOWN_BRANDS = [
   "TOYOTA", "VOLKSWAGEN", "VW", "CHEVROLET", "GM", "HYUNDAI", "BMW", "HONDA",
@@ -26,19 +29,31 @@ const KNOWN_BRANDS = [
   "LEXUS", "SUBARU", "CAOA",
 ];
 
-function parseMotorleadsSlug(slug: string): { marca?: string; modelo?: string } {
-  // Remove prefixo "comprar-" e sufixos "-usado-seminovo-campinas-sp", "-usado-seminovo", "-campinas-sp"
-  const cleaned = slug
+interface ParsedSlug {
+  id?: string;
+  marca?: string;
+  modelo?: string;
+}
+
+function parseMotorleadsSlug(slug: string): ParsedSlug {
+  // Slug bruto: comprar-arrizo-chery-1096972-usado-seminovo-campinas-sp
+  // 1. Remove prefixo "comprar-" e sufixo "-usado-seminovo-campinas-sp"
+  const stripped = slug
     .toLowerCase()
     .replace(/^comprar-/, "")
     .replace(/-usado-seminovo-campinas-sp$/, "")
     .replace(/-usado-seminovo$/, "")
-    .replace(/-campinas-sp$/, "")
-    .replace(/-\d{4,}$/, ""); // remove ID numérico no final
+    .replace(/-campinas-sp$/, "");
+  // Resultado: arrizo-chery-1096972
 
-  const tokens = cleaned.split("-").filter(Boolean);
+  // 2. Extrai o ID numérico (4+ dígitos no final)
+  const idMatch = stripped.match(/-(\d{4,})$/);
+  const id = idMatch ? idMatch[1] : undefined;
+  const withoutId = idMatch ? stripped.slice(0, -idMatch[0].length) : stripped;
+  // Resultado: arrizo-chery
 
-  // Procura uma marca conhecida em qualquer posição
+  // 3. Tokeniza e procura marca conhecida
+  const tokens = withoutId.split("-").filter(Boolean);
   let brandIdx = -1;
   let brand = "";
   for (let i = 0; i < tokens.length; i++) {
@@ -51,18 +66,17 @@ function parseMotorleadsSlug(slug: string): { marca?: string; modelo?: string } 
   }
 
   if (brandIdx === -1) {
-    return {};
+    return { id };
   }
 
-  // Os tokens antes da marca são (provavelmente) o modelo no padrão Motorleads
-  // (MODELO-MARCA-ID). Se não houver tokens antes, tenta os tokens depois.
+  // No padrão Motorleads o modelo vem ANTES da marca (modelo-marca-id)
   const modeloTokens = brandIdx > 0 ? tokens.slice(0, brandIdx) : tokens.slice(brandIdx + 1);
   const modelo = modeloTokens.join(" ");
 
   // Normaliza marca pra capitalizada — Firestore guarda assim (Volkswagen, não VOLKSWAGEN)
   const marcaCapitalized = brand.charAt(0) + brand.slice(1).toLowerCase();
 
-  return { marca: marcaCapitalized, modelo };
+  return { id, marca: marcaCapitalized, modelo };
 }
 
 export default function MotorleadsRedirect() {
@@ -75,14 +89,22 @@ export default function MotorleadsRedirect() {
       return;
     }
 
-    const { marca, modelo } = parseMotorleadsSlug(slug);
+    const { id, marca, modelo } = parseMotorleadsSlug(slug);
 
     (async () => {
       try {
-        // Tenta buscar veículos da marca extraída
+        // 1. Match exato por ID (melhor cenário — uma única leitura)
+        if (id) {
+          const exact = await getVehicleByAutoconfId(id);
+          if (exact) {
+            window.location.replace(vehiclePath(exact));
+            return;
+          }
+        }
+
+        // 2. Fallback fuzzy: busca por marca, depois match por modelo
         const vehicles = marca ? await getVehicles({ marca }) : await getVehicles();
 
-        // Match fuzzy por modelo: procura veículo cujo modelo contenha (ou seja contido) no parsed
         let match = null;
         if (modelo) {
           const modeloNorm = modelo.toLowerCase().trim();
@@ -94,15 +116,13 @@ export default function MotorleadsRedirect() {
           });
         }
 
-        // Se não achou pelo modelo, pega o primeiro da marca (melhor que mandar pro estoque genérico)
-        if (!match && vehicles.length > 0) {
-          match = vehicles[0];
-        }
-
         if (match) {
           window.location.replace(vehiclePath(match));
-        } else if (marca) {
-          // Sem match — pelo menos preserva a marca como filtro
+          return;
+        }
+
+        // 3. Fallback final: estoque com filtro de marca (preserva intenção)
+        if (marca) {
           window.location.replace(`${ROUTES.estoque}?marca=${encodeURIComponent(marca)}`);
         } else {
           window.location.replace(ROUTES.estoque);
