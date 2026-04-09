@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { VeiculoAdmin } from "./adminFirestore";
+import { track } from "./track";
 
 // ─── Lead Capture ─────────────────────────────────────────────────────────────
 export interface Lead {
@@ -23,6 +24,15 @@ export interface Lead {
 }
 
 export async function saveLead(lead: Lead): Promise<void> {
+  // Sempre dispara o evento de tracking, mesmo se Firestore falhar.
+  // Google Ads precisa ouvir o sinal pra otimizar Smart Bidding.
+  try {
+    track("generate_lead", {
+      source: lead.source,
+      ...(lead.dados || {}),
+    });
+  } catch { /* não bloqueia o save */ }
+
   if (!db) {
     console.log("[mock] Lead salvo:", lead);
     return;

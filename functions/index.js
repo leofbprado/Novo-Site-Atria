@@ -4,7 +4,7 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 const db = admin.firestore();
 
-const SITE_URL = "https://www.atriaveiculos.com";
+const SITE_URL = "https://www.atriaveiculos.com.br";
 const AUTOCONF_API = process.env.AUTOCONF_API_URL || "https://api.autoconf.com.br";
 const AUTOCONF_BEARER = process.env.AUTOCONF_BEARER || "";
 const AUTOCONF_TOKEN = process.env.AUTOCONF_TOKEN || "";

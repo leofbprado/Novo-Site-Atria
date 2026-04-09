@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { track } from "@/lib/track";
 
 const WA_NUMBER = "5519996525211";
 
@@ -121,7 +122,78 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+/**
+ * Listener global de cliques em links WhatsApp e telefone.
+ * Captura QUALQUER <a href="https://wa.me/..."> ou <a href="tel:..."> da página
+ * sem precisar plugar manualmente em cada componente.
+ *
+ * Também captura window.open() de WA quando feito programaticamente, mas pra
+ * isso usamos um interceptador separado abaixo.
+ */
+function useGlobalLinkTracking() {
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      // Procura o <a> mais próximo
+      const anchor = target.closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href") || "";
+
+      if (href.startsWith("https://wa.me/") || href.startsWith("https://api.whatsapp.com/")) {
+        // Extrai o número
+        const match = href.match(/wa\.me\/(\d+)|phone=(\d+)/);
+        const number = match?.[1] || match?.[2];
+        track("whatsapp_click", {
+          source: anchor.getAttribute("data-source") || "link",
+          number,
+          location: window.location.pathname,
+        });
+      } else if (href.startsWith("tel:")) {
+        track("phone_click", {
+          source: anchor.getAttribute("data-source") || "link",
+          number: href.replace("tel:", ""),
+          location: window.location.pathname,
+        });
+      }
+    };
+
+    document.addEventListener("click", onClick, { capture: true });
+    return () => document.removeEventListener("click", onClick, { capture: true });
+  }, []);
+}
+
+/**
+ * Intercepta window.open() pra capturar wa.me aberto programaticamente.
+ * Necessário porque vários componentes (formulários, round-robin de consignação)
+ * usam window.open() em vez de <a href>.
+ */
+function useGlobalWindowOpenTracking() {
+  useEffect(() => {
+    const orig = window.open;
+    window.open = function (url, ...rest) {
+      try {
+        if (typeof url === "string") {
+          if (url.startsWith("https://wa.me/") || url.startsWith("https://api.whatsapp.com/")) {
+            const match = url.match(/wa\.me\/(\d+)|phone=(\d+)/);
+            const number = match?.[1] || match?.[2];
+            track("whatsapp_click", {
+              source: "window.open",
+              number,
+              location: window.location.pathname,
+            });
+          }
+        }
+      } catch { /* não bloqueia */ }
+      return orig.call(this, url, ...rest);
+    };
+    return () => { window.open = orig; };
+  }, []);
+}
+
 export function Layout({ children }: LayoutProps) {
+  useGlobalLinkTracking();
+  useGlobalWindowOpenTracking();
   return (
     <div className="min-h-screen bg-white flex flex-col font-inter">
       <Header />

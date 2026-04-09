@@ -28,4 +28,4 @@ User-agent: Applebot
 Allow: /
 
 # Sitemaps
-Sitemap: https://www.atriaveiculos.com/sitemap.xml
+Sitemap: https://www.atriaveiculos.com.br/sitemap.xml

@@ -524,7 +524,7 @@ export async function generateBlogPost(
   // Step 2: Write article with Opus (no web_search)
   console.log("[BLOG] Step 2: Writing article with Opus...");
 
-  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Átria Veículos, revenda de seminovos em Campinas-SP (atriaveiculos.com). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
+  const prompt = `Voce e um jornalista automotivo experiente escrevendo pro blog da Átria Veículos, revenda de seminovos em Campinas-SP (atriaveiculos.com.br). Seu objetivo e EDUCAR o leitor — gerar confianca e autoridade. O blog NAO e vitrine de carros.
 
 ${params.tema ? `TEMA: ${params.tema}` : "TEMA: Escolha voce o melhor tema baseado nos modelos do estoque e no que as pessoas pesquisam sobre carros usados em Campinas. Pense em duvidas reais de quem esta comprando. VARIE entre sedans, hatches, SUVs, picapes, financiamento, manutencao, etc."}
 CATEGORIA: Escolha a mais adequada entre: comparativo, guia-preco, review, financiamento, guia-perfil. ALTERNE entre elas — nao repita a mesma categoria dos artigos anteriores.

@@ -20,10 +20,32 @@ function setMeta(selector: string, attr: string, value: string) {
   if (el) el.setAttribute(attr, value);
 }
 
+/**
+ * Detecta se a hostname atual é o domínio espelho técnico (.com sem .br).
+ * Durante a fase de validação paralela, queremos que SOMENTE o .com.br seja
+ * indexado pelo Google. O .com fica acessível pra Ads/QA mas é noindex.
+ *
+ * Quando virarmos o DNS do .com.br pro Firebase, a hostname passa a ser .com.br
+ * e o noindex some automaticamente — não precisa lembrar de remover nada.
+ */
+function isMirrorDomain(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  // .com (sem .br) ou subdomínios firebase = espelho técnico
+  return host === "atriaveiculos.com"
+    || host === "www.atriaveiculos.com"
+    || host.endsWith(".web.app")
+    || host.endsWith(".firebaseapp.com");
+}
+
 export function useSEO({ title, description, path, ogImage, ogType }: SEOProps) {
   useEffect(() => {
     const canonical = `${SITE_URL}${path}`;
     const img = ogImage || DEFAULTS.ogImage;
+
+    // Bloqueia indexação no domínio espelho (.com) — só .com.br deve ser indexado
+    const robotsValue = isMirrorDomain() ? "noindex, nofollow" : "index, follow";
+    setMeta('meta[name="robots"]', "content", robotsValue);
 
     document.title = title;
 
