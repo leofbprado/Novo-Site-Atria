@@ -22,7 +22,11 @@
       { "source": "/loan-calculator**",   "destination": "/simulador","type": 301 },
       { "source": "/about**",             "destination": "/sobre",   "type": 301 },
       { "source": "/compare**",           "destination": "/comparar","type": 301 },
-      { "source": "/venda-seu-carro**",   "destination": "/vender",  "type": 301 }
+      { "source": "/venda-seu-carro**",   "destination": "/vender",  "type": 301 },
+      { "source": "/nossas-lojas**",      "destination": "/sobre-atria-veiculos-campinas-sp", "type": 301 },
+      { "source": "/consignacao**",       "destination": "/vender-carro-usado-campinas-sp",   "type": 301 },
+      { "source": "/ofertas**",           "destination": "/estoque-carros-usados-seminovos-campinas-sp", "type": 301 },
+      { "source": "/quero-vender**",      "destination": "/vender-carro-usado-campinas-sp",   "type": 301 }
     ],
     "headers": [
       {

@@ -112,7 +112,7 @@ exports.sitemap = onRequest({ region: "southamerica-east1" }, async (req, res) =
           ? d.data_importacao.toDate().toISOString().split("T")[0]
           : today;
       xml += `  <url>\n`;
-      xml += `    <loc>${SITE_URL}/veiculo/${d.slug}</loc>\n`;
+      xml += `    <loc>${SITE_URL}/campinas-sp/${d.slug}</loc>\n`;
       xml += `    <lastmod>${lastmod}</lastmod>\n`;
       xml += `    <changefreq>weekly</changefreq>\n`;
       xml += `    <priority>0.7</priority>\n`;

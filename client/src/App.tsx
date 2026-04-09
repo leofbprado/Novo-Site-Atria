@@ -21,6 +21,7 @@ const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPostPage = lazy(() => import("@/pages/BlogPost"));
 const Admin = lazy(() => import("@/pages/admin/Admin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+const MotorleadsRedirect = lazy(() => import("@/pages/MotorleadsRedirect"));
 
 // Simple full-page spinner for route transitions
 function PageLoader() {
@@ -49,6 +50,8 @@ function Router() {
         <Route path="/sobre" component={() => <Redirect to={ROUTES.sobre} />} />
         {/* New SEO routes */}
         <Route path={ROUTES.estoque} component={() => <Layout><Estoque /></Layout>} />
+        {/* Motorleads legacy URLs — MUST come before /campinas-sp/:slug (more specific first) */}
+        <Route path="/campinas-sp/veiculo-seminovo-usado-atria/:slug" component={() => <MotorleadsRedirect />} />
         <Route path="/campinas-sp/:slug" component={() => <Layout><VehicleDetail /></Layout>} />
         <Route path={ROUTES.venderCarro} component={() => <Layout><VendaSeuCarro /></Layout>} />
         <Route path={ROUTES.financiamento} component={() => <Layout><Financiamento /></Layout>} />
