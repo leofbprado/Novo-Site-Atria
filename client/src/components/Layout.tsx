@@ -197,7 +197,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white flex flex-col font-inter">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-20">{children}</main>
       <Footer />
       <WhatsAppFloat />
     </div>
