@@ -49,7 +49,7 @@ function WhatsAppFloat() {
   };
 
   return (
-    <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {/* Mini-chat */}
       {open && (
         <div className="bg-white rounded-2xl shadow-2xl border border-atria-gray-medium w-72 overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200">
@@ -197,7 +197,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white flex flex-col font-inter">
       <Header />
-      <main className="flex-1 pb-20">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
       <WhatsAppFloat />
     </div>
