@@ -676,7 +676,7 @@ function EstoqueDestaque() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-16 sm:pb-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
             ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
             : displayed.map((v) => (
@@ -697,13 +697,6 @@ function EstoqueDestaque() {
 
 function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) => string }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-
-  const handleQuero = () => {
-    window.open(
-      waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Átria e quero mais informações!`),
-      "_blank"
-    );
-  };
 
   return (
     <motion.div
@@ -739,19 +732,12 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
           <span className="font-barlow-condensed font-black text-2xl text-atria-navy">{fmt(v.preco)}</span>
         </div>
       </a>
-      {/* CTAs */}
-      <div className="px-5 pb-4 flex gap-2 mt-2">
-        <button
-          onClick={handleQuero}
-          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider py-2.5 rounded transition-colors"
-        >
-          QUERO ESSE
-        </button>
+      <div className="px-5 pb-4 mt-2">
         <a
           href={vehiclePath(v)}
-          className="px-4 py-2.5 border border-atria-gray-medium text-atria-text-gray hover:border-atria-navy hover:text-atria-navy font-inter text-sm font-semibold rounded transition-all"
+          className="block w-full text-center py-2.5 bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-sm uppercase tracking-wider rounded transition-colors"
         >
-          Detalhes
+          Ver detalhes
         </a>
       </div>
     </motion.div>
