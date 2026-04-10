@@ -111,113 +111,6 @@ function LeadModal({ title, subtitle, source, extraData, prefillMsg, onClose }: 
   );
 }
 
-// ─── Exit Intent Popup ────────────────────────────────────────────────────────
-function ExitIntentPopup() {
-  const [show, setShow] = useState(false);
-  const [whatsapp, setWhatsapp] = useState("");
-  const [done, setDone] = useState(false);
-  const shown = useRef(false);
-
-  useEffect(() => {
-    // Não mostrar se já foi exibido nessa sessão
-    if (sessionStorage.getItem("exit-intent-shown")) return;
-
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY < 20 && !shown.current) {
-        shown.current = true;
-        sessionStorage.setItem("exit-intent-shown", "1");
-        setTimeout(() => setShow(true), 200);
-      }
-    };
-
-    // Mobile: scroll rápido para cima
-    let lastScrollY = window.scrollY;
-    let lastScrollTime = Date.now();
-    const handleScroll = () => {
-      const now = Date.now();
-      const dy = lastScrollY - window.scrollY;
-      const dt = now - lastScrollTime;
-      // Scroll upward > 150px em menos de 500ms
-      if (dy > 150 && dt < 500 && window.scrollY > 300 && !shown.current) {
-        shown.current = true;
-        sessionStorage.setItem("exit-intent-shown", "1");
-        setShow(true);
-      }
-      lastScrollY = window.scrollY;
-      lastScrollTime = now;
-    };
-
-    document.addEventListener("mouseleave", handleMouseLeave);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      document.removeEventListener("mouseleave", handleMouseLeave);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await saveLead({ whatsapp, source: "exit-intent" });
-    setDone(true);
-    setTimeout(() => setShow(false), 1500);
-  };
-
-  if (!show) return null;
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShow(false)} />
-        <motion.div
-          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-          initial={{ opacity: 0, scale: 0.88 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.88 }}
-        >
-          <button
-            onClick={() => setShow(false)}
-            className="absolute top-3 right-3 text-atria-text-gray hover:text-atria-text-dark"
-          >
-            <X size={18} />
-          </button>
-          {done ? (
-            <div className="p-8 text-center">
-              <CheckCircle size={44} className="text-green-500 mx-auto mb-3" />
-              <p className="font-barlow-condensed font-bold text-xl text-atria-text-dark">Ótimo! Falaremos em breve.</p>
-            </div>
-          ) : (
-            <>
-              <div className="bg-atria-yellow px-5 py-4">
-                <p className="font-barlow-condensed font-black text-xl text-atria-navy">
-                  Espere! Temos ofertas exclusivas para você 🎁
-                </p>
-              </div>
-              <div className="px-5 py-5">
-                <p className="font-inter text-sm text-atria-text-gray mb-4">
-                  Deixe seu WhatsApp e receba as melhores ofertas do nosso estoque antes de todo mundo.
-                </p>
-                <form className="space-y-3" onSubmit={handleSubmit}>
-                  <input
-                    type="tel"
-                    placeholder="Seu WhatsApp: (19) 99652-5211"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    required
-                    className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
-                  />
-                  <button type="submit" className="btn-yellow w-full rounded-lg">
-                    QUERO RECEBER OFERTAS
-                  </button>
-                </form>
-              </div>
-            </>
-          )}
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-}
-
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 const HERO_BG = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1920&q=80";
 
@@ -1622,7 +1515,6 @@ export default function Home() {
 
   return (
     <>
-      <ExitIntentPopup />
       <Hero />
       <Simulador />
       <BrandCarousel />
