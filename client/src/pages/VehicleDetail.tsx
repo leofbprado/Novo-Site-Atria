@@ -732,11 +732,60 @@ export default function VehicleDetail() {
     };
   }, [vehicle]);
 
+  /**
+   * "Você também pode gostar" — ranking por proximidade.
+   *
+   * Pesos (quanto maior, mais influente no ranking):
+   *   1. Faixa de valor: até 100 pontos (cai linearmente conforme distância de preço)
+   *      — sweet spot: ±15% do preço do veículo atual
+   *   2. Mesmo tipo (SUV/Sedan/Hatch/Pickup): +40 pontos
+   *   3. Mesma marca: +25 pontos
+   *   4. Mesmo combustível: +5 pontos (desempate)
+   *
+   * Sempre exclui o veículo atual e qualquer um sem preço.
+   */
   const similar = useMemo(() => {
     if (!vehicle) return [];
-    return allVehicles
-      .filter((v) => v.id !== vehicle.id && (v.marca === vehicle.marca || v.tipo === vehicle.tipo))
-      .slice(0, 4);
+    const myPrice = vehicle.preco || 0;
+    if (myPrice === 0) return [];
+
+    const candidates = allVehicles
+      .filter((v) => v.id !== vehicle.id && (v.preco || 0) > 0)
+      .map((v) => {
+        let score = 0;
+
+        // 1. Faixa de valor — peso máximo
+        const priceDiff = Math.abs(v.preco - myPrice);
+        const priceRatio = priceDiff / myPrice; // 0 = mesmo preço, 1 = 100% mais caro/barato
+        if (priceRatio <= 0.15) score += 100;          // ±15% = match perfeito
+        else if (priceRatio <= 0.30) score += 70;      // ±30%
+        else if (priceRatio <= 0.50) score += 40;      // ±50%
+        else if (priceRatio <= 1.00) score += 15;      // até 100% off
+        // > 100% = sem score de preço
+
+        // 2. Mesmo tipo (SUV vs Sedan vs Hatch vs Pickup)
+        if (v.tipo && vehicle.tipo && v.tipo === vehicle.tipo) {
+          score += 40;
+        }
+
+        // 3. Mesma marca
+        if (v.marca === vehicle.marca) {
+          score += 25;
+        }
+
+        // 4. Mesmo combustível (desempate)
+        if (v.combustivel === vehicle.combustivel) {
+          score += 5;
+        }
+
+        return { vehicle: v, score };
+      })
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map((x) => x.vehicle);
+
+    return candidates;
   }, [vehicle, allVehicles]);
 
   if (loading) {
