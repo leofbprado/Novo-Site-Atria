@@ -630,27 +630,6 @@ function SimilarCard({ v }: { v: Vehicle }) {
   );
 }
 
-// ---- Mobile Sticky Bar ------------------------------------------------------
-function MobileStickyBar({ v }: { v: Vehicle }) {
-  const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-  return (
-    <div id="mobile-sticky-bar" className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-atria-gray-medium z-[60] px-4 py-3 flex items-center gap-3 shadow-lg">
-      <div className="flex-1 min-w-0">
-        <p className="font-inter text-xs text-atria-text-gray truncate">{titulo} {v.ano}</p>
-        <p className="font-barlow-condensed font-black text-xl text-atria-navy leading-tight">{fmt(v.preco)}</p>
-      </div>
-      <a
-        href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Átria. Tenho interesse!`)}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {})}
-        className="bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase px-5 py-3 rounded-xl transition-colors whitespace-nowrap"
-      >
-        QUERO ESSE
-      </a>
-    </div>
-  );
-}
 
 // ---- Store Locations Footer -------------------------------------------------
 function StoreLocations() {
@@ -946,7 +925,6 @@ export default function VehicleDetail() {
       </div>
 
       {/* Mobile price + CTA bar */}
-      <MobileStickyBar v={vehicle} />
     </>
   );
 }

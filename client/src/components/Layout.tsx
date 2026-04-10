@@ -27,22 +27,10 @@ const WA_OPTIONS = [
 function WhatsAppFloat() {
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(false);
-  const [hidden, setHidden] = useState(false);
-
   // Pulsar após 15 segundos na página
   useEffect(() => {
     const t = setTimeout(() => setPulse(true), 15000);
     return () => clearTimeout(t);
-  }, []);
-
-  // Esconde o FAB quando a MobileStickyBar do VehicleDetail está presente
-  // (evita sobreposição de 2 botões verdes no bottom mobile)
-  useEffect(() => {
-    const check = () => setHidden(!!document.getElementById("mobile-sticky-bar"));
-    check();
-    const obs = new MutationObserver(check);
-    obs.observe(document.body, { childList: true, subtree: true });
-    return () => obs.disconnect();
   }, []);
 
   // Parar de pulsar quando abrir o chat
@@ -60,7 +48,7 @@ function WhatsAppFloat() {
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 transition-opacity duration-200 ${hidden ? "opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto" : ""}`}>
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {/* Mini-chat */}
       {open && (
         <div className="bg-white rounded-2xl shadow-2xl border border-atria-gray-medium w-72 overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200">
