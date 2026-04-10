@@ -223,16 +223,73 @@ const HERO_BG = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?au
 
 function Hero() {
   const [query, setQuery] = useState("");
-  const [showLeadModal, setShowLeadModal] = useState(false);
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightIdx, setHighlightIdx] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Carrega estoque em background pra autocomplete
+  useEffect(() => {
+    getVehicles().then(setAllVehicles).catch(() => {});
+  }, []);
+
+  // Filtra sugestões: busca fuzzy em marca + modelo + versao + ano
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || q.length < 2) return [];
+    const tokens = q.split(/\s+/).filter(Boolean);
+    return allVehicles
+      .filter((v) => {
+        const haystack = `${v.marca} ${v.modelo} ${v.versao} ${v.ano}`.toLowerCase();
+        return tokens.every((t) => haystack.includes(t));
+      })
+      .slice(0, 6);
+  }, [query, allVehicles]);
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      setShowLeadModal(true);
+    // Se tem sugestão highlightada, vai direto pro veículo
+    if (highlightIdx >= 0 && suggestions[highlightIdx]) {
+      window.location.href = vehiclePath(suggestions[highlightIdx]);
+      return;
+    }
+    // Senão, vai pro estoque com a query como busca
+    const q = query.trim();
+    if (q) {
+      window.location.href = `${ROUTES.estoque}?q=${encodeURIComponent(q)}`;
     } else {
       window.location.href = ROUTES.estoque;
     }
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIdx((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIdx((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setHighlightIdx(-1);
+    }
+  };
+
+  const fmtPrice = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
@@ -279,28 +336,89 @@ function Hero() {
           </a>
         </motion.div>
 
-        <motion.form
-          className="flex gap-0 rounded overflow-hidden shadow-2xl"
+        <motion.div
+          ref={wrapperRef}
+          className="relative"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.5 }}
-          onSubmit={handleSearch}
         >
-          <input
-            type="text"
-            placeholder="Buscar marca, modelo ou ano..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 px-5 py-4 font-inter text-atria-text-dark text-base bg-white outline-none"
-          />
-          <button
-            type="submit"
-            className="bg-atria-navy hover:bg-atria-navy/90 text-white px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
+          <form
+            onSubmit={handleSearch}
+            className="flex gap-0 rounded overflow-hidden shadow-2xl"
           >
-            <Search size={18} />
-            Buscar
-          </button>
-        </motion.form>
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Buscar marca, modelo ou ano..."
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowSuggestions(true);
+                setHighlightIdx(-1);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={handleKeyDown}
+              autoComplete="off"
+              className="flex-1 px-5 py-4 font-inter text-atria-text-dark text-base bg-white outline-none"
+            />
+            <button
+              type="submit"
+              className="bg-atria-navy hover:bg-atria-navy/90 text-white px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
+            >
+              <Search size={18} />
+              Buscar
+            </button>
+          </form>
+
+          {/* Dropdown de sugestões */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl overflow-hidden z-20 text-left">
+              {suggestions.map((v, idx) => (
+                <a
+                  key={v.id}
+                  href={vehiclePath(v)}
+                  className={`flex items-center gap-3 px-4 py-3 border-b border-atria-gray-medium last:border-b-0 transition-colors ${
+                    idx === highlightIdx ? "bg-atria-gray-light" : "hover:bg-atria-gray-light"
+                  }`}
+                  onMouseEnter={() => setHighlightIdx(idx)}
+                >
+                  {v.fotos?.[0] ? (
+                    <img
+                      src={v.fotos[0]}
+                      alt={`${v.marca} ${v.modelo}`}
+                      className="w-14 h-10 object-cover rounded flex-shrink-0"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-14 h-10 bg-atria-gray-light rounded flex items-center justify-center flex-shrink-0">
+                      <Car size={16} className="text-atria-gray-medium" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-inter font-semibold text-sm text-atria-text-dark truncate">
+                      {v.marca} {v.modelo}
+                    </p>
+                    <p className="font-inter text-xs text-atria-text-gray truncate">
+                      {v.ano} · {v.km?.toLocaleString("pt-BR")} km · {v.combustivel}
+                    </p>
+                  </div>
+                  <span className="font-barlow-condensed font-bold text-base text-atria-navy whitespace-nowrap">
+                    {fmtPrice(v.preco)}
+                  </span>
+                </a>
+              ))}
+              {suggestions.length >= 6 && (
+                <a
+                  href={`${ROUTES.estoque}?q=${encodeURIComponent(query)}`}
+                  className="block text-center py-3 bg-atria-navy text-white font-inter font-bold text-xs uppercase tracking-wider hover:bg-atria-navy/90 transition-colors"
+                >
+                  Ver todos os resultados →
+                </a>
+              )}
+            </div>
+          )}
+        </motion.div>
 
         <motion.div
           className="flex items-center justify-center gap-4 mt-5 flex-wrap"
@@ -327,19 +445,6 @@ function Hero() {
       >
         <ChevronDown size={28} className="text-white/40" />
       </motion.div>
-
-      <AnimatePresence>
-        {showLeadModal && (
-          <LeadModal
-            title="Ótima busca! 🎯"
-            subtitle={`Encontramos opções para "${query}". Deixe seu WhatsApp e receba as melhores!`}
-            source="hero-search"
-            extraData={{ query }}
-            prefillMsg={`Olá! Busquei por "${query}" no site da Átria e quero saber mais sobre as opções disponíveis.`}
-            onClose={() => setShowLeadModal(false)}
-          />
-        )}
-      </AnimatePresence>
     </section>
   );
 }
