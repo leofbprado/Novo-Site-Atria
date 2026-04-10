@@ -199,12 +199,12 @@ function Hero() {
           transition={{ duration: 0.7 }}
         >
           <p className="section-label mb-4 text-atria-yellow">Campinas • SP</p>
-          <h1 className="font-barlow-condensed font-black text-5xl md:text-7xl uppercase text-white leading-none mb-4">
+          <h1 className="font-barlow-condensed font-black text-4xl sm:text-5xl md:text-7xl uppercase text-white leading-none mb-4">
             Guiada por você.
             <br />
             <span className="text-atria-yellow">+10.000 escolhas certas.</span>
           </h1>
-          <p className="font-inter text-white/70 text-lg mb-8 max-w-xl mx-auto">
+          <p className="font-inter text-white/70 text-base sm:text-lg mb-6 sm:mb-8 max-w-xl mx-auto">
             200+ seminovos com garantia, perícia e financiamento facilitado. 3 lojas em Campinas há mais de 12 anos.
           </p>
         </motion.div>
@@ -257,10 +257,10 @@ function Hero() {
             />
             <button
               type="submit"
-              className="bg-atria-navy hover:bg-atria-navy/90 text-white px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
+              className="bg-atria-navy hover:bg-atria-navy/90 text-white px-5 sm:px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
             >
               <Search size={18} />
-              Buscar
+              <span className="hidden sm:inline">Buscar</span>
             </button>
           </form>
 
@@ -296,7 +296,7 @@ function Hero() {
                       {v.ano} · {v.km?.toLocaleString("pt-BR")} km · {v.combustivel}
                     </p>
                   </div>
-                  <span className="font-barlow-condensed font-bold text-base text-atria-navy whitespace-nowrap">
+                  <span className="font-barlow-condensed font-bold text-base text-atria-navy whitespace-nowrap hidden sm:block">
                     {fmtPrice(v.preco)}
                   </span>
                 </a>
