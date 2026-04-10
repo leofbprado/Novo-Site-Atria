@@ -210,20 +210,20 @@ function Hero() {
         </motion.div>
 
         <motion.div
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-6"
+          className="flex flex-row items-center justify-center gap-3 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <a
             href={ROUTES.estoque}
-            className="bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-7 py-4 rounded transition-colors"
+            className="bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-xs sm:text-sm px-4 sm:px-7 py-3 sm:py-4 rounded transition-colors"
           >
             Ver estoque completo
           </a>
           <a
             href={ROUTES.venderCarro}
-            className="bg-white/10 hover:bg-white/20 text-white font-inter font-bold uppercase tracking-wider text-sm px-7 py-4 rounded border border-white/30 transition-colors"
+            className="bg-white/10 hover:bg-white/20 text-white font-inter font-bold uppercase tracking-wider text-xs sm:text-sm px-4 sm:px-7 py-3 sm:py-4 rounded border border-white/30 transition-colors"
           >
             Quero vender meu carro
           </a>
