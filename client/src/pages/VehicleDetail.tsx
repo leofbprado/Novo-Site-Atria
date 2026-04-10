@@ -634,7 +634,7 @@ function SimilarCard({ v }: { v: Vehicle }) {
 function MobileStickyBar({ v }: { v: Vehicle }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-atria-gray-medium z-40 px-4 py-3 flex items-center gap-3 shadow-lg">
+    <div id="mobile-sticky-bar" className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-atria-gray-medium z-[60] px-4 py-3 flex items-center gap-3 shadow-lg">
       <div className="flex-1 min-w-0">
         <p className="font-inter text-xs text-atria-text-gray truncate">{titulo} {v.ano}</p>
         <p className="font-barlow-condensed font-black text-xl text-atria-navy leading-tight">{fmt(v.preco)}</p>
