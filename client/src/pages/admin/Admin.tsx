@@ -1093,6 +1093,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">KM</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Preco</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Fotos</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Tags</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Dias</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Desempenho 7d</th>
@@ -1128,6 +1129,25 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     <td className="px-4 py-3 text-slate-600 text-right hidden md:table-cell">{fmtKm(v.km)}</td>
                     <td className="px-4 py-3 font-semibold text-slate-900 text-right">{fmt(v.preco)}</td>
                     <td className="px-4 py-3 text-center"><Badge status={v.status} /></td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const next = !v.fotos_provisorias;
+                          v.fotos_provisorias = next;
+                          updateVeiculoFotosProvisórias(v.autoconf_id, next);
+                          loadVehicles();
+                        }}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border transition ${
+                          v.fotos_provisorias
+                            ? "bg-amber-50 border-amber-300 text-amber-700"
+                            : "bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300"
+                        }`}
+                        title={v.fotos_provisorias ? "Fotos provisórias — clique pra desmarcar" : "Fotos OK — clique pra marcar como provisórias"}>
+                        <Camera size={12} />
+                        {v.fotos_provisorias ? "Prov." : "OK"}
+                      </button>
+                    </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1 max-w-[180px]">
                         {(v.tags || []).slice(0, 3).map((tag) => <TagChip key={tag} tag={tag} size="xs" />)}
@@ -1163,7 +1183,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   </tr>
                   ,v.milestone ? (
                     <tr key={`${v.autoconf_id}-ms`} className="bg-orange-50/50">
-                      <td colSpan={8} className="px-4 py-1.5">
+                      <td colSpan={9} className="px-4 py-1.5">
                         <div className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border ${
                           (DIAG_STYLE[v.diag.diagnostico] ?? DIAG_STYLE["Sem dados"]).cls
                         }`}>
