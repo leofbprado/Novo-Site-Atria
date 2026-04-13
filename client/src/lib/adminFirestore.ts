@@ -47,6 +47,7 @@ export interface VeiculoAdmin {
   highlights?: string[];
   bloco_final?: string;
   descricao_final?: string;
+  fotos_provisorias?: boolean;
 }
 
 const COLLECTION = "veiculos_admin";
@@ -264,6 +265,11 @@ export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promis
     }
   }
   return count;
+}
+
+export async function updateVeiculoFotosProvisórias(autoconfId: number, fotos_provisorias: boolean): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { fotos_provisorias });
 }
 
 export async function updateVeiculoTags(autoconfId: number, tags: string[]): Promise<void> {

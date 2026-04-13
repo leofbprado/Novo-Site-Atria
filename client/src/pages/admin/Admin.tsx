@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut, BookOpen,
   RefreshCw, CheckCircle2, Search, Filter, ChevronLeft,
   ChevronRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
-  Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2,
+  Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2, Camera,
 } from "lucide-react";
 import {
   fetchAutoConfVeiculos,
@@ -20,6 +20,7 @@ import {
   upsertVeiculoFromAutoConf,
   despublishOrphanVeiculos,
   updateVeiculoTags,
+  updateVeiculoFotosProvisórias,
   updateVeiculoDescricao,
   updateVeiculoTechnicalSpecs,
   publishVeiculo,
@@ -252,6 +253,7 @@ function VehicleDetailPage({
   const [savingSpecs, setSavingSpecs] = useState(false);
   const [disclaimer, setDisclaimer] = useState(vehicle.disclaimer || "");
   const [highlights, setHighlights] = useState((vehicle.highlights || []).join("\n"));
+  const [fotosProvisórias, setFotosProvisórias] = useState(vehicle.fotos_provisorias ?? false);
 
   const handleAddTag = (tag: string) => {
     const t = tag.trim().toLowerCase();
@@ -433,6 +435,26 @@ function VehicleDetailPage({
               </div>
             )}
             <div className="p-4 space-y-3">
+              {/* Toggle Fotos Provisórias */}
+              <button
+                onClick={() => {
+                  const next = !fotosProvisórias;
+                  setFotosProvisórias(next);
+                  updateVeiculoFotosProvisórias(vehicle.autoconf_id, next);
+                }}
+                className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                  fotosProvisórias
+                    ? "bg-amber-50 border-amber-300 text-amber-700"
+                    : "bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300"
+                }`}>
+                <span className="flex items-center gap-2">
+                  <Camera size={14} />
+                  Fotos provisórias
+                </span>
+                <span className={`w-8 h-4.5 rounded-full relative transition-colors ${fotosProvisórias ? "bg-amber-400" : "bg-slate-300"}`}>
+                  <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-all ${fotosProvisórias ? "left-[calc(100%-1rem)]" : "left-0.5"}`} />
+                </span>
+              </button>
               <div className="flex items-center justify-between">
                 <p className="text-2xl font-bold text-slate-900">{fmt(vehicle.preco)}</p>
               </div>
@@ -738,6 +760,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ativos" | "rascunho" | "publicado" | "despublicado" | "todos">("ativos");
   const [perfSort, setPerfSort] = useState<"" | "coldest" | "stalled" | "views_no_contact" | "milestone">("");
+  const [fotosProvFilter, setFotosProvFilter] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
@@ -754,11 +777,14 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       if (statusFilter === "rascunho" && v.status !== "rascunho") return false;
       if (statusFilter === "publicado" && v.status !== "publicado") return false;
       if (statusFilter === "despublicado" && v.status !== "despublicado") return false;
-      if (!searchTerm) return true;
-      const s = searchTerm.toLowerCase();
-      return v.marca.toLowerCase().includes(s) || v.modelo.toLowerCase().includes(s) || v.versao.toLowerCase().includes(s);
+      if (fotosProvFilter && !v.fotos_provisorias) return false;
+      if (searchTerm) {
+        const s = searchTerm.toLowerCase();
+        if (!v.marca.toLowerCase().includes(s) && !v.modelo.toLowerCase().includes(s) && !v.versao.toLowerCase().includes(s)) return false;
+      }
+      return true;
     });
-  }, [vehicles, statusFilter, searchTerm]);
+  }, [vehicles, statusFilter, searchTerm, fotosProvFilter]);
 
   // Performance data — diagnostic based on last 7 days vs previous 7 days
   const now = Date.now();
@@ -1036,6 +1062,16 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               <option value="milestone">Em marco de revisão</option>
             </select>
           </div>
+          <button
+            onClick={() => setFotosProvFilter((p) => !p)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
+              fotosProvFilter
+                ? "bg-amber-50 border-amber-300 text-amber-700"
+                : "border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}>
+            <Camera size={14} />
+            Fotos provisórias
+          </button>
         </div>
       </div>
 
@@ -1068,13 +1104,20 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     className="hover:bg-slate-50 cursor-pointer transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {v.foto_principal ? (
-                          <img src={v.foto_principal} alt="" className="w-14 h-10 object-cover rounded-lg flex-shrink-0" />
-                        ) : (
-                          <div className="w-14 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Car size={16} className="text-slate-300" />
-                          </div>
-                        )}
+                        <div className="relative flex-shrink-0">
+                          {v.foto_principal ? (
+                            <img src={v.foto_principal} alt="" className="w-14 h-10 object-cover rounded-lg" />
+                          ) : (
+                            <div className="w-14 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                              <Car size={16} className="text-slate-300" />
+                            </div>
+                          )}
+                          {v.fotos_provisorias && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white rounded-full w-5 h-5 flex items-center justify-center" title="Fotos provisórias">
+                              <Camera size={10} />
+                            </span>
+                          )}
+                        </div>
                         <div className="min-w-0">
                           <p className="font-medium text-slate-900 truncate">{v.marca} {v.modelo}</p>
                           <p className="text-slate-400 text-xs truncate">{v.versao}</p>
