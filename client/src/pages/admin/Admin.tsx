@@ -665,7 +665,7 @@ function Sidebar({ page, setPage, onLogout, collapsed, setCollapsed }: {
       </nav>
 
       {/* Logout */}
-      <div className="px-2 pb-4">
+      <div className="px-2 pb-2">
         <button onClick={onLogout}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:text-red-400 hover:bg-slate-800 transition ${collapsed ? "justify-center" : ""}`}
           title={collapsed ? "Sair" : undefined}>
@@ -673,6 +673,19 @@ function Sidebar({ page, setPage, onLogout, collapsed, setCollapsed }: {
           {!collapsed && <span>Sair</span>}
         </button>
       </div>
+
+      {/* Build timestamp — diagnóstico de cache */}
+      {!collapsed && (
+        <div className="px-4 pb-3">
+          <p className="text-[10px] text-slate-600 font-mono leading-tight">
+            Build:<br />
+            {new Date(__BUILD_TIMESTAMP__).toLocaleString("pt-BR", {
+              day: "2-digit", month: "2-digit", year: "2-digit",
+              hour: "2-digit", minute: "2-digit",
+            })}
+          </p>
+        </div>
+      )}
     </aside>
   );
 }
@@ -1993,6 +2006,12 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
 
 // ── Dashboard (Main Layout) ─────────────────────────────────────────────────
 function Dashboard({ onLogout }: { onLogout: () => void }) {
+  // Diagnóstico: loga o build timestamp no console toda vez que o Admin monta.
+  // Serve pra detectar quando um cliente está carregando bundle antigo de cache.
+  useEffect(() => {
+    console.log("%c[admin] Build:", "color: #22d3ee; font-weight: bold", __BUILD_TIMESTAMP__);
+  }, []);
+
   const [page, setPage] = useState<Page>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [vehicles, setVehicles] = useState<VeiculoAdmin[]>([]);
