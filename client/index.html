@@ -4,6 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
 
+    <!-- Killswitch: desregistra qualquer SW legado + limpa caches ANTES de qualquer script carregar.
+         Roda inline pra não depender do bundle JS (que pode estar preso em cache antigo do SW). -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          registrations.forEach(function(registration) {
+            registration.unregister();
+          });
+        });
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(name) {
+              caches.delete(name);
+            });
+          });
+        }
+      }
+    </script>
+
     <!-- Primary Meta -->
     <title>Átria Veículos | Seminovos em Campinas-SP | Compre, Venda e Financie</title>
     <meta name="description" content="Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 12 anos de mercado e +10.000 carros vendidos. Mais de 200 veículos, 3 lojas e financiamento facilitado. BMW, Mercedes, Audi, Toyota e muito mais." />
