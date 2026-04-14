@@ -1,8 +1,8 @@
 // Service Worker - Cache Strategy for Átria Veículos
-const CACHE_NAME = 'atria-veiculos-v5.0';
-const STATIC_CACHE = 'atria-static-v5.0';
-const DYNAMIC_CACHE = 'atria-dynamic-v5.0';
-const IMAGE_CACHE = 'atria-images-v5.0';
+const CACHE_NAME = 'atria-veiculos-v6.0';
+const STATIC_CACHE = 'atria-static-v6.0';
+const DYNAMIC_CACHE = 'atria-dynamic-v6.0';
+const IMAGE_CACHE = 'atria-images-v6.0';
 
 // Resources to cache immediately
 const STATIC_ASSETS = [

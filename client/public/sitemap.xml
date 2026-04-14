@@ -2,37 +2,133 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.atriaveiculos.com.br/</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/estoque-carros-usados-seminovos-campinas-sp</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/vender-carro-usado-campinas-sp</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/financiamento-carro-usado-seminovo-campinas-sp</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/sobre-atria-veiculos-campinas-sp</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/blog</loc>
-    <lastmod>2026-04-10</lastmod>
+    <lastmod>2026-04-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-toyota-corolla-xli-1-6-16v-110cv-aut-sedan-2009-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-ford-ka-1-0-se-se-plus-tivct-flex-5p-hatch-2020-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-chevrolet-cruze-lt-1-8-16v-flexpower-4p-aut-sedan-2014-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-caoa-chery-tiggo-7-pro-1-5-turbo-hibrido-suv-utilitario-esportivo-2024-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-toyota-yaris-xl-plus-tech-1-3-flex-16v-aut-sedan-2019-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-fiat-mobi-like-1-0-fire-flex-5p-hatch-2022-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-fiat-pulse-drive-1-3-8v-flex-aut-suv-utilitario-esportivo-2022-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-gwm-haval-h6-1-5-hibrido-suv-utilitario-esportivo-2023-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-gwm-haval-h6-1-5-hibrido-suv-utilitario-esportivo-2023-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-ford-fusion-titanium-2-0-gtdi-eco-awd-aut-sedan-2017-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-hyundai-hb20-comf-c-plus-c-style-1-0-flex-12v-hatch-2018-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-volkswagen-fox-xtreme-1-6-flex-8v-5p-hatch-2019-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-gwm-haval-h6-1-5-hibrido-suv-utilitario-esportivo-2023-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-fiat-fiorino-endurance-evo-1-4-flex-8v-2p-van-utilitario-2023-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-honda-hr-v-advance-1-5-flex-tb-16v-5p-aut-suv-utilitario-esportivo-2022-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-jeep-compass-longitude-2-0-4x2-flex-16v-aut-suv-utilitario-esportivo-2018-usado-seminovo</loc>
+    <lastmod>2026-04-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1004,12 +1100,6 @@
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-peugeot-208-active-1-6-flex-16v-5p-aut-hatch-2022-usado-seminovo-6634</loc>
-    <lastmod>2026-03-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-jeep-renegade-1-8-4x2-flex-16v-aut-suv-utilitario-esportivo-2019-usado-seminovo</loc>
     <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
