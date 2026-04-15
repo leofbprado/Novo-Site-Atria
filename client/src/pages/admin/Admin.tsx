@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut, BookOpen,
   RefreshCw, CheckCircle2, Search, Filter, ChevronLeft,
   ChevronRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
-  Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2, Camera,
+  Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2, Camera, Share2,
 } from "lucide-react";
 import {
   fetchAutoConfVeiculos,
@@ -87,6 +87,31 @@ const fmtDate = (ts: { toDate?: () => Date } | null) => {
   const d = ts.toDate();
   return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 };
+
+const SITE_ORIGIN = "https://www.atriaveiculos.com";
+
+function buildFotosProvisoriasMessage(vehicles: VeiculoAdmin[]): string {
+  const pendentes = vehicles
+    .filter((v) => v.fotos_provisorias)
+    .sort((a, b) => {
+      const ta = a.data_importacao?.toDate?.().getTime() ?? 0;
+      const tb = b.data_importacao?.toDate?.().getTime() ?? 0;
+      return ta - tb;
+    });
+
+  const header = `📸 Átria — Fotos pendentes (${pendentes.length} ${pendentes.length === 1 ? "carro" : "carros"})`;
+
+  const blocos = pendentes.map((v, i) => {
+    const nome = [v.marca, v.modelo, v.versao].filter(Boolean).join(" ");
+    const ano = v.ano_fabricacao && v.ano_modelo ? `${v.ano_fabricacao}/${v.ano_modelo}` : "";
+    const linha1 = `${i + 1}. ${nome}${ano ? " " + ano : ""}`;
+    const detalhes = [v.cor, fmtKm(v.km), fmt(v.preco)].filter(Boolean).join(" · ");
+    const link = `${SITE_ORIGIN}/campinas-sp/${v.slug}`;
+    return `${linha1}\n   ${detalhes}\n   ${link}`;
+  });
+
+  return [header, "", ...blocos].join("\n");
+}
 
 // ── Login ────────────────────────────────────────────────────────────────────
 function LoginScreen() {
@@ -774,6 +799,9 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [statusFilter, setStatusFilter] = useState<"ativos" | "rascunho" | "publicado" | "despublicado" | "todos">("ativos");
   const [perfSort, setPerfSort] = useState<"" | "coldest" | "stalled" | "views_no_contact" | "milestone">("");
   const [fotosProvFilter, setFotosProvFilter] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareText, setShareText] = useState("");
+  const [shareCopied, setShareCopied] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
@@ -798,6 +826,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       return true;
     });
   }, [vehicles, statusFilter, searchTerm, fotosProvFilter]);
+
+  const fotosProvCount = useMemo(
+    () => vehicles.filter((v) => v.fotos_provisorias).length,
+    [vehicles]
+  );
 
   // Performance data — diagnostic based on last 7 days vs previous 7 days
   const now = Date.now();
@@ -1085,6 +1118,18 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             <Camera size={14} />
             Fotos provisórias
           </button>
+          <button
+            onClick={() => {
+              setShareText(buildFotosProvisoriasMessage(vehicles));
+              setShareCopied(false);
+              setShareOpen(true);
+            }}
+            disabled={fotosProvCount === 0}
+            title={fotosProvCount === 0 ? "Nenhum carro com fotos provisórias" : `Gerar mensagem com ${fotosProvCount} carros`}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-slate-200 text-slate-500 transition hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-200">
+            <Share2 size={14} />
+            Compartilhar lista
+          </button>
         </div>
       </div>
 
@@ -1240,6 +1285,63 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {shareOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setShareOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <div>
+                <h3 className="font-semibold text-slate-900">Fotos pendentes</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {fotosProvCount} {fotosProvCount === 1 ? "carro" : "carros"} · mais antigos primeiro
+                </p>
+              </div>
+              <button
+                onClick={() => setShareOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="px-5 py-4 flex-1 overflow-hidden flex flex-col gap-3">
+              <textarea
+                value={shareText}
+                onChange={(e) => setShareText(e.target.value)}
+                className="flex-1 min-h-[240px] font-mono text-xs text-slate-700 border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500 resize-none"
+              />
+              <p className="text-[11px] text-slate-400">Edite se quiser antes de enviar.</p>
+            </div>
+            <div className="flex gap-2 px-5 py-4 border-t border-slate-100 bg-slate-50">
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(shareText);
+                    setShareCopied(true);
+                    setTimeout(() => setShareCopied(false), 2000);
+                  } catch {}
+                }}
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border border-slate-200 text-slate-700 bg-white hover:border-slate-300 transition"
+              >
+                {shareCopied ? "Copiado ✓" : "Copiar"}
+              </button>
+              <button
+                onClick={() => {
+                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
+                }}
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition"
+              >
+                Abrir WhatsApp
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
