@@ -104,7 +104,8 @@ function buildFotosProvisoriasMessage(vehicles: VeiculoAdmin[]): string {
   const blocos = pendentes.map((v, i) => {
     const nome = [v.marca, v.modelo, v.versao].filter(Boolean).join(" ");
     const ano = v.ano_fabricacao && v.ano_modelo ? `${v.ano_fabricacao}/${v.ano_modelo}` : "";
-    const linha1 = `${i + 1}. ${nome}${ano ? " " + ano : ""}`;
+    const placa = v.placa_final ? ` — ${v.placa_final}` : "";
+    const linha1 = `${i + 1}. ${nome}${ano ? " " + ano : ""}${placa}`;
     const detalhes = [v.cor, fmtKm(v.km), fmt(v.preco)].filter(Boolean).join(" · ");
     const link = `${SITE_ORIGIN}/campinas-sp/${v.slug}`;
     return `${linha1}\n   ${detalhes}\n   ${link}`;
@@ -821,7 +822,15 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       if (fotosProvFilter && !v.fotos_provisorias) return false;
       if (searchTerm) {
         const s = searchTerm.toLowerCase();
-        if (!v.marca.toLowerCase().includes(s) && !v.modelo.toLowerCase().includes(s) && !v.versao.toLowerCase().includes(s)) return false;
+        const placaNorm = (v.placa_final || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const searchNorm = s.replace(/[^a-z0-9]/g, "");
+        const matchesPlaca = searchNorm.length > 0 && placaNorm.includes(searchNorm);
+        if (
+          !v.marca.toLowerCase().includes(s) &&
+          !v.modelo.toLowerCase().includes(s) &&
+          !v.versao.toLowerCase().includes(s) &&
+          !matchesPlaca
+        ) return false;
       }
       return true;
     });
@@ -1083,7 +1092,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           <div className="relative flex-1 min-w-[200px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar marca, modelo ou versao..."
+              placeholder="Buscar marca, modelo, versão ou placa..."
               className="w-full border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
           </div>
           <div className="flex items-center gap-2">
@@ -1147,6 +1156,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Veículo</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Placa</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Ano</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">KM</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Preco</th>
@@ -1183,6 +1193,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                         </div>
                       </div>
                     </td>
+                    <td className="px-4 py-3 text-slate-600 font-mono text-xs uppercase tracking-wider">{v.placa_final || "—"}</td>
                     <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{v.ano_fabricacao}/{v.ano_modelo}</td>
                     <td className="px-4 py-3 text-slate-600 text-right hidden md:table-cell">{fmtKm(v.km)}</td>
                     <td className="px-4 py-3 font-semibold text-slate-900 text-right">{fmt(v.preco)}</td>
