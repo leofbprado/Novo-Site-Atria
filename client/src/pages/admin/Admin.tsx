@@ -921,6 +921,8 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           const detail = await fetchAutoConfVeiculo(v.id);
           const d = detail.dados as any;
           const veiculo = d?.dados ?? d;
+          // TEMP DIAG: comparar placa mascarada (lista) vs detalhe
+          console.log("[placa-diag]", { id: v.id, placa_lista: (v as any).placa, placa_detalhe: veiculo?.placa });
           fotos = veiculo?.fotos || d?.fotos || [];
           // Merge acessorios + acessorios_destaque, deduplicate by id
           const acc = Array.isArray(veiculo?.acessorios) ? veiculo.acessorios : [];
