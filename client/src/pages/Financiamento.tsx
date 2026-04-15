@@ -42,15 +42,16 @@ function Hero() {
 
 // ---- Simulador (inline) ----------------------------------------------------
 const PRAZO_FIXO = 48;
-const FAIXA_MARGEM = 0.10;
+const COEF_PARCELA = 0.035;
+const FAIXA_DELTA = 7500;
 
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 function calcularFaixa(entrada: number, parcela: number) {
-  const valorBase = entrada + parcela * PRAZO_FIXO;
-  const precoMin = Math.max(0, Math.round((valorBase * (1 - FAIXA_MARGEM)) / 1000) * 1000);
-  const precoMax = Math.round((valorBase * (1 + FAIXA_MARGEM)) / 1000) * 1000;
+  const valorBase = Math.round((entrada + parcela / COEF_PARCELA) / 1000) * 1000;
+  const precoMin = Math.max(0, valorBase - FAIXA_DELTA);
+  const precoMax = valorBase + FAIXA_DELTA;
   return { valorBase, precoMin, precoMax };
 }
 
