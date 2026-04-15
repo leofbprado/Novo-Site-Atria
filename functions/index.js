@@ -144,16 +144,18 @@ async function fetchGoogleReviews(apiKey) {
   const results = await Promise.all(
     PLACES.map(async (place) => {
       try {
-        // reviews_sort=NEWEST = pede reviews mais recentes em vez de "most relevant"
-        // (Places API API New, lançado 2024)
-        const url = `https://places.googleapis.com/v1/places/${place.id}?reviews_sort=NEWEST&languageCode=pt-BR&regionCode=BR`;
+        const url = `https://places.googleapis.com/v1/places/${place.id}?languageCode=pt-BR&regionCode=BR`;
         const r = await fetch(url, {
           headers: {
             "X-Goog-Api-Key": apiKey,
             "X-Goog-FieldMask": "reviews,rating,userRatingCount",
           },
         });
-        if (!r.ok) return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
+        if (!r.ok) {
+          const body = await r.text().catch(() => "");
+          console.error(`Places API ${place.loja} HTTP ${r.status}:`, body.slice(0, 300));
+          return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
+        }
         const data = await r.json();
         const reviews = (data.reviews || []).map((rv) => ({
           authorName: rv.authorAttribution?.displayName || "Cliente",
@@ -170,7 +172,8 @@ async function fetchGoogleReviews(apiKey) {
           totalCount: data.userRatingCount ?? 0,
           loja: place.loja,
         };
-      } catch {
+      } catch (err) {
+        console.error(`Places API ${place.loja} exception:`, err?.message || err);
         return { reviews: [], rating: 0, totalCount: 0, loja: place.loja };
       }
     })
