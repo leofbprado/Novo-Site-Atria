@@ -220,8 +220,14 @@ export async function upsertVeiculoFromAutoConf(
   };
 
   if (existing.exists()) {
-    // Update AutoConf fields but preserve admin fields
-    await updateDoc(docRef, baseFields);
+    // Update AutoConf fields but preserve admin fields.
+    // Se detalhe falhou e fotosList veio vazio, NÃO sobrescrever galeria existente.
+    const updateFields: Record<string, unknown> = { ...baseFields };
+    if (fotosList.length === 0) {
+      delete updateFields.fotos;
+      delete updateFields.foto_principal;
+    }
+    await updateDoc(docRef, updateFields);
     return "updated";
   } else {
     // New vehicle — create with admin defaults

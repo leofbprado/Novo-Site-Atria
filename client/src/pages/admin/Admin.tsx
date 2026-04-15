@@ -387,6 +387,33 @@ function VehicleDetailPage({
     setPublishing(false); onUpdate(); onBack();
   };
 
+  const [resyncing, setResyncing] = useState(false);
+  const handleResync = async () => {
+    setResyncing(true);
+    try {
+      const detail = await fetchAutoConfVeiculo(vehicle.autoconf_id);
+      const d = detail.dados as any;
+      const v = d?.dados ?? d;
+      const fotos = v?.fotos || d?.fotos || [];
+      const acc = Array.isArray(v?.acessorios) ? v.acessorios : [];
+      const accDest = Array.isArray(v?.acessorios_destaque) ? v.acessorios_destaque : [];
+      const seenIds = new Set<number>();
+      const acessorios: unknown[] = [];
+      for (const a of [...accDest, ...acc]) {
+        const aid = (a as any)?.id;
+        if (aid != null && seenIds.has(aid)) continue;
+        if (aid != null) seenIds.add(aid);
+        acessorios.push(a);
+      }
+      await upsertVeiculoFromAutoConf(v as Record<string, unknown>, fotos, acessorios);
+      onUpdate();
+      onBack();
+    } catch (err: any) {
+      alert("Erro ao re-sincronizar: " + (err?.message || err));
+    }
+    setResyncing(false);
+  };
+
   const fotos = vehicle.fotos?.length ? vehicle.fotos : vehicle.foto_principal ? [vehicle.foto_principal] : [];
 
   return (
@@ -406,6 +433,12 @@ function VehicleDetailPage({
         </div>
         <div className="flex items-center gap-3">
           <Badge status={vehicle.status} />
+          <button onClick={handleResync} disabled={resyncing || publishing || doingAll}
+            title="Busca novamente esse veículo no AutoConf (fotos, specs, preço) sem rodar o sync batch"
+            className="bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            {resyncing ? <Spinner size={14} /> : <RefreshCw size={14} />}
+            {resyncing ? "Sincronizando..." : "Re-sincronizar AutoConf"}
+          </button>
           <button onClick={handleDoEverything} disabled={doingAll || generating || searchingSpecs}
             title="Pesquisa specs verídicas + gera descrição comercial em uma chamada (Sonnet + web_search)"
             className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
@@ -914,33 +947,46 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
     try {
       const res = await fetchAutoConfVeiculos({ registros_por_pagina: 500 });
       const dados = Array.isArray(res.dados) ? res.dados : [];
-      let created = 0, updated = 0;
+      let created = 0, updated = 0, errors = 0;
+      const failedIds: number[] = [];
       for (const v of dados) {
-        let fotos: unknown[] = [], acessorios: unknown[] = [];
         try {
-          const detail = await fetchAutoConfVeiculo(v.id);
-          const d = detail.dados as any;
-          const veiculo = d?.dados ?? d;
-          fotos = veiculo?.fotos || d?.fotos || [];
-          // Merge acessorios + acessorios_destaque, deduplicate by id
-          const acc = Array.isArray(veiculo?.acessorios) ? veiculo.acessorios : [];
-          const accDest = Array.isArray(veiculo?.acessorios_destaque) ? veiculo.acessorios_destaque : [];
-          const seenIds = new Set<number>();
-          const merged: unknown[] = [];
-          for (const a of [...accDest, ...acc]) {
-            const aid = (a as any)?.id;
-            if (aid != null && seenIds.has(aid)) continue;
-            if (aid != null) seenIds.add(aid);
-            merged.push(a);
+          let fotos: unknown[] = [], acessorios: unknown[] = [];
+          try {
+            const detail = await fetchAutoConfVeiculo(v.id);
+            const d = detail.dados as any;
+            const veiculo = d?.dados ?? d;
+            fotos = veiculo?.fotos || d?.fotos || [];
+            // Merge acessorios + acessorios_destaque, deduplicate by id
+            const acc = Array.isArray(veiculo?.acessorios) ? veiculo.acessorios : [];
+            const accDest = Array.isArray(veiculo?.acessorios_destaque) ? veiculo.acessorios_destaque : [];
+            const seenIds = new Set<number>();
+            const merged: unknown[] = [];
+            for (const a of [...accDest, ...acc]) {
+              const aid = (a as any)?.id;
+              if (aid != null && seenIds.has(aid)) continue;
+              if (aid != null) seenIds.add(aid);
+              merged.push(a);
+            }
+            acessorios = merged;
+          } catch {
+            // Detalhe falhou: passa fotos=[] pra upsert preservar galeria existente.
+            fotos = [];
           }
-          acessorios = merged;
-        } catch { fotos = v.foto ? [v.foto] : []; }
-        const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
-        if (result === "created") created++; else updated++;
+          const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
+          if (result === "created") created++; else updated++;
+        } catch (err) {
+          errors++;
+          failedIds.push(v.id);
+          console.error(`[sync] vehicle ${v.id} failed:`, err);
+        }
       }
       const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
       const despublicados = await despublishOrphanVeiculos(autoconfIds);
-      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados`);
+      const errorSuffix = errors
+        ? `, ${errors} com erro (IDs: ${failedIds.slice(0, 5).join(", ")}${failedIds.length > 5 ? "..." : ""})`
+        : "";
+      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados${errorSuffix}`);
       loadVehicles();
     } catch (err: any) { setSyncResult(`Erro: ${err.message}`); }
     setSyncing(false);
@@ -1184,6 +1230,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                           {v.fotos_provisorias && (
                             <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white rounded-full w-5 h-5 flex items-center justify-center" title="Fotos provisórias">
                               <Camera size={10} />
+                            </span>
+                          )}
+                          {(v.fotos?.length || 0) <= 1 && !v.fotos_provisorias && (
+                            <span className="absolute -bottom-1.5 -left-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center" title="Galeria com 1 foto — sync pode ter falhado, tente Re-sincronizar">
+                              <AlertCircle size={10} />
                             </span>
                           )}
                         </div>
