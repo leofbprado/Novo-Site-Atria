@@ -949,6 +949,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       const dados = Array.isArray(res.dados) ? res.dados : [];
       let created = 0, updated = 0, errors = 0;
       const failedIds: number[] = [];
+      let loggedPrecoFields = false;
       for (const v of dados) {
         try {
           let fotos: unknown[] = [], acessorios: unknown[] = [];
@@ -957,6 +958,15 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             const d = detail.dados as any;
             const veiculo = d?.dados ?? d;
             fotos = veiculo?.fotos || d?.fotos || [];
+            if (!loggedPrecoFields) {
+              loggedPrecoFields = true;
+              const precoRx = /val|preco|price|anuncio|web|publicad|negoc/i;
+              const filterPreco = (obj: any) => Object.fromEntries(
+                Object.entries(obj || {}).filter(([k, val]) => precoRx.test(k) && val !== null && val !== "")
+              );
+              console.log("[SYNC DEBUG] Campos de preço — lista (primeiro veículo):", filterPreco(v));
+              console.log("[SYNC DEBUG] Campos de preço — detalhe (primeiro veículo):", filterPreco(veiculo));
+            }
             // Merge acessorios + acessorios_destaque, deduplicate by id
             const acc = Array.isArray(veiculo?.acessorios) ? veiculo.acessorios : [];
             const accDest = Array.isArray(veiculo?.acessorios_destaque) ? veiculo.acessorios_destaque : [];

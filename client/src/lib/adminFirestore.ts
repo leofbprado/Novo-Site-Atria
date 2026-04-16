@@ -206,7 +206,19 @@ export async function upsertVeiculoFromAutoConf(
     ano_fabricacao: Number(data.anofabricacao) || Number(data.ano_fabricacao) || 0,
     ano_modelo: Number(data.anomodelo) || Number(data.ano_modelo) || 0,
     km: Number(data.km) || 0,
-    preco: parseFloat(String(data.valorvenda || data.preco || 0)) || 0,
+    preco: parseFloat(String(
+      data.valoranuncio ||
+      data.valor_anuncio ||
+      data.valorweb ||
+      data.valor_web ||
+      data.valorpublicado ||
+      data.valor_publicado ||
+      data.valornegociacao ||
+      data.valor_negociacao ||
+      data.valorvenda ||
+      data.preco ||
+      0
+    )) || 0,
     cor: (data.cor_nome as string) || (data.cor as string) || "",
     cambio: (data.cambio_nome as string) || (data.cambio as string) || "",
     combustivel: (data.combustivel_nome as string) || (data.combustivel as string) || "",
