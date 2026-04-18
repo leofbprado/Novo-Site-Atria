@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, Calendar,
   Gauge, Fuel, Settings, Palette, DoorOpen, ShieldCheck,
   Star, Phone, CheckCircle, Car, MapPin, Mountain,
-  Cog, Users, TrendingDown,
+  Cog, Users, TrendingDown, X, ZoomIn,
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
@@ -137,11 +137,28 @@ function generateBadges(v: Vehicle): AIBadge[] {
 function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const navigate = (delta: number) => {
     setDirection(delta);
     setCurrent((c) => (c + delta + fotos.length) % fotos.length);
   };
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      else if (e.key === "ArrowLeft" && fotos.length > 1) navigate(-1);
+      else if (e.key === "ArrowRight" && fotos.length > 1) navigate(1);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightboxOpen, fotos.length]);
 
   const variants = {
     enter: (d: number) => ({ x: d > 0 ? "60%" : "-60%", opacity: 0 }),
@@ -152,21 +169,32 @@ function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
   return (
     <div className="space-y-3">
       <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-atria-gray-light group">
-        <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-          <motion.img
-            key={current}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            src={fotos[current]}
-            alt={`${titulo} - foto ${current + 1}`}
-            className="absolute inset-0 w-full h-full object-cover"
-            draggable={false}
-          />
-        </AnimatePresence>
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="absolute inset-0 w-full h-full cursor-zoom-in"
+          aria-label="Ampliar foto"
+        >
+          <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+            <motion.img
+              key={current}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+              src={fotos[current]}
+              alt={`${titulo} - foto ${current + 1}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              draggable={false}
+            />
+          </AnimatePresence>
+        </button>
+
+        <span className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-inter font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+          <ZoomIn size={14} /> Clique para ampliar
+        </span>
 
         {fotos.length > 1 && (
           <>
@@ -208,6 +236,61 @@ function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
           ))}
         </div>
       )}
+
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setLightboxOpen(false)}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${titulo} - foto ampliada`}
+          >
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+              className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Fechar"
+            >
+              <X size={24} />
+            </button>
+
+            <img
+              key={current}
+              src={fotos[current]}
+              alt={`${titulo} - foto ${current + 1}`}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-[95vw] max-h-[90vh] object-contain select-none"
+              draggable={false}
+            />
+
+            {fotos.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(-1); }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  aria-label="Foto anterior"
+                >
+                  <ChevronLeft size={28} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(1); }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  aria-label="Próxima foto"
+                >
+                  <ChevronRight size={28} />
+                </button>
+                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
+                  {current + 1} / {fotos.length}
+                </span>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

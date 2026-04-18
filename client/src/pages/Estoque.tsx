@@ -789,32 +789,30 @@ function VehicleCard({ v }: { v: Vehicle }) {
             {v.ano}
           </span>
         </div>
-      </a>
-      <div className="p-5 pb-3">
-        <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider mb-0.5">{v.marca}</p>
-        <a href={vehiclePath(v)}>
-          <h3 className="font-barlow-condensed font-bold text-xl text-atria-text-dark leading-tight mb-2 hover:text-atria-navy transition-colors" itemProp="name">
+        <div className="p-5 pb-3">
+          <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider mb-0.5">{v.marca}</p>
+          <h3 className="font-barlow-condensed font-bold text-xl text-atria-text-dark leading-tight mb-2 group-hover:text-atria-navy transition-colors" itemProp="name">
             {titulo}
           </h3>
-        </a>
-                    {v.versao && <p className="font-inter text-sm text-atria-text-gray mb-1">{v.versao}</p>}
-        <p className="font-inter text-sm text-atria-text-gray line-clamp-1 mb-3">{v.descricao}</p>
-        <ul className="flex gap-3 flex-wrap mb-3" role="list">
-          {[fmtKm(v.km), v.cambio, v.combustivel, v.portas ? `${v.portas} portas` : null]
-            .filter(Boolean)
-            .map((spec) => (
-              <li key={spec} className="flex items-center gap-1 font-inter text-xs text-atria-text-gray">
-                <span className="w-1 h-1 bg-atria-gray-medium rounded-full" />
-                {spec}
-              </li>
-            ))}
-        </ul>
-        <p className="font-barlow-condensed font-black text-2xl text-atria-navy" itemProp="offers" itemScope itemType="https://schema.org/Offer">
-          <span itemProp="price" content={String(v.preco)}>{fmt(v.preco)}</span>
-          <meta itemProp="priceCurrency" content="BRL" />
-          <meta itemProp="availability" content="https://schema.org/InStock" />
-        </p>
-      </div>
+          {v.versao && <p className="font-inter text-sm text-atria-text-gray mb-1">{v.versao}</p>}
+          <p className="font-inter text-sm text-atria-text-gray line-clamp-1 mb-3">{v.descricao}</p>
+          <ul className="flex gap-3 flex-wrap mb-3" role="list">
+            {[fmtKm(v.km), v.cambio, v.combustivel, v.portas ? `${v.portas} portas` : null]
+              .filter(Boolean)
+              .map((spec) => (
+                <li key={spec} className="flex items-center gap-1 font-inter text-xs text-atria-text-gray">
+                  <span className="w-1 h-1 bg-atria-gray-medium rounded-full" />
+                  {spec}
+                </li>
+              ))}
+          </ul>
+          <p className="font-barlow-condensed font-black text-2xl text-atria-navy" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+            <span itemProp="price" content={String(v.preco)}>{fmt(v.preco)}</span>
+            <meta itemProp="priceCurrency" content="BRL" />
+            <meta itemProp="availability" content="https://schema.org/InStock" />
+          </p>
+        </div>
+      </a>
       <div className="px-5 pb-5 flex gap-2 mt-2">
         <a
           href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no estoque da Átria. Tenho interesse!`)}
