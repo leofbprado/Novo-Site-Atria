@@ -2437,7 +2437,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
       <main className={`transition-all duration-200 ${sidebarCollapsed ? "ml-16" : "ml-56"}`}>
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="px-6 py-8">
           {/* Error */}
           {error && (
             <div className="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
