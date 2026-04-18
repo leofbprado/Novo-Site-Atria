@@ -1027,42 +1027,91 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
         ? `, ${errors} com erro (IDs: ${failedIds.slice(0, 5).join(", ")}${failedIds.length > 5 ? "..." : ""})`
         : "";
 
-      // ── Sances cross-check: comparar preços da segunda fonte ─────────
+      // ── Sances cross-check + autocomplete de placa ─────────────────
+      // AutoConf mascara a placa como "A**-***1" — só primeira letra + último char.
+      // A Sances retorna placa completa. Matchamos por fingerprint
+      // (primeira letra + último char + marca + modelo + ano) e, quando match é
+      // único, preenchemos placa_final do Firestore com a placa completa.
       let sancesSuffix = "";
       try {
-        setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos, ${despublicados} despublicados — verificando preços Sances...`);
+        setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos, ${despublicados} despublicados — verificando Sances...`);
         const sancesList = await fetchSancesVeiculos();
-        const normalizePlaca = (p: string) => (p || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-        const sancesByPlaca = new Map<string, number>();
+        const norm = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        // Aliases conhecidos de marca entre AutoConf e Sances
+        const MARCA_ALIASES: Record<string, string> = {
+          gm: "chevrolet",
+          vw: "volkswagen",
+        };
+        const normMarca = (s: string) => {
+          const n = norm(s);
+          return MARCA_ALIASES[n] || n;
+        };
+        const fingerprint = (placa: string, marca: string, modelo: string, ano: string | number) => {
+          const p = (placa || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+          if (p.length < 2) return "";
+          const first = p[0];
+          const last = p[p.length - 1];
+          return `${first}${last}|${normMarca(marca)}|${norm(modelo)}|${String(ano || "").slice(-4)}`;
+        };
+
+        // Index Sances: fingerprint → array de candidatos (pra detectar colisão)
+        const sancesByFingerprint = new Map<string, Array<{ placa: string; preco: number }>>();
+        const sancesByPlacaCompleta = new Map<string, number>();
         for (const sv of sancesList) {
-          const key = normalizePlaca(sv.placa);
-          if (key && typeof sv.precoVenda === "number") sancesByPlaca.set(key, sv.precoVenda);
+          const placaCompleta = (sv.placa || "").toUpperCase();
+          const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
+          if (!placaCompleta) continue;
+          sancesByPlacaCompleta.set(norm(placaCompleta), preco);
+          const fp = fingerprint(placaCompleta, sv.descricaoMarca || "", sv.descricaoModelo || "", sv.anoModelo || "");
+          if (!fp) continue;
+          if (!sancesByFingerprint.has(fp)) sancesByFingerprint.set(fp, []);
+          sancesByFingerprint.get(fp)!.push({ placa: placaCompleta, preco });
         }
 
-        let divergentes = 0, ok = 0, repasse = 0, naoEncontrados = 0;
+        let divergentes = 0, ok = 0, repasse = 0, naoEncontrados = 0, placasCompletadas = 0;
         for (const v of dados as any[]) {
-          const placaAutoconf = normalizePlaca(v.placa || "");
-          if (!placaAutoconf) { naoEncontrados++; continue; }
-          const sancesPreco = sancesByPlaca.get(placaAutoconf);
+          const placaAutoconfRaw = String(v.placa || "");
+          const isMascarada = placaAutoconfRaw.includes("*");
           const precoAutoconf = parseFloat(String(v.valoranuncio || v.valor_anuncio || v.valorvenda || v.preco || 0)) || 0;
+
+          // Tenta matchar: primeiro placa completa direta (caso raro, fallback), depois fingerprint
+          let match: { placa: string; preco: number } | null = null;
+          if (!isMascarada) {
+            const precoByPlaca = sancesByPlacaCompleta.get(norm(placaAutoconfRaw));
+            if (precoByPlaca !== undefined) match = { placa: placaAutoconfRaw.toUpperCase(), preco: precoByPlaca };
+          }
+          if (!match) {
+            const fp = fingerprint(placaAutoconfRaw, v.marca_nome || "", v.modelopai_nome || "", v.anomodelo || "");
+            if (fp) {
+              const candidates = sancesByFingerprint.get(fp) || [];
+              if (candidates.length === 1) match = candidates[0]; // único match → confiável
+              // se múltiplos candidatos, não arrisca (colisão de fingerprint)
+            }
+          }
 
           let status: "ok" | "divergente" | "nao_encontrado" | "repasse";
           let diff: number | null = null;
           let precoToSave: number | null = null;
+          let placaAutocomplete: string | undefined = undefined;
 
-          if (sancesPreco === undefined) {
+          if (!match) {
             status = "nao_encontrado";
             naoEncontrados++;
-          } else if (sancesPreco < 1000) {
-            // Valores abaixo de R$ 1.000 são "repasse" (transações internas/wholesale)
-            // e não representam o preço retail. Não marcar como divergência.
-            status = "repasse";
-            precoToSave = sancesPreco;
-            repasse++;
           } else {
-            precoToSave = sancesPreco;
-            diff = precoAutoconf - sancesPreco;
-            if (Math.abs(diff) < 1) { status = "ok"; ok++; } else { status = "divergente"; divergentes++; }
+            const sancesPreco = match.preco;
+            if (isMascarada) {
+              placaAutocomplete = match.placa; // preenche placa_final com a placa real da Sances
+              placasCompletadas++;
+            }
+            if (sancesPreco < 1000) {
+              status = "repasse";
+              precoToSave = sancesPreco;
+              repasse++;
+            } else {
+              precoToSave = sancesPreco;
+              diff = precoAutoconf - sancesPreco;
+              if (Math.abs(diff) < 1) { status = "ok"; ok++; } else { status = "divergente"; divergentes++; }
+            }
           }
 
           try {
@@ -1070,10 +1119,12 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               sances_preco: precoToSave,
               sances_status: status,
               sances_diff: diff,
+              ...(placaAutocomplete ? { placa_final: placaAutocomplete } : {}),
             });
           } catch (e) { /* tolera falha individual, continua */ }
         }
         sancesSuffix = `. Sances: ${divergentes} divergentes, ${ok} ok, ${repasse} repasse, ${naoEncontrados} não encontrados`;
+        if (placasCompletadas > 0) sancesSuffix += `, ${placasCompletadas} placas completadas`;
       } catch (e: any) {
         console.error("[sync] Sances falhou:", e);
         sancesSuffix = `. Sances: falhou (${e.message || "erro"})`;

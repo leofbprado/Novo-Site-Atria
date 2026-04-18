@@ -244,6 +244,13 @@ export async function upsertVeiculoFromAutoConf(
       delete updateFields.fotos;
       delete updateFields.foto_principal;
     }
+    // Se a placa que já está salva é completa (sem asterisco) e a nova vem mascarada,
+    // preserva a completa — caso típico: Sances já autocompletou a placa em sync anterior.
+    const novaPlaca = String(baseFields.placa_final || "");
+    const placaSalva = String(existing.data().placa_final || "");
+    if (novaPlaca.includes("*") && placaSalva && !placaSalva.includes("*")) {
+      delete updateFields.placa_final;
+    }
     await updateDoc(docRef, updateFields);
     return "updated";
   } else {
@@ -319,6 +326,7 @@ export async function updateVeiculoSances(
     sances_preco: number | null;
     sances_status: "ok" | "divergente" | "nao_encontrado" | "repasse";
     sances_diff: number | null;
+    placa_final?: string; // opcional: autocompletar placa completa vinda da Sances (AutoConf só retorna mascarada "A**-***1")
   },
 ): Promise<void> {
   const firestore = requireDb();
