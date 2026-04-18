@@ -16,3 +16,6 @@ scripts/refetch-run.log
 scripts/specs-audit-report*.json
 scripts/specs-audit-report*.csv
 scripts/*.log
+
+# Sances API probe output (contém preços/placas — nunca commitar)
+sances-amostra.json

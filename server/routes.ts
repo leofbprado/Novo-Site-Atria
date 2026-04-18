@@ -177,6 +177,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Sances proxy (cross-check de preços) ────────────────────────────────
+  app.get("/api/sances/estoqueVeiculos", async (_req: Request, res: Response) => {
+    try {
+      const token = process.env.SANCES_BEARER || "";
+      if (!token) { res.status(500).json({ error: "SANCES_BEARER não configurado" }); return; }
+      const r = await fetch("https://integracao.sancesturbo.com.br/api/estoqueVeiculos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!r.ok) { res.status(r.status).json({ error: `Sances ${r.status}` }); return; }
+      const data = await r.json();
+      res.json(data);
+    } catch (e: any) {
+      res.status(502).json({ error: e.message });
+    }
+  });
+
   // ── OpenAI key (save to runtime, not persisted) ──────────────────────────
   let openaiKey = process.env.OPENAI_API_KEY || "";
 

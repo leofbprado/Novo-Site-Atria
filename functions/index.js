@@ -61,6 +61,40 @@ exports.autoconf = onRequest({ region: "southamerica-east1" }, async (req, res) 
   }
 });
 
+// ─── Sances (cross-check de preços) ──────────────────────────────────────────
+const SANCES_API = "https://integracao.sancesturbo.com.br/api";
+
+exports.sances = onRequest(
+  { region: "southamerica-east1", secrets: ["SANCES_BEARER"] },
+  async (req, res) => {
+    cors(res);
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+    const token = process.env.SANCES_BEARER || "";
+    if (!token) {
+      res.status(500).json({ error: "SANCES_BEARER não configurado" });
+      return;
+    }
+
+    try {
+      const path = req.path.replace(/^\/*(api\/sances\/?)?/, "");
+      if (path !== "estoqueVeiculos" && path !== "") {
+        res.status(404).json({ error: "not found" });
+        return;
+      }
+      const r = await fetch(`${SANCES_API}/estoqueVeiculos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const text = await r.text();
+      if (!r.ok) throw new Error(`Sances ${r.status}: ${text.slice(0, 200)}`);
+      res.set("Content-Type", "application/json");
+      res.send(text);
+    } catch (e) {
+      res.status(502).json({ error: e.message });
+    }
+  }
+);
+
 // ─── Sitemap dinâmico ────────────────────────────────────────────────────────
 let sitemapCache = { xml: "", ts: 0 };
 const CACHE_TTL = 3600_000; // 1 hora

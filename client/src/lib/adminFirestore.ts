@@ -48,6 +48,11 @@ export interface VeiculoAdmin {
   bloco_final?: string;
   descricao_final?: string;
   fotos_provisorias?: boolean;
+  // Sances cross-check (cruzamento de preços com a API da Sances)
+  sances_preco?: number | null;
+  sances_status?: "ok" | "divergente" | "nao_encontrado" | "repasse" | null;
+  sances_diff?: number | null;           // preco - sances_preco (em BRL, positivo se AutoConf > Sances)
+  sances_checked_at?: Timestamp | null;
 }
 
 const COLLECTION = "veiculos_admin";
@@ -306,6 +311,21 @@ export async function updateVeiculoTechnicalSpecs(
 ): Promise<void> {
   const firestore = requireDb();
   await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { technical_specs });
+}
+
+export async function updateVeiculoSances(
+  autoconfId: number,
+  data: {
+    sances_preco: number | null;
+    sances_status: "ok" | "divergente" | "nao_encontrado" | "repasse";
+    sances_diff: number | null;
+  },
+): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), {
+    ...data,
+    sances_checked_at: serverTimestamp(),
+  });
 }
 
 export async function publishVeiculo(autoconfId: number): Promise<void> {

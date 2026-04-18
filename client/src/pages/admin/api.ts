@@ -84,6 +84,31 @@ export async function fetchAutoConfVeiculo(id: number): Promise<{
   return { sucesso: true, dados: raw };
 }
 
+// ── Sances (cross-check de preços) ───────────────────────────────────────────
+
+export interface SancesVeiculo {
+  codigoVei: number;
+  placa: string;
+  numeroChassi: string;
+  precoVenda: number;
+  descricaoMarca: string;
+  descricaoModelo: string;
+  descricaoEstoque: string;
+  consignado: string;
+  anoModelo: number;
+  [key: string]: unknown;
+}
+
+export async function fetchSancesVeiculos(): Promise<SancesVeiculo[]> {
+  const res = await fetch("/api/sances/estoqueVeiculos");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Sances error ${res.status}`);
+  }
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
 // ── OpenAI ───────────────────────────────────────────────────────────────────
 
 export async function generateDescription(

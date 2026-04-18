@@ -9,6 +9,7 @@ import {
 import {
   fetchAutoConfVeiculos,
   fetchAutoConfVeiculo,
+  fetchSancesVeiculos,
   generateDescription,
   generateBlogPost,
   enrichVehicleWithSearch,
@@ -23,6 +24,7 @@ import {
   updateVeiculoFotosProvisórias,
   updateVeiculoDescricao,
   updateVeiculoTechnicalSpecs,
+  updateVeiculoSances,
   publishVeiculo,
   unpublishVeiculo,
   getAdminConfig,
@@ -231,6 +233,34 @@ function Badge({ status }: { status: string }) {
 
 function Spinner({ size = 16 }: { size?: number }) {
   return <RefreshCw size={size} className="animate-spin" />;
+}
+
+function SancesCell({ v }: { v: VeiculoAdmin }) {
+  const status = v.sances_status;
+  if (!status) {
+    return <span className="text-slate-300 text-xs" title="Ainda não verificado. Rode Sincronizar.">?</span>;
+  }
+  if (status === "nao_encontrado") {
+    return <span className="text-slate-300" title="Não encontrado na Sances (repasse, consignado ou fora de estoque)">—</span>;
+  }
+  if (status === "repasse") {
+    return <span className="text-slate-400 text-xs" title={`Repasse — preço Sances R$ ${v.sances_preco ?? 0} não é retail`}>Repasse</span>;
+  }
+  if (status === "ok") {
+    return <span className="text-slate-600 text-xs" title="Preço bate com a Sances">{fmt(v.sances_preco || 0)}</span>;
+  }
+  // divergente
+  const diff = v.sances_diff || 0;
+  const sign = diff > 0 ? "+" : "−";
+  const absDiff = Math.abs(diff);
+  return (
+    <div className="flex flex-col items-end leading-tight">
+      <span className="text-red-600 font-semibold text-xs">{fmt(v.sances_preco || 0)}</span>
+      <span className="text-red-500 text-[10px]" title={diff > 0 ? "AutoConf está MAIOR que Sances" : "AutoConf está MENOR que Sances"}>
+        {sign}{fmt(absDiff)}
+      </span>
+    </div>
+  );
 }
 
 function EmptyState({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
@@ -996,7 +1026,60 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       const errorSuffix = errors
         ? `, ${errors} com erro (IDs: ${failedIds.slice(0, 5).join(", ")}${failedIds.length > 5 ? "..." : ""})`
         : "";
-      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados${errorSuffix}`);
+
+      // ── Sances cross-check: comparar preços da segunda fonte ─────────
+      let sancesSuffix = "";
+      try {
+        setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos, ${despublicados} despublicados — verificando preços Sances...`);
+        const sancesList = await fetchSancesVeiculos();
+        const normalizePlaca = (p: string) => (p || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const sancesByPlaca = new Map<string, number>();
+        for (const sv of sancesList) {
+          const key = normalizePlaca(sv.placa);
+          if (key && typeof sv.precoVenda === "number") sancesByPlaca.set(key, sv.precoVenda);
+        }
+
+        let divergentes = 0, ok = 0, repasse = 0, naoEncontrados = 0;
+        for (const v of dados as any[]) {
+          const placaAutoconf = normalizePlaca(v.placa || "");
+          if (!placaAutoconf) { naoEncontrados++; continue; }
+          const sancesPreco = sancesByPlaca.get(placaAutoconf);
+          const precoAutoconf = parseFloat(String(v.valoranuncio || v.valor_anuncio || v.valorvenda || v.preco || 0)) || 0;
+
+          let status: "ok" | "divergente" | "nao_encontrado" | "repasse";
+          let diff: number | null = null;
+          let precoToSave: number | null = null;
+
+          if (sancesPreco === undefined) {
+            status = "nao_encontrado";
+            naoEncontrados++;
+          } else if (sancesPreco < 1000) {
+            // Valores abaixo de R$ 1.000 são "repasse" (transações internas/wholesale)
+            // e não representam o preço retail. Não marcar como divergência.
+            status = "repasse";
+            precoToSave = sancesPreco;
+            repasse++;
+          } else {
+            precoToSave = sancesPreco;
+            diff = precoAutoconf - sancesPreco;
+            if (Math.abs(diff) < 1) { status = "ok"; ok++; } else { status = "divergente"; divergentes++; }
+          }
+
+          try {
+            await updateVeiculoSances(Number(v.id), {
+              sances_preco: precoToSave,
+              sances_status: status,
+              sances_diff: diff,
+            });
+          } catch (e) { /* tolera falha individual, continua */ }
+        }
+        sancesSuffix = `. Sances: ${divergentes} divergentes, ${ok} ok, ${repasse} repasse, ${naoEncontrados} não encontrados`;
+      } catch (e: any) {
+        console.error("[sync] Sances falhou:", e);
+        sancesSuffix = `. Sances: falhou (${e.message || "erro"})`;
+      }
+
+      setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos (rascunho), ${despublicados} despublicados${errorSuffix}${sancesSuffix}`);
       loadVehicles();
     } catch (err: any) { setSyncResult(`Erro: ${err.message}`); }
     setSyncing(false);
@@ -1216,6 +1299,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Ano</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">KM</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Preco</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell" title="Preço na Sances (cross-check)">Sances</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Fotos</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Tags</th>
@@ -1258,6 +1342,9 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{v.ano_fabricacao}/{v.ano_modelo}</td>
                     <td className="px-4 py-3 text-slate-600 text-right hidden md:table-cell">{fmtKm(v.km)}</td>
                     <td className="px-4 py-3 font-semibold text-slate-900 text-right">{fmt(v.preco)}</td>
+                    <td className="px-4 py-3 text-right hidden md:table-cell">
+                      <SancesCell v={v} />
+                    </td>
                     <td className="px-4 py-3 text-center"><Badge status={v.status} /></td>
                     <td className="px-4 py-3 text-center">
                       <button
