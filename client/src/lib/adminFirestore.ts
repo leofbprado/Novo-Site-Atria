@@ -53,6 +53,7 @@ export interface VeiculoAdmin {
   sances_status?: "ok" | "divergente" | "nao_encontrado" | "repasse" | null;
   sances_diff?: number | null;           // preco - sances_preco (em BRL, positivo se AutoConf > Sances)
   sances_checked_at?: Timestamp | null;
+  sances_dias_patio?: number | null;     // diasEstoque da Sances (dias no pátio físico)
 }
 
 const COLLECTION = "veiculos_admin";
@@ -326,6 +327,7 @@ export async function updateVeiculoSances(
     sances_preco: number | null;
     sances_status: "ok" | "divergente" | "nao_encontrado" | "repasse";
     sances_diff: number | null;
+    sances_dias_patio?: number | null; // dias no pátio físico (diasEstoque da Sances)
     placa_final?: string; // opcional: autocompletar placa completa vinda da Sances (AutoConf só retorna mascarada "A**-***1")
   },
 ): Promise<void> {

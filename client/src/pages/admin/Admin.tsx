@@ -1070,18 +1070,20 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
         };
 
         // Index Sances: fpBase → array de candidatos (preserva modelo pro tie-breaker)
-        type SancesMatch = { placa: string; preco: number; modelo: string };
+        type SancesMatch = { placa: string; preco: number; modelo: string; diasPatio: number };
         const sancesByFingerprint = new Map<string, SancesMatch[]>();
-        const sancesByPlacaCompleta = new Map<string, number>();
+        const sancesByPlacaCompleta = new Map<string, SancesMatch>();
         for (const sv of sancesList) {
           const placaCompleta = (sv.placa || "").toUpperCase();
           const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
+          const diasPatio = typeof sv.diasEstoque === "number" ? sv.diasEstoque : 0;
           if (!placaCompleta) continue;
-          sancesByPlacaCompleta.set(norm(placaCompleta), preco);
+          const entry: SancesMatch = { placa: placaCompleta, preco, modelo: sv.descricaoModelo || "", diasPatio };
+          sancesByPlacaCompleta.set(norm(placaCompleta), entry);
           const fp = fpBase(placaCompleta, sv.descricaoMarca || "", sv.anoModelo || "");
           if (!fp) continue;
           if (!sancesByFingerprint.has(fp)) sancesByFingerprint.set(fp, []);
-          sancesByFingerprint.get(fp)!.push({ placa: placaCompleta, preco, modelo: sv.descricaoModelo || "" });
+          sancesByFingerprint.get(fp)!.push(entry);
         }
 
         // Placas Sances que deram match com algum AutoConf (pra depois filtrar pendentes)
@@ -1095,8 +1097,8 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           // Tenta matchar: primeiro placa completa direta (caso raro, fallback), depois fingerprint
           let match: SancesMatch | null = null;
           if (!isMascarada) {
-            const precoByPlaca = sancesByPlacaCompleta.get(norm(placaAutoconfRaw));
-            if (precoByPlaca !== undefined) match = { placa: placaAutoconfRaw.toUpperCase(), preco: precoByPlaca, modelo: "" };
+            const entry = sancesByPlacaCompleta.get(norm(placaAutoconfRaw));
+            if (entry !== undefined) match = entry;
           }
           if (!match) {
             const fp = fpBase(placaAutoconfRaw, v.marca_nome || "", v.anomodelo || "");
@@ -1146,6 +1148,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               sances_preco: precoToSave,
               sances_status: status,
               sances_diff: diff,
+              sances_dias_patio: match ? match.diasPatio : null,
               ...(placaAutocomplete ? { placa_final: placaAutocomplete } : {}),
             });
           } catch (e) { /* tolera falha individual, continua */ }
@@ -1430,7 +1433,8 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Fotos</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Tags</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Dias</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Dias cadastro</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell" title="Dias no pátio físico (Sances)">Dias pátio</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Desempenho 7d</th>
                 </tr>
               </thead>
@@ -1501,6 +1505,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     <td className="px-4 py-3 text-center hidden 2xl:table-cell">
                       <span className="text-sm text-slate-600">{v.dias > 0 ? `${v.dias}d` : "-"}</span>
                     </td>
+                    <td className="px-4 py-3 text-center hidden 2xl:table-cell">
+                      <span className="text-sm text-slate-600" title="Dias no pátio físico (Sances)">
+                        {typeof v.sances_dias_patio === "number" ? `${v.sances_dias_patio}d` : "—"}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 hidden 2xl:table-cell">
                       {v.dias > 0 ? (() => {
                         const d = v.diag;
@@ -1527,7 +1536,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   </tr>
                   ,v.milestone ? (
                     <tr key={`${v.autoconf_id}-ms`} className="bg-orange-50/50">
-                      <td colSpan={11} className="px-4 py-1.5">
+                      <td colSpan={12} className="px-4 py-1.5">
                         <div className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border ${
                           (DIAG_STYLE[v.diag.diagnostico] ?? DIAG_STYLE["Sem dados"]).cls
                         }`}>

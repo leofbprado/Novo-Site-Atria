@@ -96,6 +96,7 @@ export interface SancesVeiculo {
   descricaoEstoque: string;
   consignado: string;
   anoModelo: number;
+  diasEstoque: number;
   [key: string]: unknown;
 }
 
