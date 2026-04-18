@@ -933,6 +933,20 @@ export default function Estoque() {
     window.history.replaceState({}, "", url);
   }, [filters.busca, filters.tipos, filters.marcas, filters.modelos]);
 
+  // Filter change flash — feedback visual pra usuário saber que filtro recomputou
+  const [filterFlash, setFilterFlash] = useState(false);
+  const filtersSig = useMemo(() => JSON.stringify(filters), [filters]);
+  const firstFiltersRenderRef = useRef(true);
+  useEffect(() => {
+    if (firstFiltersRenderRef.current) {
+      firstFiltersRenderRef.current = false;
+      return;
+    }
+    setFilterFlash(true);
+    const t = setTimeout(() => setFilterFlash(false), 450);
+    return () => clearTimeout(t);
+  }, [filtersSig]);
+
   // Filter + sort
   const filtered = useMemo(() => {
     let res = all.filter((v) => {
@@ -1009,8 +1023,24 @@ export default function Estoque() {
             {hasFilters && <span className="w-2 h-2 rounded-full bg-atria-navy" />}
           </button>
           <div className="hidden lg:flex items-center gap-2 ml-auto">
-            <span className="font-inter text-sm text-atria-text-gray whitespace-nowrap">
-              {loading ? "…" : `${filtered.length} veículo${filtered.length !== 1 ? "s" : ""}`}
+            <span className="font-inter text-sm text-atria-text-gray whitespace-nowrap flex items-center gap-1.5">
+              {filterFlash && !loading && (
+                <span className="w-1.5 h-1.5 rounded-full bg-atria-navy animate-pulse" aria-hidden="true" />
+              )}
+              {loading ? "…" : (
+                <>
+                  <motion.span
+                    key={filtered.length}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="font-semibold text-atria-text-dark tabular-nums"
+                  >
+                    {filtered.length}
+                  </motion.span>
+                  {` veículo${filtered.length !== 1 ? "s" : ""}`}
+                </>
+              )}
             </span>
             <select
               value={filters.sort}
@@ -1053,8 +1083,20 @@ export default function Estoque() {
             <ActiveFilters filters={filters} onChange={handleChange} />
 
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <span className="font-inter text-sm text-atria-text-gray">
-                {filtered.length} veículo{filtered.length !== 1 ? "s" : ""}
+              <span className="font-inter text-sm text-atria-text-gray flex items-center gap-1.5">
+                {filterFlash && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-atria-navy animate-pulse" aria-hidden="true" />
+                )}
+                <motion.span
+                  key={filtered.length}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="font-semibold text-atria-text-dark tabular-nums"
+                >
+                  {filtered.length}
+                </motion.span>
+                {` veículo${filtered.length !== 1 ? "s" : ""}`}
               </span>
             </div>
 
