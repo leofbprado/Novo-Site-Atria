@@ -14,6 +14,7 @@ import {
   generateBlogPost,
   enrichVehicleWithSearch,
   fetchVehicleSpecs,
+  type SancesVeiculo,
 } from "./api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -869,6 +870,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
+  const [sancesPendentes, setSancesPendentes] = useState<SancesVeiculo[]>([]);
   const [enriching, setEnriching] = useState(false);
   const [enrichResult, setEnrichResult] = useState("");
   const [publishingAll, setPublishingAll] = useState(false);
@@ -1074,6 +1076,8 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           sancesByFingerprint.get(fp)!.push({ placa: placaCompleta, preco, modelo: sv.descricaoModelo || "" });
         }
 
+        // Placas Sances que deram match com algum AutoConf (pra depois filtrar pendentes)
+        const placasSancesUsadas = new Set<string>();
         let divergentes = 0, ok = 0, repasse = 0, naoEncontrados = 0, placasCompletadas = 0;
         for (const v of dados as any[]) {
           const placaAutoconfRaw = String(v.placa || "");
@@ -1112,6 +1116,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             status = "nao_encontrado";
             naoEncontrados++;
           } else {
+            placasSancesUsadas.add(match.placa.toUpperCase());
             const sancesPreco = match.preco;
             if (isMascarada) {
               placaAutocomplete = match.placa; // preenche placa_final com a placa real da Sances
@@ -1137,8 +1142,19 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             });
           } catch (e) { /* tolera falha individual, continua */ }
         }
+
+        // Direção inversa: veículos na Sances (preço retail) que não estão no AutoConf
+        const pendentes = sancesList.filter((sv) => {
+          const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
+          if (preco < 1000) return false; // ignora repasse
+          if (!sv.placa) return false;
+          return !placasSancesUsadas.has(sv.placa.toUpperCase());
+        });
+        setSancesPendentes(pendentes);
+
         sancesSuffix = `. Sances: ${divergentes} divergentes, ${ok} ok, ${repasse} repasse, ${naoEncontrados} não encontrados`;
         if (placasCompletadas > 0) sancesSuffix += `, ${placasCompletadas} placas completadas`;
+        if (pendentes.length > 0) sancesSuffix += `, ${pendentes.length} pra cadastrar no AutoConf`;
       } catch (e: any) {
         console.error("[sync] Sances falhou:", e);
         sancesSuffix = `. Sances: falhou (${e.message || "erro"})`;
@@ -1289,6 +1305,33 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           </div>
         );
       })()}
+
+      {/* Alerta: veículos na Sances sem correspondente no AutoConf */}
+      {sancesPendentes.length > 0 && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle size={16} className="text-amber-700" />
+            <h3 className="font-semibold text-amber-900 text-sm uppercase tracking-wide">
+              Cadastrar no AutoConf — {sancesPendentes.length} veículo{sancesPendentes.length !== 1 ? "s" : ""} na Sances sem correspondente
+            </h3>
+          </div>
+          <div className="divide-y divide-amber-200">
+            {sancesPendentes.map((sv) => (
+              <div key={sv.placa} className="flex items-center gap-3 py-2 text-sm">
+                <span className="font-mono text-xs uppercase bg-white px-2 py-0.5 rounded border border-amber-200 text-amber-900 flex-shrink-0">
+                  {sv.placa}
+                </span>
+                <span className="text-amber-900 truncate flex-1 min-w-0">
+                  {sv.descricaoMarca} {sv.descricaoModelo}
+                  <span className="text-amber-700 ml-2 text-xs">{sv.anoModelo}</span>
+                </span>
+                <span className="text-amber-600 text-xs hidden md:inline">{sv.descricaoEstoque}</span>
+                <span className="font-semibold text-amber-900 tabular-nums flex-shrink-0">{fmt(sv.precoVenda)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
