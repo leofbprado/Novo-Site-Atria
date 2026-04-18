@@ -32,6 +32,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // === CONFIG (admin — openai/claude keys, sances pendentes) ===
+    match /config/{id} {
+      allow read, write: if true;
+    }
+
     // === ANALYTICS (tracking público) ===
     match /veiculos_analytics/{slug} {
       allow read: if true;

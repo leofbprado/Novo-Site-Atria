@@ -26,6 +26,9 @@ import {
   updateVeiculoDescricao,
   updateVeiculoTechnicalSpecs,
   updateVeiculoSances,
+  saveSancesPendentes,
+  getSancesPendentes,
+  type SancesPendenteStored,
   publishVeiculo,
   unpublishVeiculo,
   getAdminConfig,
@@ -870,7 +873,12 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [selectedVehicle, setSelectedVehicle] = useState<VeiculoAdmin | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState("");
-  const [sancesPendentes, setSancesPendentes] = useState<SancesVeiculo[]>([]);
+  const [sancesPendentes, setSancesPendentes] = useState<SancesPendenteStored[]>([]);
+
+  // Carrega pendentes do Firestore ao montar (sobrevive a reload/navigation)
+  useEffect(() => {
+    getSancesPendentes().then((list) => setSancesPendentes(list)).catch(() => {});
+  }, []);
   const [enriching, setEnriching] = useState(false);
   const [enrichResult, setEnrichResult] = useState("");
   const [publishingAll, setPublishingAll] = useState(false);
@@ -1144,13 +1152,24 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
         }
 
         // Direção inversa: veículos na Sances (preço retail) que não estão no AutoConf
-        const pendentes = sancesList.filter((sv) => {
-          const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
-          if (preco < 1000) return false; // ignora repasse
-          if (!sv.placa) return false;
-          return !placasSancesUsadas.has(sv.placa.toUpperCase());
-        });
+        const pendentes: SancesPendenteStored[] = sancesList
+          .filter((sv) => {
+            const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
+            if (preco < 1000) return false; // ignora repasse
+            if (!sv.placa) return false;
+            return !placasSancesUsadas.has(sv.placa.toUpperCase());
+          })
+          .map((sv) => ({
+            placa: String(sv.placa || "").toUpperCase(),
+            marca: String(sv.descricaoMarca || ""),
+            modelo: String(sv.descricaoModelo || ""),
+            ano: Number(sv.anoModelo) || 0,
+            preco: typeof sv.precoVenda === "number" ? sv.precoVenda : 0,
+            estoque: String(sv.descricaoEstoque || ""),
+          }));
+        console.log("[sync] Sances pendentes pra cadastrar no AutoConf:", pendentes.length, pendentes);
         setSancesPendentes(pendentes);
+        try { await saveSancesPendentes(pendentes); } catch (e) { console.error("[sync] falha ao persistir pendentes:", e); }
 
         sancesSuffix = `. Sances: ${divergentes} divergentes, ${ok} ok, ${repasse} repasse, ${naoEncontrados} não encontrados`;
         if (placasCompletadas > 0) sancesSuffix += `, ${placasCompletadas} placas completadas`;
@@ -1322,11 +1341,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   {sv.placa}
                 </span>
                 <span className="text-amber-900 truncate flex-1 min-w-0">
-                  {sv.descricaoMarca} {sv.descricaoModelo}
-                  <span className="text-amber-700 ml-2 text-xs">{sv.anoModelo}</span>
+                  {sv.marca} {sv.modelo}
+                  <span className="text-amber-700 ml-2 text-xs">{sv.ano}</span>
                 </span>
-                <span className="text-amber-600 text-xs hidden md:inline">{sv.descricaoEstoque}</span>
-                <span className="font-semibold text-amber-900 tabular-nums flex-shrink-0">{fmt(sv.precoVenda)}</span>
+                <span className="text-amber-600 text-xs hidden md:inline">{sv.estoque}</span>
+                <span className="font-semibold text-amber-900 tabular-nums flex-shrink-0">{fmt(sv.preco)}</span>
               </div>
             ))}
           </div>

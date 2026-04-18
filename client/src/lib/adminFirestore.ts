@@ -369,6 +369,34 @@ export async function saveAdminConfig(config: Partial<{ openai_key: string; clau
   await setDoc(doc(firestore, CONFIG_COLLECTION, "admin"), config, { merge: true });
 }
 
+// ── Sances Pendentes (veículos na Sances sem correspondente no AutoConf) ────
+// Persiste em config/sances_pendentes pra não sumir quando usuário navega.
+
+export interface SancesPendenteStored {
+  placa: string;
+  marca: string;
+  modelo: string;
+  ano: number;
+  preco: number;
+  estoque: string;
+}
+
+export async function saveSancesPendentes(list: SancesPendenteStored[]): Promise<void> {
+  const firestore = requireDb();
+  await setDoc(doc(firestore, CONFIG_COLLECTION, "sances_pendentes"), {
+    list,
+    updated_at: serverTimestamp(),
+  });
+}
+
+export async function getSancesPendentes(): Promise<SancesPendenteStored[]> {
+  const firestore = requireDb();
+  const snap = await getDoc(doc(firestore, CONFIG_COLLECTION, "sances_pendentes"));
+  if (!snap.exists()) return [];
+  const data = snap.data();
+  return Array.isArray(data.list) ? data.list : [];
+}
+
 // ── Milestone Config ────────────────────────────────────────────────────────
 
 export interface MilestoneConfig {
