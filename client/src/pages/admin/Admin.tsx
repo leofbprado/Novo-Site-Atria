@@ -5,6 +5,7 @@ import {
   RefreshCw, CheckCircle2, Search, Filter, ChevronLeft,
   ChevronRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
   Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2, Camera, Share2,
+  ArrowDown, ArrowUp, ArrowUpDown, Image as ImageIcon,
 } from "lucide-react";
 import {
   fetchAutoConfVeiculos,
@@ -866,6 +867,10 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ativos" | "rascunho" | "publicado" | "despublicado" | "todos">("ativos");
   const [perfSort, setPerfSort] = useState<"" | "coldest" | "stalled" | "views_no_contact" | "milestone">("");
+  type SortCol = "preco" | "dias" | "sances_dias_patio" | "ano_modelo" | "km" | null;
+  const [columnSort, setColumnSort] = useState<{ col: SortCol; dir: "asc" | "desc" }>({ col: null, dir: "desc" });
+  type QuickFilter = "parados90" | "divergentes" | "semFotos" | null;
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>(null);
   const [fotosProvFilter, setFotosProvFilter] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareText, setShareText] = useState("");
@@ -963,7 +968,34 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   }), [withBasic, medianaViews, medianaContatos]);
 
   const sorted = useMemo(() => {
-    const arr = [...withPerf];
+    let arr = [...withPerf];
+
+    // 1. Quick filter filtra primeiro
+    if (quickFilter === "parados90") {
+      arr = arr.filter((v) => (v.sances_dias_patio ?? 0) > 90);
+    } else if (quickFilter === "divergentes") {
+      arr = arr.filter((v) => v.sances_status === "divergente");
+    } else if (quickFilter === "semFotos") {
+      arr = arr.filter((v) => (v.fotos?.length || 0) <= 1 && v.status !== "despublicado");
+    }
+
+    // 2. Column sort tem prioridade sobre perfSort
+    if (columnSort.col) {
+      const key = columnSort.col;
+      const mult = columnSort.dir === "desc" ? -1 : 1;
+      return [...arr].sort((a, b) => {
+        const av = Number((a as any)[key]) || 0;
+        const bv = Number((b as any)[key]) || 0;
+        return (av - bv) * mult;
+      });
+    }
+
+    // 3. Sort implícito do quick filter ativo
+    if (quickFilter === "parados90") return [...arr].sort((a, b) => (b.sances_dias_patio ?? 0) - (a.sances_dias_patio ?? 0));
+    if (quickFilter === "divergentes") return [...arr].sort((a, b) => Math.abs(b.sances_diff ?? 0) - Math.abs(a.sances_diff ?? 0));
+    if (quickFilter === "semFotos") return [...arr].sort((a, b) => b.dias - a.dias);
+
+    // 4. Senão, perfSort existente
     switch (perfSort) {
       case "coldest": return arr.sort((a, b) => (a.diag.views7d + a.diag.contatos7d) - (b.diag.views7d + b.diag.contatos7d));
       case "stalled": return arr.sort((a, b) => b.dias - a.dias);
@@ -971,12 +1003,31 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       case "milestone": return arr.filter((v) => v.milestone !== null);
       default: return arr;
     }
-  }, [withPerf, perfSort]);
+  }, [withPerf, perfSort, columnSort, quickFilter]);
+
+  // Helpers pra interação de sort/filter
+  const handleColumnSort = (col: Exclude<SortCol, null>) => {
+    setColumnSort((prev) => {
+      if (prev.col !== col) return { col, dir: "desc" };
+      if (prev.dir === "desc") return { col, dir: "asc" };
+      return { col: null, dir: "desc" };
+    });
+  };
+  const toggleQuickFilter = (f: Exclude<QuickFilter, null>) => {
+    setQuickFilter((cur) => (cur === f ? null : f));
+    setColumnSort({ col: null, dir: "desc" }); // reseta column sort quando muda quick filter
+  };
+  const SortArrow = ({ col }: { col: Exclude<SortCol, null> }) => {
+    if (columnSort.col !== col) return <ArrowUpDown size={11} className="text-slate-300" />;
+    return columnSort.dir === "desc"
+      ? <ArrowDown size={11} className="text-blue-600" />
+      : <ArrowUp size={11} className="text-blue-600" />;
+  };
 
   const totalPages = Math.ceil(sorted.length / PER_PAGE);
   const paginated = sorted.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, perfSort]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, perfSort, columnSort, quickFilter]);
 
   const publishedCount = vehicles.filter((v) => v.status === "publicado").length;
   const draftCount = vehicles.filter((v) => v.status === "rascunho").length;
@@ -1396,6 +1447,40 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             <Camera size={14} />
             Fotos provisórias
           </button>
+          {/* Quick filters — atalhos pra workflows comuns */}
+          <button
+            onClick={() => toggleQuickFilter("parados90")}
+            title="Veículos no pátio físico há mais de 90 dias (Sances)"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
+              quickFilter === "parados90"
+                ? "bg-red-50 border-red-300 text-red-700"
+                : "border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}>
+            <Clock size={14} />
+            Parados &gt; 90d
+          </button>
+          <button
+            onClick={() => toggleQuickFilter("divergentes")}
+            title="Preço AutoConf diferente do preço Sances"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
+              quickFilter === "divergentes"
+                ? "bg-orange-50 border-orange-300 text-orange-700"
+                : "border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}>
+            <AlertCircle size={14} />
+            Divergentes Sances
+          </button>
+          <button
+            onClick={() => toggleQuickFilter("semFotos")}
+            title="Veículos com 1 ou nenhuma foto (exceto despublicados)"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
+              quickFilter === "semFotos"
+                ? "bg-slate-800 border-slate-800 text-white"
+                : "border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}>
+            <ImageIcon size={14} />
+            Sem fotos
+          </button>
           <button
             onClick={() => {
               setShareText(buildFotosProvisoriasMessage(vehicles));
@@ -1426,15 +1511,35 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                 <tr className="border-b border-slate-100 bg-slate-50/50">
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Veículo</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Placa</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Ano</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">KM</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Preco</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">
+                    <button type="button" onClick={() => handleColumnSort("ano_modelo")} className="flex items-center gap-1 hover:text-slate-700 transition-colors uppercase tracking-wider">
+                      Ano <SortArrow col="ano_modelo" />
+                    </button>
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">
+                    <button type="button" onClick={() => handleColumnSort("km")} className="flex items-center gap-1 ml-auto hover:text-slate-700 transition-colors uppercase tracking-wider">
+                      KM <SortArrow col="km" />
+                    </button>
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <button type="button" onClick={() => handleColumnSort("preco")} className="flex items-center gap-1 ml-auto hover:text-slate-700 transition-colors uppercase tracking-wider">
+                      Preco <SortArrow col="preco" />
+                    </button>
+                  </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell" title="Preço na Sances (cross-check)">Sances</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Fotos</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Tags</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Dias cadastro</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell" title="Dias no pátio físico (Sances)">Dias pátio</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">
+                    <button type="button" onClick={() => handleColumnSort("dias")} className="flex items-center gap-1 mx-auto hover:text-slate-700 transition-colors uppercase tracking-wider">
+                      Dias cadastro <SortArrow col="dias" />
+                    </button>
+                  </th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell" title="Dias no pátio físico (Sances)">
+                    <button type="button" onClick={() => handleColumnSort("sances_dias_patio")} className="flex items-center gap-1 mx-auto hover:text-slate-700 transition-colors uppercase tracking-wider">
+                      Dias pátio <SortArrow col="sances_dias_patio" />
+                    </button>
+                  </th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Desempenho 7d</th>
                 </tr>
               </thead>
