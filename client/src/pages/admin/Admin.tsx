@@ -1410,9 +1410,9 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell" title="Preço na Sances (cross-check)">Sances</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Fotos</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Tags</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Dias</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Desempenho 7d</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden xl:table-cell">Tags</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Dias</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden 2xl:table-cell">Desempenho 7d</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1473,16 +1473,16 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                         {v.fotos_provisorias ? "Prov." : "OK"}
                       </button>
                     </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
+                    <td className="px-4 py-3 hidden xl:table-cell">
                       <div className="flex flex-wrap gap-1 max-w-[180px]">
                         {(v.tags || []).slice(0, 3).map((tag) => <TagChip key={tag} tag={tag} size="xs" />)}
                         {(v.tags || []).length > 3 && <span className="text-slate-400 text-[10px]">+{v.tags.length - 3}</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center hidden xl:table-cell">
+                    <td className="px-4 py-3 text-center hidden 2xl:table-cell">
                       <span className="text-sm text-slate-600">{v.dias > 0 ? `${v.dias}d` : "-"}</span>
                     </td>
-                    <td className="px-4 py-3 hidden xl:table-cell">
+                    <td className="px-4 py-3 hidden 2xl:table-cell">
                       {v.dias > 0 ? (() => {
                         const d = v.diag;
                         const style = DIAG_STYLE[d.diagnostico] ?? DIAG_STYLE["Sem dados"];
@@ -1508,7 +1508,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   </tr>
                   ,v.milestone ? (
                     <tr key={`${v.autoconf_id}-ms`} className="bg-orange-50/50">
-                      <td colSpan={9} className="px-4 py-1.5">
+                      <td colSpan={11} className="px-4 py-1.5">
                         <div className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border ${
                           (DIAG_STYLE[v.diag.diagnostico] ?? DIAG_STYLE["Sem dados"]).cls
                         }`}>
