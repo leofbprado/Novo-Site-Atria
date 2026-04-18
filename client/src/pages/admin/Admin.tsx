@@ -1029,9 +1029,12 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
 
       // ── Sances cross-check + autocomplete de placa ─────────────────
       // AutoConf mascara a placa como "A**-***1" — só primeira letra + último char.
-      // A Sances retorna placa completa. Matchamos por fingerprint
-      // (primeira letra + último char + marca + modelo + ano) e, quando match é
-      // único, preenchemos placa_final do Firestore com a placa completa.
+      // A Sances retorna placa completa + descrição de modelo mais verbosa que
+      // a do AutoConf (ex: AutoConf "KA" vs Sances "FORD KA SE 1.0"). Por isso
+      // NÃO usamos modelo no fingerprint primário — apenas como tie-breaker
+      // quando marca+ano+primeira+última da placa dão múltiplos candidatos.
+      // Teste empírico (200 AutoConf × 74 Sances): fp sem modelo dá 60 matches
+      // únicos sem ambiguidade; com modelo cai pra 19 acidentais.
       let sancesSuffix = "";
       try {
         setSyncResult(`Sincronizado: ${updated} atualizados, ${created} novos, ${despublicados} despublicados — verificando Sances...`);
@@ -1041,31 +1044,34 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
         const MARCA_ALIASES: Record<string, string> = {
           gm: "chevrolet",
           vw: "volkswagen",
+          gwmhaval: "gwm",
+          caoachery: "chery",
         };
         const normMarca = (s: string) => {
           const n = norm(s);
           return MARCA_ALIASES[n] || n;
         };
-        const fingerprint = (placa: string, marca: string, modelo: string, ano: string | number) => {
+        const fpBase = (placa: string, marca: string, ano: string | number) => {
           const p = (placa || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
           if (p.length < 2) return "";
           const first = p[0];
           const last = p[p.length - 1];
-          return `${first}${last}|${normMarca(marca)}|${norm(modelo)}|${String(ano || "").slice(-4)}`;
+          return `${first}${last}|${normMarca(marca)}|${String(ano || "").slice(-4)}`;
         };
 
-        // Index Sances: fingerprint → array de candidatos (pra detectar colisão)
-        const sancesByFingerprint = new Map<string, Array<{ placa: string; preco: number }>>();
+        // Index Sances: fpBase → array de candidatos (preserva modelo pro tie-breaker)
+        type SancesMatch = { placa: string; preco: number; modelo: string };
+        const sancesByFingerprint = new Map<string, SancesMatch[]>();
         const sancesByPlacaCompleta = new Map<string, number>();
         for (const sv of sancesList) {
           const placaCompleta = (sv.placa || "").toUpperCase();
           const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
           if (!placaCompleta) continue;
           sancesByPlacaCompleta.set(norm(placaCompleta), preco);
-          const fp = fingerprint(placaCompleta, sv.descricaoMarca || "", sv.descricaoModelo || "", sv.anoModelo || "");
+          const fp = fpBase(placaCompleta, sv.descricaoMarca || "", sv.anoModelo || "");
           if (!fp) continue;
           if (!sancesByFingerprint.has(fp)) sancesByFingerprint.set(fp, []);
-          sancesByFingerprint.get(fp)!.push({ placa: placaCompleta, preco });
+          sancesByFingerprint.get(fp)!.push({ placa: placaCompleta, preco, modelo: sv.descricaoModelo || "" });
         }
 
         let divergentes = 0, ok = 0, repasse = 0, naoEncontrados = 0, placasCompletadas = 0;
@@ -1075,17 +1081,25 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           const precoAutoconf = parseFloat(String(v.valoranuncio || v.valor_anuncio || v.valorvenda || v.preco || 0)) || 0;
 
           // Tenta matchar: primeiro placa completa direta (caso raro, fallback), depois fingerprint
-          let match: { placa: string; preco: number } | null = null;
+          let match: SancesMatch | null = null;
           if (!isMascarada) {
             const precoByPlaca = sancesByPlacaCompleta.get(norm(placaAutoconfRaw));
-            if (precoByPlaca !== undefined) match = { placa: placaAutoconfRaw.toUpperCase(), preco: precoByPlaca };
+            if (precoByPlaca !== undefined) match = { placa: placaAutoconfRaw.toUpperCase(), preco: precoByPlaca, modelo: "" };
           }
           if (!match) {
-            const fp = fingerprint(placaAutoconfRaw, v.marca_nome || "", v.modelopai_nome || "", v.anomodelo || "");
+            const fp = fpBase(placaAutoconfRaw, v.marca_nome || "", v.anomodelo || "");
             if (fp) {
               const candidates = sancesByFingerprint.get(fp) || [];
-              if (candidates.length === 1) match = candidates[0]; // único match → confiável
-              // se múltiplos candidatos, não arrisca (colisão de fingerprint)
+              if (candidates.length === 1) {
+                match = candidates[0];
+              } else if (candidates.length > 1) {
+                // tie-breaker: primeira palavra do modelopai_nome AutoConf tem que
+                // aparecer no descricaoModelo da Sances. Se sobrar 1, usa.
+                const token = String(v.modelopai_nome || "").toUpperCase().split(/\s+/)[0];
+                const compat = token ? candidates.filter((c) => c.modelo.toUpperCase().includes(token)) : [];
+                if (compat.length === 1) match = compat[0];
+                // senão, não arrisca — não preenche (evita false match)
+              }
             }
           }
 
