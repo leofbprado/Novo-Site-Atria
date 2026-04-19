@@ -430,12 +430,27 @@ function VehicleDetailPage({
   const handleResync = async () => {
     setResyncing(true);
     try {
-      const detail = await fetchAutoConfVeiculo(vehicle.autoconf_id);
-      const d = detail.dados as any;
-      const v = d?.dados ?? d;
-      // AutoConf retorna [] quando o veículo foi removido. Detecta e avisa
-      // em vez de tentar escrever Firestore com id undefined.
-      if (!v || typeof v !== "object" || Array.isArray(v) || !v.id) {
+      // Detail endpoint tá instável (retorna false pra maioria dos IDs).
+      // Se falhar, fallback pra list — que tem fotos/acessórios completos.
+      let v: any = null;
+      try {
+        const detail = await fetchAutoConfVeiculo(vehicle.autoconf_id);
+        const d = detail.dados as any;
+        const veiculo = d?.dados ?? d;
+        if (veiculo && typeof veiculo === "object" && !Array.isArray(veiculo) && veiculo.id) {
+          v = veiculo;
+        }
+      } catch { /* ignora, tenta list */ }
+
+      if (!v) {
+        // Detail falhou. Busca na list (onde fotos/acessórios também existem).
+        const listResp = await fetchAutoConfVeiculos({ registros_por_pagina: 500 });
+        const arr = (listResp.dados || []) as any[];
+        v = arr.find((x) => Number(x.id) === Number(vehicle.autoconf_id)) || null;
+      }
+
+      if (!v) {
+        // Nem detail nem list têm o veículo — foi removido de verdade.
         alert(
           `Esse veículo não está mais na AutoConf (ID ${vehicle.autoconf_id}).\n\n` +
           `Provavelmente foi removido lá. Se o carro já foi vendido, clica em "Despublicar" em vez de "Re-sincronizar".`
@@ -443,9 +458,10 @@ function VehicleDetailPage({
         setResyncing(false);
         return;
       }
-      const fotos = v?.fotos || d?.fotos || [];
-      const acc = Array.isArray(v?.acessorios) ? v.acessorios : [];
-      const accDest = Array.isArray(v?.acessorios_destaque) ? v.acessorios_destaque : [];
+
+      const fotos = Array.isArray(v.fotos) ? v.fotos : [];
+      const acc = Array.isArray(v.acessorios) ? v.acessorios : [];
+      const accDest = Array.isArray(v.acessorios_destaque) ? v.acessorios_destaque : [];
       const seenIds = new Set<number>();
       const acessorios: unknown[] = [];
       for (const a of [...accDest, ...acc]) {
@@ -1130,37 +1146,46 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       let loggedPrecoFields = false;
       for (const v of dados) {
         try {
-          let fotos: unknown[] = [], acessorios: unknown[] = [];
+          // FONTE PRIMÁRIA: o LIST endpoint (dados `v`) já traz fotos, acessórios,
+          // acessorios_destaque completos. Detail endpoint retorna `false` em ~100%
+          // dos casos atualmente (bug AutoConf), então detail vira só enrichment
+          // opcional. Usar list como default elimina perda de fotos silenciosa.
+          const vAny = v as any;
+          let fotos: unknown[] = Array.isArray(vAny.fotos) ? vAny.fotos : [];
+          let accList: unknown[] = Array.isArray(vAny.acessorios) ? vAny.acessorios : [];
+          let accDest: unknown[] = Array.isArray(vAny.acessorios_destaque) ? vAny.acessorios_destaque : [];
+
+          // Enrichment via detail (opcional — sobrescreve se vier com mais info)
           try {
             const detail = await fetchAutoConfVeiculo(v.id);
             const d = detail.dados as any;
             const veiculo = d?.dados ?? d;
-            fotos = veiculo?.fotos || d?.fotos || [];
-            if (!loggedPrecoFields) {
-              loggedPrecoFields = true;
-              const precoRx = /val|preco|price|anuncio|web|publicad|negoc/i;
-              const filterPreco = (obj: any) => Object.fromEntries(
-                Object.entries(obj || {}).filter(([k, val]) => precoRx.test(k) && val !== null && val !== "")
-              );
-              console.log("[SYNC DEBUG] Campos de preço — lista (primeiro veículo):", filterPreco(v));
-              console.log("[SYNC DEBUG] Campos de preço — detalhe (primeiro veículo):", filterPreco(veiculo));
+            if (veiculo && typeof veiculo === "object" && !Array.isArray(veiculo)) {
+              if (Array.isArray(veiculo.fotos) && veiculo.fotos.length > 0) fotos = veiculo.fotos;
+              if (Array.isArray(veiculo.acessorios)) accList = veiculo.acessorios;
+              if (Array.isArray(veiculo.acessorios_destaque)) accDest = veiculo.acessorios_destaque;
+              if (!loggedPrecoFields) {
+                loggedPrecoFields = true;
+                const precoRx = /val|preco|price|anuncio|web|publicad|negoc/i;
+                const filterPreco = (obj: any) => Object.fromEntries(
+                  Object.entries(obj || {}).filter(([k, val]) => precoRx.test(k) && val !== null && val !== "")
+                );
+                console.log("[SYNC DEBUG] Campos de preço — lista (primeiro veículo):", filterPreco(v));
+                console.log("[SYNC DEBUG] Campos de preço — detalhe (primeiro veículo):", filterPreco(veiculo));
+              }
             }
-            // Merge acessorios + acessorios_destaque, deduplicate by id
-            const acc = Array.isArray(veiculo?.acessorios) ? veiculo.acessorios : [];
-            const accDest = Array.isArray(veiculo?.acessorios_destaque) ? veiculo.acessorios_destaque : [];
-            const seenIds = new Set<number>();
-            const merged: unknown[] = [];
-            for (const a of [...accDest, ...acc]) {
-              const aid = (a as any)?.id;
-              if (aid != null && seenIds.has(aid)) continue;
-              if (aid != null) seenIds.add(aid);
-              merged.push(a);
-            }
-            acessorios = merged;
-          } catch {
-            // Detalhe falhou: passa fotos=[] pra upsert preservar galeria existente.
-            fotos = [];
+          } catch { /* detail falhou, dados da list servem */ }
+
+          // Merge acessórios (destaque + lista), dedupe por id
+          const seenIds = new Set<number>();
+          const acessorios: unknown[] = [];
+          for (const a of [...accDest, ...accList]) {
+            const aid = (a as any)?.id;
+            if (aid != null && seenIds.has(aid)) continue;
+            if (aid != null) seenIds.add(aid);
+            acessorios.push(a);
           }
+
           const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
           if (result === "created") created++; else updated++;
         } catch (err) {
