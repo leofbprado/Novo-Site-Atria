@@ -56,7 +56,7 @@ export interface Vehicle {
   km: number;
   cor: string;
   cambio: "Manual" | "Automática" | "CVT";
-  combustivel: "Gasolina" | "Diesel" | "Flex" | "Elétrico" | "Gasolina e Elétrico" | "Híbrido";
+  combustivel: "Gasolina" | "Diesel" | "Flex" | "Elétrico" | "Híbrido";
   fotos: string[];
   descricao: string;
   opcionais?: string[];
@@ -96,6 +96,23 @@ function normalizeTipo(modelo: string, tipoOriginal: string): string {
   return tipoOriginal || "";
 }
 
+// Normaliza combustivel do AutoConf pros 5 rótulos do filtro do site.
+// AutoConf retorna "Gasolina e Elétrico" pra HEVs — a gente mostra "Híbrido"
+// no site; distinção HEV/PHEV/motorização fica na versão (modelo_nome).
+function normalizeCombustivel(raw: string | undefined | null): Vehicle["combustivel"] {
+  const s = (raw || "").toLowerCase();
+  if (!s) return "Flex";
+  if (s.includes("elétrico") || s.includes("eletrico")) {
+    return s.includes("gasolina") || s.includes("flex") || s.includes("diesel")
+      ? "Híbrido"
+      : "Elétrico";
+  }
+  if (s.includes("diesel")) return "Diesel";
+  if (s.includes("flex")) return "Flex";
+  if (s.includes("gasolina")) return "Gasolina";
+  return "Flex";
+}
+
 function adminToVehicle(v: VeiculoAdmin): Vehicle {
   const fotos = normalizeFotos(v.fotos);
   const fotoPrincipal = v.foto_principal || fotos[0] || "";
@@ -111,7 +128,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     km: v.km || 0,
     cor: v.cor || "",
     cambio: (v.cambio || "Manual") as Vehicle["cambio"],
-    combustivel: (v.combustivel || "Flex") as Vehicle["combustivel"],
+    combustivel: normalizeCombustivel(v.combustivel),
     fotos: fotos.length ? fotos : fotoPrincipal ? [fotoPrincipal] : [],
     descricao: v.descricao_ia || v.observacao || "",
     opcionais: normalizeAcessorios(v.acessorios),
