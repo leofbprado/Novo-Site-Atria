@@ -56,7 +56,7 @@ export interface Vehicle {
   km: number;
   cor: string;
   cambio: "Manual" | "Automática" | "CVT";
-  combustivel: "Gasolina" | "Diesel" | "Flex" | "Elétrico" | "Híbrido";
+  combustivel: "Gasolina" | "Diesel" | "Flex" | "Elétrico" | "Gasolina e Elétrico" | "Híbrido";
   fotos: string[];
   descricao: string;
   opcionais?: string[];

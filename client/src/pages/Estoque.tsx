@@ -10,7 +10,7 @@ const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", curren
 const fmtKm = (n: number) => `${n.toLocaleString("pt-BR")} km`;
 
 const TIPOS = ["SUV", "Sedan", "Hatch", "Pickup"];
-const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"];
+const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Gasolina e Elétrico", "Elétrico"];
 const CAMBIOS = ["Automática", "Manual", "CVT"];
 
 const SORT_OPTIONS = [
