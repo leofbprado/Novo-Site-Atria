@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut, BookOpen,
@@ -962,7 +962,16 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [enrichResult, setEnrichResult] = useState("");
   const [publishingAll, setPublishingAll] = useState(false);
   const [publishAllResult, setPublishAllResult] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    try {
+      const saved = sessionStorage.getItem("estoque-page");
+      const n = saved ? Number(saved) : 1;
+      return Number.isFinite(n) && n >= 1 ? n : 1;
+    } catch { return 1; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem("estoque-page", String(currentPage)); } catch {}
+  }, [currentPage]);
   const PER_PAGE = 20;
 
   const filtered = useMemo(() => {
@@ -1101,7 +1110,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const totalPages = Math.ceil(sorted.length / PER_PAGE);
   const paginated = sorted.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, perfSort, columnSort, quickFilter]);
+  const firstMountRef = useRef(true);
+  useEffect(() => {
+    if (firstMountRef.current) { firstMountRef.current = false; return; }
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, perfSort, columnSort, quickFilter]);
 
   const publishedCount = vehicles.filter((v) => v.status === "publicado").length;
   const draftCount = vehicles.filter((v) => v.status === "rascunho").length;
@@ -1671,12 +1684,12 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     <td className="px-4 py-3 text-center"><Badge status={v.status} /></td>
                     <td className="px-4 py-3 text-center">
                       <button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
                           const next = !v.fotos_provisorias;
-                          v.fotos_provisorias = next;
-                          updateVeiculoFotosProvisórias(v.autoconf_id, next);
-                          loadVehicles();
+                          v.fotos_provisorias = next; // optimistic UI local
+                          await updateVeiculoFotosProvisórias(v.autoconf_id, next);
+                          await loadVehicles();
                         }}
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border transition ${
                           v.fotos_provisorias
