@@ -5,9 +5,12 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  addDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
+  limit as firestoreLimit,
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
@@ -284,21 +287,79 @@ export async function upsertVeiculoFromAutoConf(
 /**
  * Despublica veículos que existem no Firestore como "publicado"
  * mas não vieram na lista do AutoConf (provavelmente vendidos/removidos).
+ * Retorna a lista dos veículos despublicados pra permitir logging/auditoria.
  */
-export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promise<number> {
+export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promise<VeiculoAdmin[]> {
   const firestore = requireDb();
   const snap = await getDocs(collection(firestore, COLLECTION));
-  let count = 0;
+  const despublicados: VeiculoAdmin[] = [];
   for (const docSnap of snap.docs) {
     if (!autoconfIds.has(docSnap.id) && docSnap.data().status === "publicado") {
       await updateDoc(docSnap.ref, {
         status: "despublicado",
         data_remocao: serverTimestamp(),
       });
-      count++;
+      despublicados.push(normalizeVeiculoAdmin(docSnap.data()));
     }
   }
-  return count;
+  return despublicados;
+}
+
+// ── Log de despublicações (histórico pra auditoria) ───────────────────────
+
+export interface DespublicacaoLog {
+  id: string; // doc id do Firestore
+  autoconf_id: number;
+  marca: string;
+  modelo: string;
+  versao: string;
+  placa_final: string;
+  preco: number;
+  data_despublicacao: Timestamp | null;
+  origem: "sync_batch" | "individual_resync";
+}
+
+const DESPUB_COLLECTION = "despublicacoes";
+
+export async function logDespublicacoes(
+  veiculos: VeiculoAdmin[],
+  origem: "sync_batch" | "individual_resync",
+): Promise<void> {
+  if (!veiculos.length) return;
+  const firestore = requireDb();
+  await Promise.all(
+    veiculos.map((v) =>
+      addDoc(collection(firestore, DESPUB_COLLECTION), {
+        autoconf_id: v.autoconf_id,
+        marca: v.marca,
+        modelo: v.modelo,
+        versao: v.versao,
+        placa_final: v.placa_final,
+        preco: v.preco,
+        data_despublicacao: serverTimestamp(),
+        origem,
+      }),
+    ),
+  );
+}
+
+export async function getUltimasDespublicacoes(max = 30): Promise<DespublicacaoLog[]> {
+  const firestore = requireDb();
+  const q = query(
+    collection(firestore, DESPUB_COLLECTION),
+    orderBy("data_despublicacao", "desc"),
+    firestoreLimit(max),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<DespublicacaoLog, "id">) }));
+}
+
+export async function reativarVeiculo(logId: string, autoconfId: number): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), {
+    status: "rascunho",
+  });
+  await deleteDoc(doc(firestore, DESPUB_COLLECTION, logId));
 }
 
 export async function updateVeiculoFotosProvisórias(autoconfId: number, fotos_provisorias: boolean): Promise<void> {

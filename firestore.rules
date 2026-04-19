@@ -37,6 +37,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // === DESPUBLICACOES (log histórico de auditoria de sync) ===
+    match /despublicacoes/{id} {
+      allow read, write: if true;
+    }
+
     // === ANALYTICS (tracking público) ===
     match /veiculos_analytics/{slug} {
       allow read: if true;

@@ -22,6 +22,10 @@ import {
   getAllAdminVeiculos,
   upsertVeiculoFromAutoConf,
   despublishOrphanVeiculos,
+  logDespublicacoes,
+  getUltimasDespublicacoes,
+  reativarVeiculo,
+  type DespublicacaoLog,
   updateVeiculoTags,
   updateVeiculoFotosProvisórias,
   updateVeiculoDescricao,
@@ -802,6 +806,23 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
 
   const totalValue = vehicles.reduce((sum, v) => sum + v.preco, 0);
 
+  const [despubs, setDespubs] = useState<DespublicacaoLog[]>([]);
+  const [reativandoId, setReativandoId] = useState<string | null>(null);
+  const reloadDespubs = useCallback(async () => {
+    try { setDespubs(await getUltimasDespublicacoes(30)); } catch (e) { console.error(e); }
+  }, []);
+  useEffect(() => { reloadDespubs(); }, [reloadDespubs]);
+  const handleReativar = async (logId: string, autoconfId: number) => {
+    setReativandoId(logId);
+    try {
+      await reativarVeiculo(logId, autoconfId);
+      await reloadDespubs();
+    } catch (e: any) {
+      alert("Erro ao reativar: " + (e?.message || e));
+    }
+    setReativandoId(null);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -847,6 +868,49 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
             </div>
           )}
         </div>
+      </div>
+
+      {/* Últimos despublicados (auditoria de sync) */}
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-slate-900">Últimos despublicados automaticamente</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Carros que sumiram do AutoConf nos últimos syncs. Clique "Reativar" se for falso positivo.</p>
+          </div>
+          <button onClick={reloadDespubs} className="text-slate-400 hover:text-slate-600 transition-colors" title="Recarregar lista">
+            <RefreshCw size={14} />
+          </button>
+        </div>
+        {despubs.length === 0 ? (
+          <p className="text-slate-400 text-sm">Nenhuma despublicação registrada ainda.</p>
+        ) : (
+          <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+            {despubs.map((d) => (
+              <div key={d.id} className="flex items-center gap-3 py-2.5 text-sm">
+                <span className="font-mono text-[11px] uppercase bg-slate-50 px-2 py-0.5 rounded border border-slate-200 text-slate-700 flex-shrink-0">
+                  {d.placa_final || "—"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-800 truncate">
+                    {d.marca} {d.modelo}
+                    <span className="text-slate-400 ml-2 text-xs font-normal">{d.versao}</span>
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {fmtDate(d.data_despublicacao)} · {d.origem === "sync_batch" ? "sync" : "resync individual"} · {fmt(d.preco)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleReativar(d.id, d.autoconf_id)}
+                  disabled={reativandoId === d.id}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-800 transition disabled:opacity-50 flex-shrink-0"
+                  title="Volta pra status rascunho e some desta lista"
+                >
+                  {reativandoId === d.id ? "..." : "Reativar"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Top brands breakdown */}
@@ -1093,7 +1157,12 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
         }
       }
       const autoconfIds = new Set(dados.map((v: any) => String(v.id)));
-      const despublicados = await despublishOrphanVeiculos(autoconfIds);
+      const despublicadosList = await despublishOrphanVeiculos(autoconfIds);
+      const despublicados = despublicadosList.length;
+      if (despublicadosList.length > 0) {
+        try { await logDespublicacoes(despublicadosList, "sync_batch"); }
+        catch (e) { console.error("[sync] falha ao logar despublicacoes:", e); }
+      }
       const errorSuffix = errors
         ? `, ${errors} com erro (IDs: ${failedIds.slice(0, 5).join(", ")}${failedIds.length > 5 ? "..." : ""})`
         : "";
