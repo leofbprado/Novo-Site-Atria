@@ -1,4 +1,5 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -268,6 +269,117 @@ async function fetchGoogleReviews(apiKey) {
     totalReviews,
   };
 }
+
+// ─── Hypergestor (AutoPop360) — envia leads do site pro CRM ──────────────────
+const HYPERGESTOR_URL = "https://api.autopop360.com/lead-novo";
+const HYPERGESTOR_EMPRESA = "TFQMKVULUG";
+const HYPERGESTOR_UNIDADE = "KJPE8E67TY";
+const HYPERGESTOR_SEGMENTO = "fUyQVHGfrD86SYPFAKCZNuZvXRkk13"; // Veículos Seminovos
+const HYPERGESTOR_DEPARTAMENTO = "NyDjUMSiGuEbCn8SnPpUPa7YB1DjV4"; // Comercial
+const HYPERGESTOR_FONTE = "z3uaM6VEQCbtYlTVZ3vYysirJZgMlM"; // SITE
+
+function normalizePhone(raw) {
+  const digits = String(raw || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+  return digits;
+}
+
+function isVendaSource(source) {
+  return /venda|consigna|quero-vender/i.test(source || "");
+}
+
+function buildMensagem(lead) {
+  const parts = [];
+  if (lead.query) parts.push(String(lead.query));
+  if (lead.dados && typeof lead.dados === "object") {
+    const entries = Object.entries(lead.dados)
+      .filter(([, v]) => v !== undefined && v !== null && v !== "")
+      .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`);
+    if (entries.length) parts.push(entries.join(" | "));
+  }
+  if (lead.source) parts.push(`[origem: ${lead.source}]`);
+  return parts.join(" — ") || "Lead do site";
+}
+
+function buildHypergestorPayload(lead, createdAt) {
+  const data = createdAt instanceof Date
+    ? createdAt.toISOString().split("T")[0]
+    : new Date().toISOString().split("T")[0];
+  const phone = normalizePhone(lead.whatsapp);
+  const dados = lead.dados || {};
+
+  const objeto = {
+    nome: lead.nome || dados.nome || "Lead Site",
+    whatsapp: phone,
+    telefone: phone,
+    email: dados.email || "",
+    mensagem: buildMensagem(lead),
+    unidade: HYPERGESTOR_UNIDADE,
+    numeroUnico_segmentos_de_lead: HYPERGESTOR_SEGMENTO,
+    numeroUnico_departamentos_de_lead: HYPERGESTOR_DEPARTAMENTO,
+    numeroUnico_fontes_de_lead: HYPERGESTOR_FONTE,
+    origem: "SITE",
+    departamento: "Veículos",
+    data,
+    receber_whatsapp: "SIM",
+    receber_email: dados.email ? "SIM" : "NÃO",
+    receber_telefone: "SIM",
+    veiculo_na_troca: isVendaSource(lead.source) ? "SIM" : "NÃO",
+  };
+
+  if (dados.marcaModelo) objeto.modelo = String(dados.marcaModelo);
+  if (dados.ano) objeto.ano_modelo = String(dados.ano);
+  if (dados.km) objeto.kilometragem = String(dados.km);
+  if (dados.carro) objeto.modelo = String(dados.carro);
+  if (dados.slug) objeto.modelo = String(dados.slug);
+
+  return { Rota: "lead-novo", Empresa: HYPERGESTOR_EMPRESA, Objeto: objeto };
+}
+
+exports.onLeadCreated = onDocumentCreated(
+  { region: "southamerica-east1", document: "leads/{leadId}", retry: false },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const lead = snap.data() || {};
+    const ref = snap.ref;
+
+    if (lead.hypergestor_sent_at) {
+      console.log(`[onLeadCreated] ${event.params.leadId} já enviado, skip`);
+      return;
+    }
+
+    if (!lead.whatsapp) {
+      await ref.update({ hypergestor_error: "sem whatsapp" }).catch(() => {});
+      return;
+    }
+
+    const createdAt = lead.createdAt?.toDate?.() || new Date();
+    const payload = buildHypergestorPayload(lead, createdAt);
+
+    try {
+      const res = await fetch(HYPERGESTOR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const text = await res.text();
+      if (!res.ok) throw new Error(`Hypergestor ${res.status}: ${text.slice(0, 300)}`);
+      await ref.update({
+        hypergestor_sent_at: admin.firestore.FieldValue.serverTimestamp(),
+        hypergestor_response: text.slice(0, 500),
+      });
+      console.log(`[onLeadCreated] ${event.params.leadId} enviado ok`);
+    } catch (e) {
+      console.error(`[onLeadCreated] ${event.params.leadId} erro:`, e?.message || e);
+      await ref.update({
+        hypergestor_error: String(e?.message || e).slice(0, 500),
+        hypergestor_error_at: admin.firestore.FieldValue.serverTimestamp(),
+      }).catch(() => {});
+    }
+  }
+);
 
 exports.googleReviews = onRequest(
   {
