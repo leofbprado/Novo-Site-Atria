@@ -1186,16 +1186,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             acessorios.push(a);
           }
 
-          // DIAG temporário: rastrear o Peugeot 208 (ID 635972) que não estava
-          // atualizando fotos. Remover depois de validar.
-          if (v.id === 635972) {
-            console.log("[DIAG 635972] fotos count ANTES do upsert:", (fotos as unknown[]).length);
-            console.log("[DIAG 635972] fotos URLs:", (fotos as any[]).slice(0, 3).map((f: any) => f?.url || f));
-          }
           const result = await upsertVeiculoFromAutoConf(v as unknown as Record<string, unknown>, fotos, acessorios);
-          if (v.id === 635972) {
-            console.log("[DIAG 635972] upsert result:", result);
-          }
           if (result === "created") created++; else updated++;
         } catch (err) {
           errors++;
