@@ -291,7 +291,15 @@ function FilterAccordion({
 }: {
   title: string; defaultOpen?: boolean; hasActive?: boolean; children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  // Abre inicialmente se defaultOpen OU se já chega com filtro ativo
+  const [open, setOpen] = useState(defaultOpen || hasActive);
+  // Quando hasActive vira true depois (ex: usuário aplica filtro via URL/hero),
+  // abre automaticamente pra mostrar o filtro — mas respeita se usuário fechou manual
+  const prevHasActive = useRef(hasActive);
+  useEffect(() => {
+    if (!prevHasActive.current && hasActive) setOpen(true);
+    prevHasActive.current = hasActive;
+  }, [hasActive]);
   return (
     <div className="border-b border-atria-gray-medium last:border-b-0">
       <button
