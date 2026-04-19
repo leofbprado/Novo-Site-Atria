@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Car, Users, MessageCircle, Settings, LogOut, BookOpen,
   RefreshCw, CheckCircle2, Search, Filter, ChevronLeft,
-  ChevronRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
+  ChevronRight, ChevronsLeft, ChevronsRight, Eye, EyeOff, Sparkles, X, Tag, Save, ExternalLink,
   Phone, Mail, Calendar, Clock, TrendingUp, AlertCircle, Menu, Plus, Trash2, Camera, Share2,
   ArrowDown, ArrowUp, ArrowUpDown, Image as ImageIcon,
 } from "lucide-react";
@@ -1816,7 +1816,13 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                 {(currentPage - 1) * PER_PAGE + 1}-{Math.min(currentPage * PER_PAGE, sorted.length)} de {sorted.length}
               </p>
               <div className="flex gap-1">
+                <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}
+                  title="Primeira página"
+                  className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 transition">
+                  <ChevronsLeft size={16} />
+                </button>
                 <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
+                  title="Página anterior"
                   className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 transition">
                   <ChevronLeft size={16} />
                 </button>
@@ -1832,8 +1838,14 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   );
                 })}
                 <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                  title="Próxima página"
                   className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 transition">
                   <ChevronRight size={16} />
+                </button>
+                <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}
+                  title="Última página"
+                  className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-30 transition">
+                  <ChevronsRight size={16} />
                 </button>
               </div>
             </div>
