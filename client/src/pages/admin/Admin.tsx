@@ -1128,6 +1128,10 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       let created = 0, updated = 0, errors = 0;
       const failedIds: number[] = [];
       let loggedPrecoFields = false;
+      // Placas completas que AutoConf revela no detail — usadas depois pra
+      // determinar se um Sances está REALMENTE cadastrado no AutoConf (sem
+      // depender só de fingerprint, que gera false positive com modelos iguais).
+      const autoconfPlacasCompletas = new Set<string>();
       for (const v of dados) {
         try {
           let fotos: unknown[] = [], acessorios: unknown[] = [];
@@ -1136,6 +1140,8 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             const d = detail.dados as any;
             const veiculo = d?.dados ?? d;
             fotos = veiculo?.fotos || d?.fotos || [];
+            const placaCompleta = String(veiculo?.placa_completa || "").toUpperCase().trim();
+            if (placaCompleta) autoconfPlacasCompletas.add(placaCompleta);
             if (!loggedPrecoFields) {
               loggedPrecoFields = true;
               const precoRx = /val|preco|price|anuncio|web|publicad|negoc/i;
@@ -1305,13 +1311,19 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           } catch (e) { /* tolera falha individual, continua */ }
         }
 
-        // Direção inversa: veículos na Sances (preço retail) que não estão no AutoConf
+        // Direção inversa: veículos na Sances (preço retail) que não estão no AutoConf.
+        // Usa placa_completa revelada pelo AutoConf no detail (match exato) em vez
+        // de fingerprint — evita false positive tipo "outro VW Fox 2020 com mesma
+        // primeira+última letra da placa" marcar um Sances diferente como matched.
+        // AutoConf que não revela placa_completa (null) simplesmente não contribui
+        // pro match — conservador: na dúvida, flag como "pra cadastrar".
         const pendentes: SancesPendenteStored[] = sancesList
           .filter((sv) => {
             const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
             if (preco < 1000) return false; // ignora repasse
             if (!sv.placa) return false;
-            return !placasSancesUsadas.has(sv.placa.toUpperCase());
+            const placaUp = sv.placa.toUpperCase().trim();
+            return !autoconfPlacasCompletas.has(placaUp);
           })
           .map((sv) => ({
             placa: String(sv.placa || "").toUpperCase(),
