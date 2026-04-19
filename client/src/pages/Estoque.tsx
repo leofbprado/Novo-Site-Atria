@@ -913,7 +913,13 @@ export default function Estoque() {
     setFilters((f) => ({
       ...f,
       busca: p.get("q") ?? "",
-      tipos: p.get("tipo") ? [p.get("tipo")!] : [],
+      tipos: (() => {
+        const raw = p.get("tipo");
+        if (!raw) return [];
+        // Normaliza pra case canônico (TIPOS) — URL vem lowercase do hero/footer
+        const canonical = TIPOS.find((t) => t.toLowerCase() === raw.toLowerCase());
+        return canonical ? [canonical] : [raw];
+      })(),
       marcas: p.get("marca") ? p.get("marca")!.split(",") : [],
       preco: [
         Number.isFinite(min) && min > 0 ? min : f.preco[0],
@@ -952,7 +958,10 @@ export default function Estoque() {
     let res = all.filter((v) => {
       if (filters.marcas.length && !filters.marcas.includes(v.marca)) return false;
       if ((filters.modelos ?? []).length && !(filters.modelos ?? []).includes(v.modelo)) return false;
-      if (filters.tipos.length && !filters.tipos.includes(v.tipo ?? "")) return false;
+      if (filters.tipos.length) {
+        const vTipo = (v.tipo || "").toLowerCase();
+        if (!filters.tipos.some((t) => t.toLowerCase() === vTipo)) return false;
+      }
       if (v.preco > 0 && (v.preco < filters.preco[0] || v.preco > filters.preco[1])) return false;
       if (v.ano > 0 && (v.ano < filters.ano[0] || v.ano > filters.ano[1])) return false;
       if (v.km >= 0 && (v.km < filters.km[0] || v.km > filters.km[1])) return false;
