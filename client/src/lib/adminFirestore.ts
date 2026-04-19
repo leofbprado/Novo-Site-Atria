@@ -184,7 +184,10 @@ export async function upsertVeiculoFromAutoConf(
   acessorios: unknown[]
 ): Promise<"created" | "updated"> {
   const firestore = requireDb();
-  const id = data.id as number;
+  const id = Number(data.id);
+  if (!id || !Number.isFinite(id)) {
+    throw new Error(`upsertVeiculoFromAutoConf: data.id inválido (${data.id}) — provavelmente veículo removido do AutoConf`);
+  }
   const docRef = doc(firestore, COLLECTION, String(id));
   const existing = await getDoc(docRef);
 

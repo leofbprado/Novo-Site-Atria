@@ -429,6 +429,16 @@ function VehicleDetailPage({
       const detail = await fetchAutoConfVeiculo(vehicle.autoconf_id);
       const d = detail.dados as any;
       const v = d?.dados ?? d;
+      // AutoConf retorna [] quando o veículo foi removido. Detecta e avisa
+      // em vez de tentar escrever Firestore com id undefined.
+      if (!v || typeof v !== "object" || Array.isArray(v) || !v.id) {
+        alert(
+          `Esse veículo não está mais na AutoConf (ID ${vehicle.autoconf_id}).\n\n` +
+          `Provavelmente foi removido lá. Se o carro já foi vendido, clica em "Despublicar" em vez de "Re-sincronizar".`
+        );
+        setResyncing(false);
+        return;
+      }
       const fotos = v?.fotos || d?.fotos || [];
       const acc = Array.isArray(v?.acessorios) ? v.acessorios : [];
       const accDest = Array.isArray(v?.acessorios_destaque) ? v.acessorios_destaque : [];
