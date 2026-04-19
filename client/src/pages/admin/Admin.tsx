@@ -1128,10 +1128,6 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
       let created = 0, updated = 0, errors = 0;
       const failedIds: number[] = [];
       let loggedPrecoFields = false;
-      // Placas completas que AutoConf revela no detail — usadas depois pra
-      // determinar se um Sances está REALMENTE cadastrado no AutoConf (sem
-      // depender só de fingerprint, que gera false positive com modelos iguais).
-      const autoconfPlacasCompletas = new Set<string>();
       for (const v of dados) {
         try {
           let fotos: unknown[] = [], acessorios: unknown[] = [];
@@ -1140,8 +1136,6 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             const d = detail.dados as any;
             const veiculo = d?.dados ?? d;
             fotos = veiculo?.fotos || d?.fotos || [];
-            const placaCompleta = String(veiculo?.placa_completa || "").toUpperCase().trim();
-            if (placaCompleta) autoconfPlacasCompletas.add(placaCompleta);
             if (!loggedPrecoFields) {
               loggedPrecoFields = true;
               const precoRx = /val|preco|price|anuncio|web|publicad|negoc/i;
@@ -1218,16 +1212,17 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           return `${first}${last}|${normMarca(marca)}|${String(ano || "").slice(-4)}`;
         };
 
-        // Index Sances: fpBase → array de candidatos (preserva modelo pro tie-breaker)
-        type SancesMatch = { placa: string; preco: number; modelo: string; diasPatio: number };
+        // Index Sances: fpBase → array de candidatos (preserva modelo + km pro match)
+        type SancesMatch = { placa: string; preco: number; modelo: string; diasPatio: number; km: number };
         const sancesByFingerprint = new Map<string, SancesMatch[]>();
         const sancesByPlacaCompleta = new Map<string, SancesMatch>();
         for (const sv of sancesList) {
           const placaCompleta = (sv.placa || "").toUpperCase();
           const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
           const diasPatio = typeof sv.diasEstoque === "number" ? sv.diasEstoque : 0;
+          const km = typeof sv.quilometragem === "number" ? sv.quilometragem : 0;
           if (!placaCompleta) continue;
-          const entry: SancesMatch = { placa: placaCompleta, preco, modelo: sv.descricaoModelo || "", diasPatio };
+          const entry: SancesMatch = { placa: placaCompleta, preco, modelo: sv.descricaoModelo || "", diasPatio, km };
           sancesByPlacaCompleta.set(norm(placaCompleta), entry);
           const fp = fpBase(placaCompleta, sv.descricaoMarca || "", sv.anoModelo || "");
           if (!fp) continue;
@@ -1253,11 +1248,11 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             const fp = fpBase(placaAutoconfRaw, v.marca_nome || "", v.anomodelo || "");
             if (fp) {
               const candidates = sancesByFingerprint.get(fp) || [];
-              // Tie-breaker por modelo: sempre valida — mesmo com 1 só candidato.
-              // Evita false-positive quando modelos diferentes da mesma marca/ano
-              // compartilham fingerprint de placa (ex: VW Nivus vs VW Taos ambos
-              // F...7 2022). Normaliza (maiúsculas + remove pontuação tipo "!")
-              // pra "up!" bater com "UP XTREME TSI 1.0".
+              // Tie-breaker por modelo + KM: evita false positives quando
+              // AutoConf não expõe placa_completa. KM deve ser IDÊNTICO — carros
+              // diferentes quase nunca têm mesmo km exato, carros iguais entre
+              // Sances e AutoConf têm km sincronizado (confirmado empiricamente
+              // nos 4 casos reportados pelo user: BWW5C42/FIX1D82/EBQ0529/EGU8J59).
               const normModelo = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim();
               // Aliases de modelo: AutoConf às vezes usa submarca ("Haval"),
               // Sances usa modelo específico ("H6"). Mapeamento token AC → tokens aceitos SC.
@@ -1268,7 +1263,9 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               const tokensAceitos = tokenAc ? [tokenAc, ...(MODELO_ALIASES[tokenAc] || [])] : [];
               const modeloOK = (c: SancesMatch) =>
                 tokensAceitos.length === 0 || tokensAceitos.some((t) => normModelo(c.modelo).includes(t));
-              const compat = candidates.filter(modeloOK);
+              const kmAutoconf = Number(v.km) || 0;
+              const kmOK = (c: SancesMatch) => c.km === kmAutoconf;
+              const compat = candidates.filter((c) => modeloOK(c) && kmOK(c));
               if (compat.length === 1) match = compat[0];
               // Se 0 ou múltiplos compatíveis, não arrisca (evita false match)
             }
@@ -1312,18 +1309,16 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
         }
 
         // Direção inversa: veículos na Sances (preço retail) que não estão no AutoConf.
-        // Usa placa_completa revelada pelo AutoConf no detail (match exato) em vez
-        // de fingerprint — evita false positive tipo "outro VW Fox 2020 com mesma
-        // primeira+última letra da placa" marcar um Sances diferente como matched.
-        // AutoConf que não revela placa_completa (null) simplesmente não contribui
-        // pro match — conservador: na dúvida, flag como "pra cadastrar".
+        // Usa placasSancesUsadas (alimentado no loop via fingerprint + modelo + KM
+        // exato). AutoConf não expõe placa_completa de forma confiável, por isso
+        // KM idêntico é o discriminante principal: carros diferentes quase nunca
+        // têm mesmo km exato.
         const pendentes: SancesPendenteStored[] = sancesList
           .filter((sv) => {
             const preco = typeof sv.precoVenda === "number" ? sv.precoVenda : 0;
             if (preco < 1000) return false; // ignora repasse
             if (!sv.placa) return false;
-            const placaUp = sv.placa.toUpperCase().trim();
-            return !autoconfPlacasCompletas.has(placaUp);
+            return !placasSancesUsadas.has(sv.placa.toUpperCase());
           })
           .map((sv) => ({
             placa: String(sv.placa || "").toUpperCase(),
