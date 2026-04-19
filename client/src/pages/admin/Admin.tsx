@@ -1155,16 +1155,17 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             const fp = fpBase(placaAutoconfRaw, v.marca_nome || "", v.anomodelo || "");
             if (fp) {
               const candidates = sancesByFingerprint.get(fp) || [];
-              if (candidates.length === 1) {
-                match = candidates[0];
-              } else if (candidates.length > 1) {
-                // tie-breaker: primeira palavra do modelopai_nome AutoConf tem que
-                // aparecer no descricaoModelo da Sances. Se sobrar 1, usa.
-                const token = String(v.modelopai_nome || "").toUpperCase().split(/\s+/)[0];
-                const compat = token ? candidates.filter((c) => c.modelo.toUpperCase().includes(token)) : [];
-                if (compat.length === 1) match = compat[0];
-                // senão, não arrisca — não preenche (evita false match)
-              }
+              // Tie-breaker por modelo: sempre valida — mesmo com 1 só candidato.
+              // Evita false-positive quando modelos diferentes da mesma marca/ano
+              // compartilham fingerprint de placa (ex: VW Nivus vs VW Taos ambos
+              // F...7 2022). Normaliza (maiúsculas + remove pontuação tipo "!")
+              // pra "up!" bater com "UP XTREME TSI 1.0".
+              const normModelo = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim();
+              const tokenAc = normModelo(String(v.modelopai_nome || "")).split(/\s+/)[0] || "";
+              const modeloOK = (c: SancesMatch) => !tokenAc || normModelo(c.modelo).includes(tokenAc);
+              const compat = candidates.filter(modeloOK);
+              if (compat.length === 1) match = compat[0];
+              // Se 0 ou múltiplos compatíveis, não arrisca (evita false match)
             }
           }
 
