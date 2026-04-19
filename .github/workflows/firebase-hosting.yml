@@ -64,3 +64,12 @@ jobs:
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NOVO_SITE_ATRIA }}
           PROJECT_ID: novo-site-atria
+
+      - name: Deploy Firestore rules (live)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only firestore:rules
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NOVO_SITE_ATRIA }}
+          PROJECT_ID: novo-site-atria
