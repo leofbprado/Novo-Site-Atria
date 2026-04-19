@@ -210,11 +210,25 @@ export async function upsertVeiculoFromAutoConf(
   //   foto           = url da foto principal
   //   fotos          = [{url: "..."}]
   //   acessorios     = [{nome: "..."}]
+  // AutoConf coloca "(Hibrido)" genérico no modelo_nome, mas o modelo_slug
+  // às vezes tem "-hev-" ou "-phev-" delimitado — a gente refina a versão
+  // pra mostrar HEV/PHEV explícito quando o slug indicar.
+  const modeloNomeRaw = (data.modelo_nome as string) || (data.versao as string) || "";
+  const modeloSlug = (data.modelo_slug as string) || "";
+  const tipoHibrido = /(^|-)phev(-|$)/.test(modeloSlug.toLowerCase())
+    ? "PHEV"
+    : /(^|-)hev(-|$)/.test(modeloSlug.toLowerCase())
+      ? "HEV"
+      : null;
+  const versaoRefinada = tipoHibrido && /\(h[íi]brido\)/i.test(modeloNomeRaw)
+    ? modeloNomeRaw.replace(/\(h[íi]brido\)/i, `(${tipoHibrido})`)
+    : modeloNomeRaw;
+
   const baseFields = {
     autoconf_id: id,
     marca: (data.marca_nome as string) || (data.marca as string) || "",
     modelo: (data.modelopai_nome as string) || (data.modelo as string) || "",
-    versao: (data.modelo_nome as string) || (data.versao as string) || "",
+    versao: versaoRefinada,
     ano_fabricacao: Number(data.anofabricacao) || Number(data.ano_fabricacao) || 0,
     ano_modelo: Number(data.anomodelo) || Number(data.ano_modelo) || 0,
     km: Number(data.km) || 0,
