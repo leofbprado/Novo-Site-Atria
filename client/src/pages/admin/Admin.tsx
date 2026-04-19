@@ -1161,8 +1161,15 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               // F...7 2022). Normaliza (maiúsculas + remove pontuação tipo "!")
               // pra "up!" bater com "UP XTREME TSI 1.0".
               const normModelo = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim();
+              // Aliases de modelo: AutoConf às vezes usa submarca ("Haval"),
+              // Sances usa modelo específico ("H6"). Mapeamento token AC → tokens aceitos SC.
+              const MODELO_ALIASES: Record<string, string[]> = {
+                HAVAL: ["H6", "H2", "H3", "JOLION", "DARGO", "F7"],
+              };
               const tokenAc = normModelo(String(v.modelopai_nome || "")).split(/\s+/)[0] || "";
-              const modeloOK = (c: SancesMatch) => !tokenAc || normModelo(c.modelo).includes(tokenAc);
+              const tokensAceitos = tokenAc ? [tokenAc, ...(MODELO_ALIASES[tokenAc] || [])] : [];
+              const modeloOK = (c: SancesMatch) =>
+                tokensAceitos.length === 0 || tokensAceitos.some((t) => normModelo(c.modelo).includes(t));
               const compat = candidates.filter(modeloOK);
               if (compat.length === 1) match = compat[0];
               // Se 0 ou múltiplos compatíveis, não arrisca (evita false match)
