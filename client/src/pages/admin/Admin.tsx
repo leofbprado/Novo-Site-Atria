@@ -958,9 +958,30 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
   const [statusFilter, setStatusFilter] = useState<"ativos" | "rascunho" | "publicado" | "despublicado" | "todos">("ativos");
   const [perfSort, setPerfSort] = useState<"" | "coldest" | "stalled" | "views_no_contact" | "milestone">("");
   type SortCol = "preco" | "dias" | "sances_dias_patio" | "ano_modelo" | "km" | null;
-  const [columnSort, setColumnSort] = useState<{ col: SortCol; dir: "asc" | "desc" }>({ col: null, dir: "desc" });
+  const [columnSort, setColumnSort] = useState<{ col: SortCol; dir: "asc" | "desc" }>(() => {
+    try {
+      const saved = sessionStorage.getItem("estoque-column-sort");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { col: null, dir: "desc" };
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem("estoque-column-sort", JSON.stringify(columnSort)); } catch {}
+  }, [columnSort]);
   type QuickFilter = "parados90" | "divergentes" | "semFotos" | null;
-  const [quickFilter, setQuickFilter] = useState<QuickFilter>(null);
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>(() => {
+    try {
+      const saved = sessionStorage.getItem("estoque-quick-filter");
+      if (saved === "parados90" || saved === "divergentes" || saved === "semFotos") return saved;
+    } catch {}
+    return null;
+  });
+  useEffect(() => {
+    try {
+      if (quickFilter) sessionStorage.setItem("estoque-quick-filter", quickFilter);
+      else sessionStorage.removeItem("estoque-quick-filter");
+    } catch {}
+  }, [quickFilter]);
   const [fotosProvFilter, setFotosProvFilter] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareText, setShareText] = useState("");
