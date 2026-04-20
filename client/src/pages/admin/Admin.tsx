@@ -43,7 +43,6 @@ import {
   getAllWhatsAppClicks,
   getMilestoneConfig,
   saveMilestoneConfig,
-  migrateAllSlugs,
   getAllBlogPosts,
   createBlogPost,
   updateBlogPost,
@@ -245,6 +244,16 @@ function Spinner({ size = 16 }: { size?: number }) {
 }
 
 function CrmBadge({ lead }: { lead: LeadAdmin }) {
+  if (lead.hypergestor_skipped) {
+    return (
+      <span
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-400 border-slate-200"
+        title="Lead placeholder sem contato — não aplicável ao CRM"
+      >
+        —
+      </span>
+    );
+  }
   if (lead.hypergestor_sent_at) {
     return (
       <span
@@ -1970,7 +1979,8 @@ function LeadsPage() {
     getAllLeads().then(setLeads).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const crmStatus = (l: LeadAdmin): "enviado" | "pendente" | "erro" => {
+  const crmStatus = (l: LeadAdmin): "enviado" | "pendente" | "erro" | "skipped" => {
+    if (l.hypergestor_skipped) return "skipped";
     if (l.hypergestor_sent_at) return "enviado";
     if (l.hypergestor_error) return "erro";
     return "pendente";
@@ -2479,8 +2489,6 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
   const [milestoneDias, setMilestoneDias] = useState(milestoneConfig.dias.join(", "));
   const [savingMs, setSavingMs] = useState(false);
   const [savedMs, setSavedMs] = useState(false);
-  const [migrating, setMigrating] = useState(false);
-  const [migrateResult, setMigrateResult] = useState("");
   const [crmChecking, setCrmChecking] = useState(true);
   const [crmOk, setCrmOk] = useState<boolean | null>(null);
   const [crmDetail, setCrmDetail] = useState("");
@@ -2508,7 +2516,7 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
   const loadPending = useCallback(async () => {
     try {
       const all = await getAllLeads();
-      setPendingLeads(all.filter((l) => !l.hypergestor_sent_at && !l.hypergestor_error));
+      setPendingLeads(all.filter((l) => !l.hypergestor_sent_at && !l.hypergestor_error && !l.hypergestor_skipped));
     } catch { setPendingLeads([]); }
   }, []);
 
@@ -2796,38 +2804,6 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
           )}
         </div>
 
-        {/* SEO Slug Migration */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
-              <RefreshCw size={18} className="text-emerald-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-slate-900">Migrar Slugs SEO</h3>
-              <p className="text-slate-500 text-xs">Atualiza URLs dos veiculos para formato otimizado para Google</p>
-            </div>
-          </div>
-          <button
-            onClick={async () => {
-              setMigrating(true); setMigrateResult("");
-              try {
-                const r = await migrateAllSlugs();
-                setMigrateResult(`${r.migrated} migrados, ${r.skipped} ja atualizados`);
-              } catch (err: any) { setMigrateResult(`Erro: ${err.message}`); }
-              setMigrating(false);
-            }}
-            disabled={migrating}
-            className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2"
-          >
-            {migrating ? <Spinner size={14} /> : <RefreshCw size={14} />}
-            {migrating ? "Migrando..." : "Migrar Slugs"}
-          </button>
-          {migrateResult && (
-            <p className={`text-sm mt-2 ${migrateResult.startsWith("Erro") ? "text-red-600" : "text-emerald-600"}`}>
-              {migrateResult}
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );

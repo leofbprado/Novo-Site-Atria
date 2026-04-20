@@ -510,6 +510,7 @@ export interface LeadAdmin {
   hypergestor_error?: string;
   hypergestor_error_at?: Timestamp | null;
   hypergestor_response?: string;
+  hypergestor_skipped?: boolean;
 }
 
 export async function getAllLeads(): Promise<LeadAdmin[]> {

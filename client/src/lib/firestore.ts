@@ -37,16 +37,19 @@ export async function saveLead(lead: Lead): Promise<void> {
     console.log("[mock] Lead salvo:", lead);
     return;
   }
+  const digits = String(lead.whatsapp || "").replace(/\D/g, "");
+  const validPhone = digits.length >= 10;
+
+  // Placeholder sem contato (tipo botão Agendar) entra no Firestore
+  // com flag hypergestor_skipped — pra tracking GA/Ads funcionar, mas
+  // sem tentar despachar pro CRM nem aparecer como pendente lá.
   const ref = await addDoc(collection(db, "leads"), {
     ...lead,
     createdAt: serverTimestamp(),
+    ...(validPhone ? {} : { hypergestor_skipped: true }),
   });
 
-  // Só despacha pro CRM se houver contato real (DDD + número, mín. 10 dígitos).
-  // Leads-placeholder tipo vehicle-agendar (só pra track GA/Ads) ficam
-  // só no Firestore, não poluem o CRM.
-  const digits = String(lead.whatsapp || "").replace(/\D/g, "");
-  if (digits.length < 10) return;
+  if (!validPhone) return;
 
   fetch("/api/hypergestor-send", {
     method: "POST",
