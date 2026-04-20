@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,11 +19,14 @@ const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComp
 const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const fmtKm = (n: number) => `${n.toLocaleString("pt-BR")} km`;
 
-function calcParcela(preco: number, entradaPct: number, meses: number): number {
-  const r = 0.015;
-  const P = preco * (1 - entradaPct / 100);
-  return Math.round((P * r * Math.pow(1 + r, meses)) / (Math.pow(1 + r, meses) - 1));
+function formatPhone(s: string): string {
+  const d = s.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : d;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
+
 
 // ---- SEO --------------------------------------------------------------------
 import { useSEO } from "@/hooks/useSEO";
@@ -391,101 +394,109 @@ function OpcionaisSection({ opcionais }: { opcionais: string[] }) {
 
 // ---- Sticky Price Panel (right column) --------------------------------------
 function PricePanel({ v }: { v: Vehicle }) {
-  const [agendarDone, setAgendarDone] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-  const parcela60 = calcParcela(v.preco, 20, 60);
+  const trackProps = {
+    vehicle_id: v.slug,
+    vehicle_marca: v.marca,
+    vehicle_modelo: v.modelo,
+    vehicle_ano: v.ano,
+    vehicle_preco: v.preco,
+    value: v.preco,
+  };
 
-  const handleAgendar = async () => {
-    await saveLead({ source: "vehicle-agendar", whatsapp: "", query: titulo, dados: { slug: v.slug, preco: v.preco } });
+  const handleInteresseClick = () => {
+    trackVehicleEvent(v.slug, "clique_interesse_header").catch(() => {});
+    track("cta_click", { source: "ficha-interesse-panel", cta: "interesse", ...trackProps });
+    setDrawerOpen(true);
+  };
+
+  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(v.preco)}). Poderia me atender?`;
+  const handleWhatsClick = () => {
+    trackVehicleEvent(v.slug, "clique_whatsapp_header").catch(() => {});
     trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
-    trackVehicleEvent(v.slug, "lead").catch(() => {});
-    setAgendarDone(true);
-    setTimeout(() => {
-      window.open(waLink(`Olá! Gostaria de agendar uma visita para ver o ${titulo} ${v.ano} (${fmt(v.preco)}). Qual a disponibilidade?`), "_blank");
-    }, 300);
+    track("whatsapp_click", { source: "ficha-whatsapp-panel", ...trackProps });
+  };
+
+  const handleSimularCredere = () => {
+    trackVehicleEvent(v.slug, "clique_simular_credere_header").catch(() => {});
+    track("cta_click", { source: "ficha-credere-panel", cta: "credere", ...trackProps });
+    document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <div className="bg-white border border-atria-gray-medium rounded-2xl shadow-sm overflow-hidden">
-      <div className="p-6 space-y-5">
-        {/* Header */}
-        <div>
-          <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider">{v.marca}</p>
-          <h2 className="font-barlow-condensed font-black text-2xl text-atria-text-dark leading-tight">
-            {v.marca} {v.modelo}
-          </h2>
-          {v.versao && (
-            <p className="font-inter text-sm text-atria-text-gray mt-0.5">{v.versao}</p>
-          )}
-        </div>
+    <>
+      <div className="bg-white border border-atria-gray-medium rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 space-y-4">
+          {/* Header */}
+          <div>
+            <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider">{v.marca}</p>
+            <h2 className="font-barlow-condensed font-black text-2xl text-atria-text-dark leading-tight">
+              {v.marca} {v.modelo}
+            </h2>
+            {v.versao && (
+              <p className="font-inter text-sm text-atria-text-gray mt-0.5">{v.versao}</p>
+            )}
+          </div>
 
-        {/* Price */}
-        <div>
-          <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">
-            {fmt(v.preco)}
-          </p>
-          <p className="font-inter text-sm text-atria-text-gray mt-1">
-            ou a partir de{" "}
-            <strong className="text-atria-text-dark">{fmt(parcela60)}/mes</strong>
-            {" "}em 60x
-          </p>
-        </div>
+          {/* Price */}
+          <div>
+            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
+            <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">
+              {fmt(v.preco)}
+            </p>
+          </div>
 
-        {/* WhatsApp CTA */}
-        <a
-          href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no site da Átria Veículos e tenho interesse! Código: ${v.slug}`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {})}
-          className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-colors flex items-center justify-center gap-2 block text-center shadow-lg shadow-green-500/20"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-          </svg>
-          QUERO ESSA {v.marca.toUpperCase()} {v.modelo.toUpperCase()}!
-        </a>
+          {/* Primary CTA: Interesse */}
+          <button
+            onClick={handleInteresseClick}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
+          >
+            <Heart size={18} fill="currentColor" /> Tenho interesse neste {v.modelo}
+          </button>
 
-        {/* Schedule visit */}
-        <button
-          onClick={handleAgendar}
-          disabled={agendarDone}
-          className={`w-full border-2 font-inter font-semibold text-sm py-3 rounded-xl transition-all flex items-center justify-center gap-2 ${
-            agendarDone
-              ? "border-green-500 text-green-600 bg-green-50"
-              : "border-atria-gray-medium text-atria-text-dark hover:border-atria-navy hover:text-atria-navy"
-          }`}
-        >
-          {agendarDone ? (
-            <><CheckCircle size={16} /> Agendamento enviado!</>
-          ) : (
-            <><Calendar size={16} /> Agendar visita presencial</>
-          )}
-        </button>
+          {/* Secondary CTA: WhatsApp */}
+          <a
+            href={waLink(waMsg)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleWhatsClick}
+            className="w-full border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold text-sm rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors"
+          >
+            <MessageCircle size={18} /> WhatsApp agora
+          </a>
 
-        {/* Scroll to financing */}
-        <button
-          onClick={() => { trackVehicleEvent(v.slug, "clique_financiamento").catch(() => {}); document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" }); }}
-          className="w-full font-inter text-sm text-atria-navy hover:text-atria-navy-dark underline underline-offset-2 transition-colors py-1"
-        >
-          Simular financiamento com CPF
-        </button>
+          {/* Scroll to financing */}
+          <button
+            onClick={handleSimularCredere}
+            className="w-full text-center font-inter text-sm text-atria-text-gray hover:text-atria-navy underline underline-offset-4 decoration-atria-gray-medium hover:decoration-atria-navy transition-colors pt-1"
+          >
+            Simular financiamento →
+          </button>
 
-        {/* Trust seals */}
-        <div className="border-t border-atria-gray-medium pt-4 space-y-2.5">
-          {[
-            { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veículo inspecionado com laudo" },
-            { icon: <Star size={16} className="text-atria-yellow" />, text: "Garantia de 90 dias" },
-            { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
-            { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
-          ].map((item) => (
-            <div key={item.text} className="flex items-center gap-2.5">
-              {item.icon}
-              <span className="font-inter text-xs text-atria-text-gray">{item.text}</span>
-            </div>
-          ))}
+          {/* Trust seals */}
+          <div className="border-t border-atria-gray-medium pt-4 space-y-2.5">
+            {[
+              { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veículo inspecionado com laudo" },
+              { icon: <Star size={16} className="text-atria-yellow" />, text: "Garantia de 90 dias" },
+              { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
+              { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-2.5">
+                {item.icon}
+                <span className="font-inter text-xs text-atria-text-gray">{item.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      <AnimatePresence>
+        {drawerOpen && (
+          <InterestDrawer vehicle={v} onClose={() => setDrawerOpen(false)} />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -573,12 +584,38 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
   const [done, setDone] = useState(false);
   const titulo = vehicle.titulo ?? `${vehicle.marca} ${vehicle.modelo}`;
   const waMsg = `Olá! Me chamo ${nome}, tenho interesse no ${titulo} ${vehicle.ano} (${fmt(vehicle.preco)}). Qual a disponibilidade?`;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, []);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key !== "Tab" || !containerRef.current) return;
+      const focusables = Array.from(
+        containerRef.current.querySelectorAll<HTMLElement>(
+          'input:not([disabled]), button:not([disabled]), a[href]'
+        )
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,6 +670,10 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <motion.div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="interest-drawer-title"
         className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -669,7 +710,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
         ) : (
           <>
             <div className="bg-atria-navy px-6 py-5">
-              <h3 className="font-barlow-condensed font-black text-xl text-white">
+              <h3 id="interest-drawer-title" className="font-barlow-condensed font-black text-xl text-white">
                 Tenho interesse no {vehicle.modelo}
               </h3>
               <p className="font-inter text-white/70 text-sm mt-1">
@@ -678,10 +719,11 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
             </div>
             <form className="px-6 py-5 space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Seu nome</label>
+                <label htmlFor="interest-nome" className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Seu nome</label>
                 <input
+                  id="interest-nome"
                   type="text"
-                  placeholder="João Silva"
+                  placeholder="Seu nome completo"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   required
@@ -690,12 +732,14 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
                 />
               </div>
               <div>
-                <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">WhatsApp</label>
+                <label htmlFor="interest-whatsapp" className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">WhatsApp</label>
                 <input
+                  id="interest-whatsapp"
                   type="tel"
-                  placeholder="(19) 99652-5211"
+                  inputMode="numeric"
+                  placeholder="(19) 99999-9999"
                   value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
+                  onChange={(e) => setWhatsapp(formatPhone(e.target.value))}
                   required
                   className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
                 />
@@ -706,7 +750,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
                 className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-inter font-bold text-base rounded-lg py-3.5 flex items-center justify-center gap-2 transition-colors"
               >
                 <MessageCircle size={18} />
-                {sending ? "Enviando..." : "QUERO FALAR NO WHATSAPP"}
+                {sending ? "Enviando..." : "Enviar e abrir WhatsApp"}
               </button>
               <p className="text-xs text-atria-text-gray text-center">
                 Ao enviar, você vai direto pro WhatsApp da Átria. Seu contato fica só com o time de vendas — sem SPAM.
