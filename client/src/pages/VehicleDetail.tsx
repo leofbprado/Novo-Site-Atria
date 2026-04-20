@@ -709,7 +709,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
                 {sending ? "Enviando..." : "QUERO FALAR NO WHATSAPP"}
               </button>
               <p className="text-xs text-atria-text-gray text-center">
-                Nosso time te atende em até 10 minutos em horário comercial.
+                Ao enviar, você vai direto pro WhatsApp da Átria. Seu contato fica só com o time de vendas — sem SPAM.
               </p>
             </form>
           </>
