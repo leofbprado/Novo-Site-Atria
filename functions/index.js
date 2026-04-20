@@ -1,5 +1,4 @@
 const { onRequest } = require("firebase-functions/v2/https");
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -390,46 +389,54 @@ exports.hypergestorTest = onRequest(
   }
 );
 
-exports.onLeadCreated = onDocumentCreated(
-  { region: "southamerica-east1", document: "leads/{leadId}", retry: false },
-  async (event) => {
-    const snap = event.data;
-    if (!snap) return;
-    const lead = snap.data() || {};
-    const ref = snap.ref;
+exports.hypergestorSend = onRequest(
+  { region: "southamerica-east1", cors: true },
+  async (req, res) => {
+    cors(res);
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+    if (req.method !== "POST") { res.status(405).json({ ok: false, error: "POST only" }); return; }
 
-    if (lead.hypergestor_sent_at) {
-      console.log(`[onLeadCreated] ${event.params.leadId} já enviado, skip`);
+    const { leadId, lead } = req.body || {};
+    if (!lead || !lead.whatsapp) {
+      res.status(400).json({ ok: false, error: "lead.whatsapp obrigatório" });
       return;
     }
 
-    if (!lead.whatsapp) {
-      await ref.update({ hypergestor_error: "sem whatsapp" }).catch(() => {});
-      return;
-    }
-
-    const createdAt = lead.createdAt?.toDate?.() || new Date();
-    const payload = buildHypergestorPayload(lead, createdAt);
+    const payload = buildHypergestorPayload(lead, new Date());
 
     try {
-      const res = await fetch(HYPERGESTOR_URL, {
+      const r = await fetch(HYPERGESTOR_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const text = await res.text();
-      if (!res.ok) throw new Error(`Hypergestor ${res.status}: ${text.slice(0, 300)}`);
-      await ref.update({
-        hypergestor_sent_at: admin.firestore.FieldValue.serverTimestamp(),
-        hypergestor_response: text.slice(0, 500),
-      });
-      console.log(`[onLeadCreated] ${event.params.leadId} enviado ok`);
+      const text = await r.text();
+
+      if (leadId) {
+        const ref = db.collection("leads").doc(leadId);
+        if (r.ok) {
+          await ref.update({
+            hypergestor_sent_at: admin.firestore.FieldValue.serverTimestamp(),
+            hypergestor_response: text.slice(0, 500),
+          }).catch(() => {});
+        } else {
+          await ref.update({
+            hypergestor_error: `HTTP ${r.status}: ${text.slice(0, 300)}`,
+            hypergestor_error_at: admin.firestore.FieldValue.serverTimestamp(),
+          }).catch(() => {});
+        }
+      }
+
+      res.json({ ok: r.ok, status: r.status, body: text.slice(0, 500) });
     } catch (e) {
-      console.error(`[onLeadCreated] ${event.params.leadId} erro:`, e?.message || e);
-      await ref.update({
-        hypergestor_error: String(e?.message || e).slice(0, 500),
-        hypergestor_error_at: admin.firestore.FieldValue.serverTimestamp(),
-      }).catch(() => {});
+      const msg = String(e?.message || e).slice(0, 500);
+      if (leadId) {
+        await db.collection("leads").doc(leadId).update({
+          hypergestor_error: msg,
+          hypergestor_error_at: admin.firestore.FieldValue.serverTimestamp(),
+        }).catch(() => {});
+      }
+      res.status(502).json({ ok: false, status: 0, body: "", error: msg });
     }
   }
 );

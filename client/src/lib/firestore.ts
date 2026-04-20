@@ -37,10 +37,19 @@ export async function saveLead(lead: Lead): Promise<void> {
     console.log("[mock] Lead salvo:", lead);
     return;
   }
-  await addDoc(collection(db, "leads"), {
+  const ref = await addDoc(collection(db, "leads"), {
     ...lead,
     createdAt: serverTimestamp(),
   });
+
+  // Envia pro CRM Hypergestor em background. Falha não bloqueia o save
+  // nem a experiência do usuário — erro fica gravado no próprio doc.
+  fetch("/api/hypergestor-send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    body: JSON.stringify({ leadId: ref.id, lead }),
+  }).catch(() => { /* ignora; erro vai no doc via server */ });
 }
 
 export interface Vehicle {
