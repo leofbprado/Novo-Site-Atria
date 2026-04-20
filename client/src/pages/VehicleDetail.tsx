@@ -580,6 +580,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const titulo = vehicle.titulo ?? `${vehicle.marca} ${vehicle.modelo}`;
+  const waMsg = `Olá! Me chamo ${nome}, tenho interesse no ${titulo} ${vehicle.ano} (${fmt(vehicle.preco)}). Qual a disponibilidade?`;
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -619,13 +620,21 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
         value: vehicle.preco,
       });
     } catch { /* não bloqueia */ }
-    setDone(true);
     setSending(false);
-    setTimeout(() => {
-      const msg = `Olá! Me chamo ${nome}, tenho interesse no ${titulo} ${vehicle.ano} (${fmt(vehicle.preco)}). Qual a disponibilidade?`;
-      window.open(waLink(msg), "_blank");
-      onClose();
-    }, 1000);
+    setDone(true);
+  };
+
+  const handleOpenWhatsApp = () => {
+    trackVehicleEvent(vehicle.slug, "clique_whatsapp").catch(() => {});
+    track("whatsapp_click", {
+      source: "vehicle-interesse-success",
+      vehicle_id: vehicle.slug,
+      vehicle_marca: vehicle.marca,
+      vehicle_modelo: vehicle.modelo,
+      vehicle_ano: vehicle.ano,
+      vehicle_preco: vehicle.preco,
+    });
+    onClose();
   };
 
   return (
@@ -647,11 +656,23 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
         </button>
 
         {done ? (
-          <div className="p-10 text-center">
+          <div className="p-8 text-center">
             <CheckCircle size={52} className="text-green-500 mx-auto mb-3" />
-            <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark">
-              Recebemos! Abrindo WhatsApp...
+            <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark mb-2">
+              Tudo certo, {nome.split(" ")[0]}!
             </h3>
+            <p className="font-inter text-sm text-atria-text-gray mb-5">
+              Recebemos seu interesse. Toque abaixo para abrir o WhatsApp e falar agora com a gente.
+            </p>
+            <a
+              href={waLink(waMsg)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleOpenWhatsApp}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-lg py-3.5 flex items-center justify-center gap-2 transition-colors"
+            >
+              <MessageCircle size={18} /> Abrir WhatsApp agora
+            </a>
           </div>
         ) : (
           <>
