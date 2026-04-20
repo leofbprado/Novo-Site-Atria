@@ -110,6 +110,26 @@ export async function fetchSancesVeiculos(): Promise<SancesVeiculo[]> {
   return Array.isArray(data) ? data : [];
 }
 
+// ── Hypergestor (CRM) ────────────────────────────────────────────────────────
+
+export interface HypergestorTestResult {
+  ok: boolean;
+  status: number;
+  body: string;
+  error?: string;
+}
+
+export async function testHypergestor(): Promise<HypergestorTestResult> {
+  const res = await fetch("/api/hypergestor-test", { method: "POST" });
+  const data = await res.json().catch(() => ({} as any));
+  return {
+    ok: !!data.ok,
+    status: data.status ?? res.status,
+    body: data.body || "",
+    error: data.error,
+  };
+}
+
 // ── OpenAI ───────────────────────────────────────────────────────────────────
 
 export async function generateDescription(

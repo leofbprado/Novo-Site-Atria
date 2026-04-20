@@ -177,6 +177,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Hypergestor test (dev) ──────────────────────────────────────────────
+  app.post("/api/hypergestor-test", async (_req: Request, res: Response) => {
+    const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+    const payload = {
+      Rota: "lead-novo",
+      Empresa: "TFQMKVULUG",
+      Objeto: {
+        nome: `TESTE API ${stamp}`,
+        whatsapp: "5519000000000",
+        telefone: "5519000000000",
+        mensagem: "Lead de teste (dev)",
+        unidade: "KJPE8E67TY",
+        numeroUnico_segmentos_de_lead: "fUyQVHGfrD86SYPFAKCZNuZvXRkk13",
+        numeroUnico_departamentos_de_lead: "NyDjUMSiGuEbCn8SnPpUPa7YB1DjV4",
+        numeroUnico_fontes_de_lead: "z3uaM6VEQCbtYlTVZ3vYysirJZgMlM",
+        origem: "SITE",
+        departamento: "Veículos",
+        data: new Date().toISOString().split("T")[0],
+        receber_whatsapp: "NÃO",
+        receber_email: "NÃO",
+        receber_telefone: "NÃO",
+        veiculo_na_troca: "NÃO",
+      },
+    };
+    try {
+      const r = await fetch("https://api.autopop360.com/lead-novo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const text = await r.text();
+      res.json({ ok: r.ok, status: r.status, body: text.slice(0, 800) });
+    } catch (e: any) {
+      res.status(502).json({ ok: false, status: 0, body: "", error: String(e?.message || e).slice(0, 500) });
+    }
+  });
+
   // ── Sances proxy (cross-check de preços) ────────────────────────────────
   app.get("/api/sances/estoqueVeiculos", async (_req: Request, res: Response) => {
     try {

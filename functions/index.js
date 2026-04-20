@@ -337,6 +337,59 @@ function buildHypergestorPayload(lead, createdAt) {
   return { Rota: "lead-novo", Empresa: HYPERGESTOR_EMPRESA, Objeto: objeto };
 }
 
+exports.hypergestorTest = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    cors(res);
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+    const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+    const testPayload = {
+      Rota: "lead-novo",
+      Empresa: HYPERGESTOR_EMPRESA,
+      Objeto: {
+        nome: `TESTE API ${stamp}`,
+        whatsapp: "5519000000000",
+        telefone: "5519000000000",
+        email: "",
+        mensagem: "Lead de teste disparado pelo botão 'Testar integração' do admin. Pode deletar.",
+        unidade: HYPERGESTOR_UNIDADE,
+        numeroUnico_segmentos_de_lead: HYPERGESTOR_SEGMENTO,
+        numeroUnico_departamentos_de_lead: HYPERGESTOR_DEPARTAMENTO,
+        numeroUnico_fontes_de_lead: HYPERGESTOR_FONTE,
+        origem: "SITE",
+        departamento: "Veículos",
+        data: new Date().toISOString().split("T")[0],
+        receber_whatsapp: "NÃO",
+        receber_email: "NÃO",
+        receber_telefone: "NÃO",
+        veiculo_na_troca: "NÃO",
+      },
+    };
+
+    try {
+      const r = await fetch(HYPERGESTOR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testPayload),
+      });
+      const text = await r.text();
+      res.json({
+        ok: r.ok,
+        status: r.status,
+        body: text.slice(0, 800),
+      });
+    } catch (e) {
+      res.status(502).json({
+        ok: false,
+        status: 0,
+        body: "",
+        error: String(e?.message || e).slice(0, 500),
+      });
+    }
+  }
+);
+
 exports.onLeadCreated = onDocumentCreated(
   { region: "southamerica-east1", document: "leads/{leadId}", retry: false },
   async (event) => {

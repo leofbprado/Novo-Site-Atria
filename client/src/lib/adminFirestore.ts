@@ -506,7 +506,10 @@ export interface LeadAdmin {
   query?: string;
   dados?: Record<string, unknown>;
   createdAt: Timestamp | null;
-  status?: "novo" | "contatado" | "convertido";
+  hypergestor_sent_at?: Timestamp | null;
+  hypergestor_error?: string;
+  hypergestor_error_at?: Timestamp | null;
+  hypergestor_response?: string;
 }
 
 export async function getAllLeads(): Promise<LeadAdmin[]> {
@@ -515,14 +518,6 @@ export async function getAllLeads(): Promise<LeadAdmin[]> {
     query(collection(firestore, "leads"), orderBy("createdAt", "desc"))
   );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as LeadAdmin));
-}
-
-export async function updateLeadStatus(
-  leadId: string,
-  status: "novo" | "contatado" | "convertido"
-): Promise<void> {
-  const firestore = requireDb();
-  await updateDoc(doc(firestore, "leads", leadId), { status });
 }
 
 // ── WhatsApp Clicks ─────────────────────────────────────────────────────────

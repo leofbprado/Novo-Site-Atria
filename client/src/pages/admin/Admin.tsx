@@ -11,6 +11,7 @@ import {
   fetchAutoConfVeiculos,
   fetchAutoConfVeiculo,
   fetchSancesVeiculos,
+  testHypergestor,
   generateDescription,
   generateBlogPost,
   enrichVehicleWithSearch,
@@ -39,7 +40,6 @@ import {
   getAdminConfig,
   saveAdminConfig,
   getAllLeads,
-  updateLeadStatus,
   getAllWhatsAppClicks,
   getMilestoneConfig,
   saveMilestoneConfig,
@@ -242,6 +242,37 @@ function Badge({ status }: { status: string }) {
 
 function Spinner({ size = 16 }: { size?: number }) {
   return <RefreshCw size={size} className="animate-spin" />;
+}
+
+function CrmBadge({ lead }: { lead: LeadAdmin }) {
+  if (lead.hypergestor_sent_at) {
+    return (
+      <span
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200"
+        title={`Enviado ao Hypergestor em ${fmtDate(lead.hypergestor_sent_at)}`}
+      >
+        <CheckCircle2 size={10} /> Enviado
+      </span>
+    );
+  }
+  if (lead.hypergestor_error) {
+    return (
+      <span
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border bg-red-50 text-red-700 border-red-200"
+        title={lead.hypergestor_error}
+      >
+        <X size={10} /> Erro
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-100 text-slate-500 border-slate-200"
+      title="Aguardando envio ao Hypergestor"
+    >
+      <Clock size={10} /> Pendente
+    </span>
+  );
 }
 
 function SancesCell({ v }: { v: VeiculoAdmin }) {
@@ -818,7 +849,7 @@ function Sidebar({ page, setPage, onLogout, collapsed, setCollapsed }: {
 function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: LeadAdmin[] }) {
   const published = vehicles.filter((v) => v.status === "publicado").length;
   const drafts = vehicles.filter((v) => v.status === "rascunho").length;
-  const newLeads = leads.filter((l) => !l.status || l.status === "novo").length;
+  const pendingLeads = leads.filter((l) => !l.hypergestor_sent_at).length;
 
   const totalValue = vehicles.reduce((sum, v) => sum + v.preco, 0);
 
@@ -850,7 +881,7 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
         <StatCard label="Total de veiculos" value={vehicles.length} icon={<Car size={20} />} />
         <StatCard label="Publicados" value={published} icon={<Eye size={20} />} color="text-emerald-600" />
         <StatCard label="Rascunhos" value={drafts} icon={<EyeOff size={20} />} color="text-amber-600" />
-        <StatCard label="Leads novos" value={newLeads} icon={<Users size={20} />} color="text-blue-600" />
+        <StatCard label="Leads pendentes CRM" value={pendingLeads} icon={<Users size={20} />} color="text-blue-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -878,7 +909,7 @@ function DashboardPage({ vehicles, leads }: { vehicles: VeiculoAdmin[]; leads: L
                     <p className="text-sm font-medium text-slate-700 truncate">{l.nome || l.whatsapp || "Lead"}</p>
                     <p className="text-xs text-slate-400">{l.source} - {fmtDate(l.createdAt)}</p>
                   </div>
-                  <Badge status={l.status || "novo"} />
+                  <CrmBadge lead={l} />
                 </div>
               ))}
             </div>
@@ -1933,26 +1964,31 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
 function LeadsPage() {
   const [leads, setLeads] = useState<LeadAdmin[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"" | "novo" | "contatado" | "convertido">("");
+  const [filter, setFilter] = useState<"" | "enviado" | "pendente" | "erro">("");
 
   useEffect(() => {
     getAllLeads().then(setLeads).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const handleStatusChange = async (id: string, status: "novo" | "contatado" | "convertido") => {
-    await updateLeadStatus(id, status);
-    setLeads((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
+  const crmStatus = (l: LeadAdmin): "enviado" | "pendente" | "erro" => {
+    if (l.hypergestor_sent_at) return "enviado";
+    if (l.hypergestor_error) return "erro";
+    return "pendente";
   };
 
-  const filtered = filter ? leads.filter((l) => (l.status || "novo") === filter) : leads;
-  const newCount = leads.filter((l) => !l.status || l.status === "novo").length;
+  const filtered = filter ? leads.filter((l) => crmStatus(l) === filter) : leads;
+  const pendingCount = leads.filter((l) => crmStatus(l) === "pendente").length;
+  const errorCount = leads.filter((l) => crmStatus(l) === "erro").length;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{leads.length} leads recebidos ({newCount} novos)</p>
+          <p className="text-slate-500 text-sm mt-0.5">
+            {leads.length} leads recebidos · {pendingCount} pendentes no CRM
+            {errorCount > 0 ? ` · ${errorCount} com erro` : ""}
+          </p>
         </div>
       </div>
 
@@ -1960,9 +1996,9 @@ function LeadsPage() {
       <div className="flex gap-2">
         {[
           { val: "", label: "Todos" },
-          { val: "novo", label: "Novos" },
-          { val: "contatado", label: "Contatados" },
-          { val: "convertido", label: "Convertidos" },
+          { val: "enviado", label: "Enviados" },
+          { val: "pendente", label: "Pendentes" },
+          { val: "erro", label: "Erros" },
         ].map((f) => (
           <button key={f.val} onClick={() => setFilter(f.val as any)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${filter === f.val ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
@@ -1985,7 +2021,7 @@ function LeadsPage() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Origem</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Interesse</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Data</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">CRM</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -2015,19 +2051,7 @@ function LeadsPage() {
                       <div className="flex items-center gap-1"><Calendar size={12} />{fmtDate(l.createdAt)}</div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <select
-                        value={l.status || "novo"}
-                        onChange={(e) => handleStatusChange(l.id, e.target.value as any)}
-                        className={`text-xs font-medium rounded-full px-2.5 py-1 border outline-none cursor-pointer ${
-                          (l.status || "novo") === "novo" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                          l.status === "contatado" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                          "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        }`}
-                      >
-                        <option value="novo">Novo</option>
-                        <option value="contatado">Contatado</option>
-                        <option value="convertido">Convertido</option>
-                      </select>
+                      <CrmBadge lead={l} />
                     </td>
                   </tr>
                 ))}
@@ -2457,6 +2481,24 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
   const [savedMs, setSavedMs] = useState(false);
   const [migrating, setMigrating] = useState(false);
   const [migrateResult, setMigrateResult] = useState("");
+  const [testingCrm, setTestingCrm] = useState(false);
+  const [crmResult, setCrmResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const handleTestCrm = async () => {
+    setTestingCrm(true);
+    setCrmResult(null);
+    try {
+      const r = await testHypergestor();
+      if (r.ok) {
+        setCrmResult({ ok: true, msg: `Conectado (HTTP ${r.status}). Resposta: ${r.body.slice(0, 200) || "(vazia)"}` });
+      } else {
+        setCrmResult({ ok: false, msg: `Falha (HTTP ${r.status}): ${r.error || r.body || "sem resposta"}` });
+      }
+    } catch (err: any) {
+      setCrmResult({ ok: false, msg: `Erro: ${err?.message || err}` });
+    }
+    setTestingCrm(false);
+  };
 
   const handleSaveMilestones = async () => {
     setSavingMs(true);
@@ -2634,6 +2676,32 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
             ))}
           </div>
         </div>
+        {/* Hypergestor (CRM) */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Users size={18} className="text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Integração Hypergestor (CRM)</h3>
+              <p className="text-slate-500 text-xs">Envio automático de leads pro CRM. Teste cria um lead "TESTE API" que você pode deletar lá.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleTestCrm}
+            disabled={testingCrm}
+            className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2"
+          >
+            {testingCrm ? <Spinner size={14} /> : <CheckCircle2 size={14} />}
+            {testingCrm ? "Testando..." : "Testar integração"}
+          </button>
+          {crmResult && (
+            <p className={`text-sm mt-3 ${crmResult.ok ? "text-emerald-600" : "text-red-600"}`}>
+              {crmResult.ok ? "OK — " : "ERRO — "}{crmResult.msg}
+            </p>
+          )}
+        </div>
+
         {/* SEO Slug Migration */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
