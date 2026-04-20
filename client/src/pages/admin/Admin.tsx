@@ -2500,6 +2500,53 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
 
   useEffect(() => { checkCrm(); }, [checkCrm]);
 
+  // Backfill: reenviar leads pendentes pro Hypergestor
+  const [pendingLeads, setPendingLeads] = useState<LeadAdmin[] | null>(null);
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillProgress, setBackfillProgress] = useState({ done: 0, total: 0, ok: 0, fail: 0 });
+
+  const loadPending = useCallback(async () => {
+    try {
+      const all = await getAllLeads();
+      setPendingLeads(all.filter((l) => !l.hypergestor_sent_at));
+    } catch { setPendingLeads([]); }
+  }, []);
+
+  useEffect(() => { loadPending(); }, [loadPending]);
+
+  const handleBackfill = async () => {
+    if (!pendingLeads || pendingLeads.length === 0) return;
+    if (!window.confirm(`Reenviar ${pendingLeads.length} leads pendentes pro Hypergestor? (vai rodar um por vez com pausa de 500ms — não feche a página)`)) return;
+    setBackfilling(true);
+    setBackfillProgress({ done: 0, total: pendingLeads.length, ok: 0, fail: 0 });
+    let ok = 0, fail = 0;
+    for (let i = 0; i < pendingLeads.length; i++) {
+      const l = pendingLeads[i];
+      try {
+        const res = await fetch("/api/hypergestor-send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            leadId: l.id,
+            lead: {
+              nome: l.nome,
+              whatsapp: l.whatsapp,
+              source: l.source,
+              query: l.query,
+              dados: l.dados,
+            },
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data.ok) ok++; else fail++;
+      } catch { fail++; }
+      setBackfillProgress({ done: i + 1, total: pendingLeads.length, ok, fail });
+      if (i < pendingLeads.length - 1) await new Promise((r) => setTimeout(r, 500));
+    }
+    setBackfilling(false);
+    await loadPending();
+  };
+
   const handleSaveMilestones = async () => {
     setSavingMs(true);
     const dias = milestoneDias.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n) && n > 0).sort((a, b) => a - b);
@@ -2721,6 +2768,32 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
               <p className="text-xs text-red-600 mt-1 break-all">{crmDetail}</p>
             )}
           </div>
+
+          {/* Backfill dos leads pendentes */}
+          {pendingLeads !== null && (
+            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-slate-700 font-medium">
+                  {pendingLeads.length === 0
+                    ? "Nenhum lead pendente"
+                    : `${pendingLeads.length} lead${pendingLeads.length === 1 ? "" : "s"} pendente${pendingLeads.length === 1 ? "" : "s"} de envio`}
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {backfilling
+                    ? `Enviando ${backfillProgress.done}/${backfillProgress.total} · ${backfillProgress.ok} ok, ${backfillProgress.fail} erro`
+                    : "Reenvia em lote os leads que ainda não chegaram no Hypergestor"}
+                </p>
+              </div>
+              <button
+                onClick={handleBackfill}
+                disabled={backfilling || !crmOk || pendingLeads.length === 0}
+                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shrink-0"
+              >
+                {backfilling ? <Spinner size={14} /> : <RefreshCw size={14} />}
+                {backfilling ? `${backfillProgress.done}/${backfillProgress.total}` : "Reenviar"}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* SEO Slug Migration */}
