@@ -2508,7 +2508,7 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
   const loadPending = useCallback(async () => {
     try {
       const all = await getAllLeads();
-      setPendingLeads(all.filter((l) => !l.hypergestor_sent_at));
+      setPendingLeads(all.filter((l) => !l.hypergestor_sent_at && !l.hypergestor_error));
     } catch { setPendingLeads([]); }
   }, []);
 

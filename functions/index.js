@@ -398,6 +398,12 @@ exports.hypergestorSend = onRequest(
 
     const { leadId, lead } = req.body || {};
     if (!lead || !lead.whatsapp) {
+      if (leadId) {
+        await db.collection("leads").doc(leadId).update({
+          hypergestor_error: "Lead sem whatsapp — não é possível enviar pro CRM",
+          hypergestor_error_at: admin.firestore.FieldValue.serverTimestamp(),
+        }).catch(() => {});
+      }
       res.status(400).json({ ok: false, error: "lead.whatsapp obrigatório" });
       return;
     }
