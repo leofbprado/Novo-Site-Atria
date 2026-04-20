@@ -6,7 +6,7 @@ import {
   Gauge, Fuel, Settings, Palette, DoorOpen, ShieldCheck,
   Star, Phone, CheckCircle, Car, MapPin, Mountain,
   Cog, Users, TrendingDown, X, ZoomIn,
-  Tag, Calculator, MessageCircle, Camera,
+  Heart, MessageCircle, Camera,
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
@@ -493,7 +493,6 @@ function PricePanel({ v }: { v: Vehicle }) {
 function ActionBlock({ v }: { v: Vehicle }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-  const parcela60 = calcParcela(v.preco, 20, 60);
   const trackProps = {
     vehicle_id: v.slug,
     vehicle_marca: v.marca,
@@ -525,41 +524,34 @@ function ActionBlock({ v }: { v: Vehicle }) {
   return (
     <>
       <section className="bg-atria-gray-light border border-atria-gray-medium rounded-2xl p-5 space-y-3 shadow-sm">
-        <div className="flex items-baseline justify-between gap-3">
-          <div>
-            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
-            <p className="font-barlow-condensed font-black text-3xl text-atria-navy leading-none">{fmt(v.preco)}</p>
-          </div>
-          <div className="text-right">
-            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">ou 60x de</p>
-            <p className="font-inter font-bold text-base text-atria-text-dark leading-none">{fmt(parcela60)}</p>
-          </div>
+        <div>
+          <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
+          <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">{fmt(v.preco)}</p>
         </div>
 
         <button
           onClick={handleInteresseClick}
           className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
         >
-          <Tag size={18} /> Tenho interesse neste {v.modelo}
+          <Heart size={18} fill="currentColor" /> Tenho interesse neste {v.modelo}
         </button>
 
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={handleSimularCredere}
-            className="border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold text-sm rounded-xl py-3 flex items-center justify-center gap-2 transition-colors"
-          >
-            <Calculator size={16} /> Financiamento com CPF
-          </button>
-          <a
-            href={waLink(waMsg)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleWhatsClick}
-            className="border-2 border-green-500 text-green-700 hover:bg-green-500 hover:text-white font-inter font-bold text-sm rounded-xl py-3 flex items-center justify-center gap-2 transition-colors"
-          >
-            <MessageCircle size={16} /> WhatsApp
-          </a>
-        </div>
+        <a
+          href={waLink(waMsg)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleWhatsClick}
+          className="w-full border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold text-sm rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors"
+        >
+          <MessageCircle size={18} /> WhatsApp agora
+        </a>
+
+        <button
+          onClick={handleSimularCredere}
+          className="w-full text-center font-inter text-sm text-atria-text-gray hover:text-atria-navy underline underline-offset-4 decoration-atria-gray-medium hover:decoration-atria-navy transition-colors pt-1"
+        >
+          Simular financiamento →
+        </button>
       </section>
 
       <AnimatePresence>
