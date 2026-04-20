@@ -42,8 +42,12 @@ export async function saveLead(lead: Lead): Promise<void> {
     createdAt: serverTimestamp(),
   });
 
-  // Envia pro CRM Hypergestor em background. Falha não bloqueia o save
-  // nem a experiência do usuário — erro fica gravado no próprio doc.
+  // Só despacha pro CRM se houver contato real (DDD + número, mín. 10 dígitos).
+  // Leads-placeholder tipo vehicle-agendar (só pra track GA/Ads) ficam
+  // só no Firestore, não poluem o CRM.
+  const digits = String(lead.whatsapp || "").replace(/\D/g, "");
+  if (digits.length < 10) return;
+
   fetch("/api/hypergestor-send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

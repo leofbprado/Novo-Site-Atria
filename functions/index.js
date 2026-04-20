@@ -397,14 +397,15 @@ exports.hypergestorSend = onRequest(
     if (req.method !== "POST") { res.status(405).json({ ok: false, error: "POST only" }); return; }
 
     const { leadId, lead } = req.body || {};
-    if (!lead || !lead.whatsapp) {
+    const digits = String(lead?.whatsapp || "").replace(/\D/g, "");
+    if (!lead || digits.length < 10) {
       if (leadId) {
         await db.collection("leads").doc(leadId).update({
-          hypergestor_error: "Lead sem whatsapp — não é possível enviar pro CRM",
+          hypergestor_error: `Telefone inválido: "${lead?.whatsapp || ""}" (mín. 10 dígitos incluindo DDD)`,
           hypergestor_error_at: admin.firestore.FieldValue.serverTimestamp(),
         }).catch(() => {});
       }
-      res.status(400).json({ ok: false, error: "lead.whatsapp obrigatório" });
+      res.status(400).json({ ok: false, error: "telefone inválido" });
       return;
     }
 
