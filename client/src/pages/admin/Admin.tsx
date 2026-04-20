@@ -2481,24 +2481,24 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
   const [savedMs, setSavedMs] = useState(false);
   const [migrating, setMigrating] = useState(false);
   const [migrateResult, setMigrateResult] = useState("");
-  const [testingCrm, setTestingCrm] = useState(false);
-  const [crmResult, setCrmResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [crmChecking, setCrmChecking] = useState(true);
+  const [crmOk, setCrmOk] = useState<boolean | null>(null);
+  const [crmDetail, setCrmDetail] = useState("");
 
-  const handleTestCrm = async () => {
-    setTestingCrm(true);
-    setCrmResult(null);
+  const checkCrm = useCallback(async () => {
+    setCrmChecking(true);
     try {
       const r = await testHypergestor();
-      if (r.ok) {
-        setCrmResult({ ok: true, msg: `Conectado (HTTP ${r.status}). Resposta: ${r.body.slice(0, 200) || "(vazia)"}` });
-      } else {
-        setCrmResult({ ok: false, msg: `Falha (HTTP ${r.status}): ${r.error || r.body || "sem resposta"}` });
-      }
+      setCrmOk(r.ok);
+      setCrmDetail(r.ok ? `HTTP ${r.status}` : `HTTP ${r.status} — ${r.error || r.body || "sem resposta"}`);
     } catch (err: any) {
-      setCrmResult({ ok: false, msg: `Erro: ${err?.message || err}` });
+      setCrmOk(false);
+      setCrmDetail(err?.message || String(err));
     }
-    setTestingCrm(false);
-  };
+    setCrmChecking(false);
+  }, []);
+
+  useEffect(() => { checkCrm(); }, [checkCrm]);
 
   const handleSaveMilestones = async () => {
     setSavingMs(true);
@@ -2684,22 +2684,43 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
             </div>
             <div>
               <h3 className="font-semibold text-slate-900">Integração Hypergestor (CRM)</h3>
-              <p className="text-slate-500 text-xs">Envio automático de leads pro CRM. Teste cria um lead "TESTE API" que você pode deletar lá.</p>
+              <p className="text-slate-500 text-xs">Leads do site são enviados automaticamente pro CRM</p>
             </div>
           </div>
-          <button
-            onClick={handleTestCrm}
-            disabled={testingCrm}
-            className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2"
-          >
-            {testingCrm ? <Spinner size={14} /> : <CheckCircle2 size={14} />}
-            {testingCrm ? "Testando..." : "Testar integração"}
-          </button>
-          {crmResult && (
-            <p className={`text-sm mt-3 ${crmResult.ok ? "text-emerald-600" : "text-red-600"}`}>
-              {crmResult.ok ? "OK — " : "ERRO — "}{crmResult.msg}
-            </p>
-          )}
+          <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">API</span>
+              <span className="text-slate-700 font-medium">api.autopop360.com</span>
+            </div>
+            <div className="flex justify-between text-sm items-center">
+              <span className="text-slate-500">Status</span>
+              {crmChecking ? (
+                <span className="text-slate-500 font-medium flex items-center gap-1"><Spinner size={12} /> Verificando...</span>
+              ) : crmOk ? (
+                <span className="text-emerald-600 font-medium flex items-center gap-1" title={crmDetail}>
+                  <CheckCircle2 size={12} /> Conectado
+                </span>
+              ) : (
+                <span className="text-red-600 font-medium flex items-center gap-1" title={crmDetail}>
+                  <X size={12} /> Desconectado
+                </span>
+              )}
+            </div>
+            <div className="flex justify-between text-sm items-center pt-1">
+              <span className="text-slate-400 text-xs">Cria um lead "TESTE API" no CRM — pode deletar lá</span>
+              <button
+                onClick={checkCrm}
+                disabled={crmChecking}
+                className="text-blue-600 hover:text-blue-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition"
+              >
+                <RefreshCw size={12} className={crmChecking ? "animate-spin" : ""} />
+                {crmChecking ? "Testando..." : "Testar agora"}
+              </button>
+            </div>
+            {!crmChecking && !crmOk && crmDetail && (
+              <p className="text-xs text-red-600 mt-1 break-all">{crmDetail}</p>
+            )}
+          </div>
         </div>
 
         {/* SEO Slug Migration */}
