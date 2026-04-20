@@ -11,7 +11,13 @@ export type AnalyticsEvent =
   | "clique_whatsapp"
   | "clique_financiamento"
   | "clique_telefone"
-  | "lead";
+  | "lead"
+  | "clique_interesse_header"
+  | "clique_simular_credere_header"
+  | "clique_whatsapp_header"
+  | "vehicle_interesse_lead"
+  | "gallery_swipe"
+  | "gallery_lightbox_open";
 
 export interface VehicleAnalytics {
   slug: string;
@@ -42,6 +48,12 @@ const EVENT_FIELD: Record<AnalyticsEvent, string> = {
   clique_financiamento: "cliques_financiamento",
   clique_telefone: "cliques_telefone",
   lead: "leads",
+  clique_interesse_header: "cliques_interesse_header",
+  clique_simular_credere_header: "cliques_simular_credere_header",
+  clique_whatsapp_header: "cliques_whatsapp_header",
+  vehicle_interesse_lead: "leads_interesse",
+  gallery_swipe: "gallery_swipes",
+  gallery_lightbox_open: "gallery_lightbox_opens",
 };
 
 // ─── Track Event ─────────────────────────────────────────────────────────────

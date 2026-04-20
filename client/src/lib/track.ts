@@ -31,7 +31,8 @@ export type TrackEvent =
   | "phone_click"
   | "simulator_complete"
   | "view_inventory"
-  | "view_vehicle";
+  | "view_vehicle"
+  | "cta_click";
 
 export interface TrackProps {
   source?: string;          // ex: "hero-search", "venda-seu-carro-form"

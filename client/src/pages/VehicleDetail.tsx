@@ -6,9 +6,11 @@ import {
   Gauge, Fuel, Settings, Palette, DoorOpen, ShieldCheck,
   Star, Phone, CheckCircle, Car, MapPin, Mountain,
   Cog, Users, TrendingDown, X, ZoomIn,
+  Tag, Calculator, MessageCircle, Camera,
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
+import { track } from "@/lib/track";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
@@ -134,7 +136,7 @@ function generateBadges(v: Vehicle): AIBadge[] {
 }
 
 // ---- Photo Gallery ----------------------------------------------------------
-function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
+function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string; slug: string }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -142,6 +144,11 @@ function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
   const navigate = (delta: number) => {
     setDirection(delta);
     setCurrent((c) => (c + delta + fotos.length) % fotos.length);
+  };
+
+  const handleLightboxOpen = () => {
+    setLightboxOpen(true);
+    trackVehicleEvent(slug, "gallery_lightbox_open").catch(() => {});
   };
 
   useEffect(() => {
@@ -169,54 +176,57 @@ function PhotoGallery({ fotos, titulo }: { fotos: string[]; titulo: string }) {
   return (
     <div className="space-y-3">
       <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-atria-gray-light group">
-        <button
-          type="button"
-          onClick={() => setLightboxOpen(true)}
-          className="absolute inset-0 w-full h-full cursor-zoom-in"
-          aria-label="Ampliar foto"
-        >
-          <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-            <motion.img
-              key={current}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              src={fotos[current]}
-              alt={`${titulo} - foto ${current + 1}`}
-              className="absolute inset-0 w-full h-full object-cover"
-              draggable={false}
-            />
-          </AnimatePresence>
-        </button>
+        <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+          <motion.img
+            key={current}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            src={fotos[current]}
+            alt={`${titulo} - foto ${current + 1}`}
+            className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+            draggable={false}
+            drag={fotos.length > 1 ? "x" : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (Math.abs(info.offset.x) > 80) {
+                navigate(info.offset.x < 0 ? 1 : -1);
+                trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
+              }
+            }}
+            onClick={handleLightboxOpen}
+          />
+        </AnimatePresence>
 
-        <span className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-inter font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-          <ZoomIn size={14} /> Clique para ampliar
+        <span className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-inter font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 pointer-events-none md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <ZoomIn size={14} /> Toque para ampliar
         </span>
 
         {fotos.length > 1 && (
           <>
             <button
               onClick={() => navigate(-1)}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Foto anterior"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </button>
             <button
               onClick={() => navigate(1)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Próxima foto"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </button>
           </>
         )}
 
-        <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-inter font-semibold px-2.5 py-1 rounded-full">
-          {current + 1} / {fotos.length}
+        <span className="absolute bottom-3 right-3 bg-black/70 text-white text-sm font-inter font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+          <Camera size={14} /> {current + 1} / {fotos.length}
         </span>
       </div>
 
@@ -479,6 +489,223 @@ function PricePanel({ v }: { v: Vehicle }) {
   );
 }
 
+// ---- Action Block (CTAs contextualizados com o veículo) ---------------------
+function ActionBlock({ v }: { v: Vehicle }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
+  const parcela60 = calcParcela(v.preco, 20, 60);
+  const trackProps = {
+    vehicle_id: v.slug,
+    vehicle_marca: v.marca,
+    vehicle_modelo: v.modelo,
+    vehicle_ano: v.ano,
+    vehicle_preco: v.preco,
+    value: v.preco,
+  };
+
+  const handleInteresseClick = () => {
+    trackVehicleEvent(v.slug, "clique_interesse_header").catch(() => {});
+    track("cta_click", { source: "ficha-interesse-header", cta: "interesse", ...trackProps });
+    setDrawerOpen(true);
+  };
+
+  const handleSimularCredere = () => {
+    trackVehicleEvent(v.slug, "clique_simular_credere_header").catch(() => {});
+    track("cta_click", { source: "ficha-credere-header", cta: "credere", ...trackProps });
+    document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(v.preco)}). Poderia me atender?`;
+  const handleWhatsClick = () => {
+    trackVehicleEvent(v.slug, "clique_whatsapp_header").catch(() => {});
+    trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
+    track("whatsapp_click", { source: "ficha-whatsapp-header", ...trackProps });
+  };
+
+  return (
+    <>
+      <section className="bg-atria-gray-light border border-atria-gray-medium rounded-2xl p-5 space-y-3 shadow-sm">
+        <div className="flex items-baseline justify-between gap-3">
+          <div>
+            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
+            <p className="font-barlow-condensed font-black text-3xl text-atria-navy leading-none">{fmt(v.preco)}</p>
+          </div>
+          <div className="text-right">
+            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">ou 60x de</p>
+            <p className="font-inter font-bold text-base text-atria-text-dark leading-none">{fmt(parcela60)}</p>
+          </div>
+        </div>
+
+        <button
+          onClick={handleInteresseClick}
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
+        >
+          <Tag size={18} /> Tenho interesse neste {v.modelo}
+        </button>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={handleSimularCredere}
+            className="border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold text-sm rounded-xl py-3 flex items-center justify-center gap-2 transition-colors"
+          >
+            <Calculator size={16} /> Financiamento com CPF
+          </button>
+          <a
+            href={waLink(waMsg)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleWhatsClick}
+            className="border-2 border-green-500 text-green-700 hover:bg-green-500 hover:text-white font-inter font-bold text-sm rounded-xl py-3 flex items-center justify-center gap-2 transition-colors"
+          >
+            <MessageCircle size={16} /> WhatsApp
+          </a>
+        </div>
+      </section>
+
+      <AnimatePresence>
+        {drawerOpen && (
+          <InterestDrawer
+            vehicle={v}
+            onClose={() => setDrawerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () => void }) {
+  const [nome, setNome] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState(false);
+  const titulo = vehicle.titulo ?? `${vehicle.marca} ${vehicle.modelo}`;
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nome || !whatsapp) return;
+    setSending(true);
+    try {
+      await saveLead({
+        source: "vehicle-interesse",
+        nome,
+        whatsapp,
+        query: titulo,
+        dados: {
+          slug: vehicle.slug,
+          marca: vehicle.marca,
+          modelo: vehicle.modelo,
+          ano: vehicle.ano,
+          preco: vehicle.preco,
+          placa: (vehicle as any).placa_final || (vehicle as any).placa || undefined,
+          km: vehicle.km,
+        },
+      });
+      trackVehicleEvent(vehicle.slug, "vehicle_interesse_lead").catch(() => {});
+      trackVehicleEvent(vehicle.slug, "lead").catch(() => {});
+      track("generate_lead", {
+        source: "vehicle-interesse",
+        vehicle_id: vehicle.slug,
+        vehicle_marca: vehicle.marca,
+        vehicle_modelo: vehicle.modelo,
+        vehicle_ano: vehicle.ano,
+        vehicle_preco: vehicle.preco,
+        value: vehicle.preco,
+      });
+    } catch { /* não bloqueia */ }
+    setDone(true);
+    setSending(false);
+    setTimeout(() => {
+      const msg = `Olá! Me chamo ${nome}, tenho interesse no ${titulo} ${vehicle.ano} (${fmt(vehicle.preco)}). Qual a disponibilidade?`;
+      window.open(waLink(msg), "_blank");
+      onClose();
+    }, 1000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 40 }}
+        transition={{ type: "spring", stiffness: 300, damping: 28 }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-atria-text-gray hover:text-atria-text-dark transition-colors z-10"
+          aria-label="Fechar"
+        >
+          <X size={20} />
+        </button>
+
+        {done ? (
+          <div className="p-10 text-center">
+            <CheckCircle size={52} className="text-green-500 mx-auto mb-3" />
+            <h3 className="font-barlow-condensed font-bold text-2xl text-atria-text-dark">
+              Recebemos! Abrindo WhatsApp...
+            </h3>
+          </div>
+        ) : (
+          <>
+            <div className="bg-atria-navy px-6 py-5">
+              <h3 className="font-barlow-condensed font-black text-xl text-white">
+                Tenho interesse no {vehicle.modelo}
+              </h3>
+              <p className="font-inter text-white/70 text-sm mt-1">
+                {vehicle.marca} {vehicle.modelo} {vehicle.ano} — {fmt(vehicle.preco)}
+              </p>
+            </div>
+            <form className="px-6 py-5 space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">Seu nome</label>
+                <input
+                  type="text"
+                  placeholder="João Silva"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  required
+                  autoFocus
+                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                />
+              </div>
+              <div>
+                <label className="font-inter text-sm font-semibold text-atria-text-dark block mb-1.5">WhatsApp</label>
+                <input
+                  type="tel"
+                  placeholder="(19) 99652-5211"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  required
+                  className="w-full border border-atria-gray-medium rounded-lg px-4 py-3 font-inter text-sm outline-none focus:border-atria-navy transition-colors"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={sending}
+                className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-inter font-bold text-base rounded-lg py-3.5 flex items-center justify-center gap-2 transition-colors"
+              >
+                <MessageCircle size={18} />
+                {sending ? "Enviando..." : "QUERO FALAR NO WHATSAPP"}
+              </button>
+              <p className="text-xs text-atria-text-gray text-center">
+                Nosso time te atende em até 10 minutos em horário comercial.
+              </p>
+            </form>
+          </>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
 // ---- Ficha Tecnica with IA subtexts -----------------------------------------
 function FichaTecnica({ v }: { v: Vehicle }) {
   const versaoLower = (v.versao ?? "").toLowerCase();
@@ -615,69 +842,6 @@ function FinancingSection({ v }: { v: Vehicle }) {
         data-preco={String(v.preco)}
       />
     </section>
-  );
-}
-
-// ---- Compact Lead Capture ---------------------------------------------------
-function CompactLeadCapture({ v }: { v: Vehicle }) {
-  const [form, setForm] = useState({ email: "", telefone: "" });
-  const [sent, setSent] = useState(false);
-  const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.email || !form.telefone) return;
-    await saveLead({
-      source: "vehicle-comparativo-ia",
-      whatsapp: form.telefone,
-      query: titulo,
-      dados: { email: form.email, slug: v.slug, preco: v.preco },
-    });
-    trackVehicleEvent(v.slug, "lead").catch(() => {});
-    setSent(true);
-  };
-
-  if (sent) {
-    return (
-      <div className="bg-[#F0F4FF] border border-[#D0DCFF] rounded-xl px-5 py-4 flex items-center gap-3">
-        <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
-        <p className="font-inter text-sm text-atria-text-dark">Comparativo enviado para seu e-mail!</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-[#F0F4FF] border border-[#D0DCFF] rounded-xl px-5 py-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Gauge size={18} className="text-[#001A8C]" />
-        <span className="font-inter font-semibold text-sm text-atria-text-dark">Compare este veículo</span>
-        <span className="font-inter text-xs text-atria-text-gray ml-1">- Receba um comparativo com concorrentes diretos por email</span>
-      </div>
-      <form onSubmit={handleSubmit} className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
-        <input
-          type="email"
-          placeholder="Seu e-mail"
-          value={form.email}
-          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-          className="flex-1 min-w-[160px] bg-white border border-[#D0DCFF] rounded-lg px-3 py-2 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
-          required
-        />
-        <input
-          type="tel"
-          placeholder="Seu telefone"
-          value={form.telefone}
-          onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))}
-          className="flex-1 min-w-[140px] bg-white border border-[#D0DCFF] rounded-lg px-3 py-2 font-inter text-sm text-atria-text-dark placeholder-atria-text-gray/50 focus:outline-none focus:border-atria-navy transition-colors"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap"
-        >
-          Enviar
-        </button>
-      </form>
-    </div>
   );
 }
 
@@ -893,7 +1057,12 @@ export default function VehicleDetail() {
           {/* LEFT COLUMN (70%) */}
           <div className="w-full lg:w-[70%] space-y-8 min-w-0">
             {/* Gallery */}
-            <PhotoGallery fotos={vehicle.fotos} titulo={titulo} />
+            <PhotoGallery fotos={vehicle.fotos} titulo={titulo} slug={vehicle.slug} />
+
+            {/* Action Block — CTAs contextualizados (mobile-first) */}
+            <div className="lg:hidden">
+              <ActionBlock v={vehicle} />
+            </div>
 
             {/* Title + AI Badges */}
             <div>
@@ -954,9 +1123,6 @@ export default function VehicleDetail() {
               </section>
             )}
 
-            {/* Compact Lead Capture */}
-            <CompactLeadCapture v={vehicle} />
-
             {/* Financing / Credere */}
             <FinancingSection v={vehicle} />
           </div>
@@ -991,23 +1157,7 @@ export default function VehicleDetail() {
         <div className="mt-12">
           <StoreLocations />
         </div>
-
-        {/* Bottom CTA */}
-        <section className="mt-12 bg-atria-navy rounded-2xl p-8 text-center text-white">
-          <h2 className="font-barlow-condensed font-black text-3xl mb-2">Nao encontrou o que procura?</h2>
-          <p className="font-inter text-white/70 mb-5">Nossa equipe encontra o veículo ideal para você.</p>
-          <a
-            href={waLink("Olá! Não encontrei o veículo que procuro no estoque. Podem me ajudar?")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
-          >
-            Falar com um consultor
-          </a>
-        </section>
       </div>
-
-      {/* Mobile price + CTA bar */}
     </>
   );
 }
