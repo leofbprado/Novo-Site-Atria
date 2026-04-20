@@ -308,7 +308,10 @@ export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promis
   const snap = await getDocs(collection(firestore, COLLECTION));
   const despublicados: VeiculoAdmin[] = [];
   for (const docSnap of snap.docs) {
-    if (!autoconfIds.has(docSnap.id) && docSnap.data().status === "publicado") {
+    const status = docSnap.data().status;
+    // Despublica publicados E rascunhos órfãos — ambos cadastrados a partir do AutoConf;
+    // se sumiram de lá, foram vendidos ou removidos e não têm por que continuar no admin.
+    if (!autoconfIds.has(docSnap.id) && (status === "publicado" || status === "rascunho")) {
       await updateDoc(docSnap.ref, {
         status: "despublicado",
         data_remocao: serverTimestamp(),
@@ -317,6 +320,18 @@ export async function despublishOrphanVeiculos(autoconfIds: Set<string>): Promis
     }
   }
   return despublicados;
+}
+
+export async function despublishVeiculoSingle(autoconfId: number): Promise<VeiculoAdmin | null> {
+  const firestore = requireDb();
+  const docRef = doc(firestore, COLLECTION, String(autoconfId));
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return null;
+  await updateDoc(docRef, {
+    status: "despublicado",
+    data_remocao: serverTimestamp(),
+  });
+  return normalizeVeiculoAdmin(snap.data());
 }
 
 // ── Log de despublicações (histórico pra auditoria) ───────────────────────

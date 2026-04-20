@@ -23,6 +23,7 @@ import {
   getAllAdminVeiculos,
   upsertVeiculoFromAutoConf,
   despublishOrphanVeiculos,
+  despublishVeiculoSingle,
   logDespublicacoes,
   getUltimasDespublicacoes,
   reativarVeiculo,
@@ -490,12 +491,19 @@ function VehicleDetailPage({
       }
 
       if (!v) {
-        // Nem detail nem list têm o veículo — foi removido de verdade.
+        // Nem detail nem list têm o veículo — foi removido do AutoConf (vendido).
+        // Marca como despublicado e loga pra auditoria. Se for engano, user
+        // reativa pelo Dashboard (card "Últimos despublicados").
+        const despublicado = await despublishVeiculoSingle(vehicle.autoconf_id);
+        if (despublicado) {
+          try { await logDespublicacoes([despublicado], "individual_resync"); } catch { /* ignora */ }
+        }
         alert(
-          `Esse veículo não está mais na AutoConf (ID ${vehicle.autoconf_id}).\n\n` +
-          `Provavelmente foi removido lá. Se o carro já foi vendido, clica em "Despublicar" em vez de "Re-sincronizar".`
+          `Veículo ID ${vehicle.autoconf_id} não está mais no AutoConf — marcado como despublicado.\n\n` +
+          `Se foi engano, reativa pelo card "Últimos despublicados" no Dashboard.`
         );
-        setResyncing(false);
+        onUpdate();
+        onBack();
         return;
       }
 
