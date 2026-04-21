@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { brandLogoFor } from "@/lib/brandLogos";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WA_NUMBER = "5519996525211";
@@ -23,50 +24,6 @@ const SORT_OPTIONS = [
   { label: "Mais velho", key: "ano_asc" },
 ] as const;
 type SortKey = typeof SORT_OPTIONS[number]["key"];
-
-// ─── Brand Logos (Wikimedia Commons) ─────────────────────────────────────────
-// Logo lookup por marca (chave normalizada lowercase). Se a marca top 6 não estiver
-// aqui, o BrandLogoCard cai no fallback de iniciais.
-const BRAND_LOGOS: Record<string, string> = {
-  toyota:      "https://www.carlogos.org/car-logos/toyota-logo.png",
-  volkswagen:  "https://www.carlogos.org/car-logos/volkswagen-logo.png",
-  vw:          "https://www.carlogos.org/car-logos/volkswagen-logo.png",
-  chevrolet:   "https://www.carlogos.org/car-logos/chevrolet-logo.png",
-  gm:          "https://www.carlogos.org/car-logos/chevrolet-logo.png",
-  hyundai:     "https://www.carlogos.org/car-logos/hyundai-logo.png",
-  bmw:         "https://www.carlogos.org/car-logos/bmw-logo.png",
-  honda:       "https://www.carlogos.org/car-logos/honda-logo.png",
-  fiat:        "https://www.carlogos.org/car-logos/fiat-logo.png",
-  ford:        "https://www.carlogos.org/car-logos/ford-logo.png",
-  jeep:        "https://www.carlogos.org/car-logos/jeep-logo.png",
-  renault:     "https://www.carlogos.org/car-logos/renault-logo.png",
-  nissan:      "https://www.carlogos.org/car-logos/nissan-logo.png",
-  peugeot:     "https://www.carlogos.org/car-logos/peugeot-logo.png",
-  citroen:     "https://www.carlogos.org/car-logos/citroen-logo.png",
-  citroën:     "https://www.carlogos.org/car-logos/citroen-logo.png",
-  mitsubishi:  "https://www.carlogos.org/car-logos/mitsubishi-logo.png",
-  audi:        "https://www.carlogos.org/car-logos/audi-logo.png",
-  mercedes:    "https://www.carlogos.org/car-logos/mercedes-benz-logo.png",
-  "mercedes-benz": "https://www.carlogos.org/car-logos/mercedes-benz-logo.png",
-  kia:         "https://www.carlogos.org/car-logos/kia-logo.png",
-  volvo:       "https://www.carlogos.org/car-logos/volvo-logo.png",
-  suzuki:      "https://www.carlogos.org/car-logos/suzuki-logo.png",
-  caoa:        "https://www.carlogos.org/car-logos/chery-logo.png",
-  chery:       "https://www.carlogos.org/car-logos/chery-logo.png",
-  byd:         "https://www.carlogos.org/car-logos/byd-logo.png",
-  ram:         "https://www.carlogos.org/car-logos/ram-trucks-logo.png",
-  dodge:       "https://www.carlogos.org/car-logos/dodge-logo.png",
-  jac:         "https://www.carlogos.org/car-logos/jac-motors-logo.png",
-  gwm:         "https://www.carlogos.org/car-logos/great-wall-logo.png",
-  "land rover":"https://www.carlogos.org/car-logos/land-rover-logo.png",
-  porsche:     "https://www.carlogos.org/car-logos/porsche-logo.png",
-  lexus:       "https://www.carlogos.org/car-logos/lexus-logo.png",
-  subaru:      "https://www.carlogos.org/car-logos/subaru-logo.png",
-};
-
-function brandLogoFor(name: string): string {
-  return BRAND_LOGOS[name.trim().toLowerCase()] || "";
-}
 
 const TIPO_ICONS: Record<string, JSX.Element> = {
   SUV: (

@@ -7,6 +7,7 @@ import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
 import { trackLead } from "@/lib/track";
+import { brandLogoFor } from "@/lib/brandLogos";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -1072,58 +1073,15 @@ function Stats() {
   );
 }
 
-// ─── Brand Logos (arquivos locais em /images/brands/) ────────────────────────
-const L = "/images/brands";
-const BRAND_LOGO_URLS: Record<string, string> = {
-  // SVGs locais
-  "volkswagen":   `${L}/volkswagen.svg`,
-  "chevrolet":    `${L}/chevrolet.svg`,
-  "fiat":         `${L}/fiat.svg`,
-  "ford":         `${L}/ford.svg`,
-  "toyota":       `${L}/toyota.svg`,
-  "honda":        `${L}/honda.svg`,
-  "hyundai":      `${L}/hyundai.svg`,
-  "jeep":         `${L}/jeep.svg`,
-  "renault":      `${L}/renault.svg`,
-  "peugeot":      `${L}/peugeot.svg`,
-  "citroën":      `${L}/citroen.svg`,
-  "citroen":      `${L}/citroen.svg`,
-  "nissan":       `${L}/nissan.svg`,
-  "kia":          `${L}/kia.svg`,
-  "suzuki":       `${L}/suzuki.svg`,
-  "mitsubishi":   `${L}/mitsubishi.svg`,
-  "byd":          `${L}/byd.svg`,
-  "gwm":          `${L}/gwm.svg`,
-  "haval":        `${L}/gwm.svg`,
-  "mg":           `${L}/mg.svg`,
-  "changan":      `${L}/changan.svg`,
-  "jac":          `${L}/jac-motors.svg`,
-  "jac motors":   `${L}/jac-motors.svg`,
-  "caoa chery":   `${L}/caoa-chery.svg`,
-  "caoa-chery":   `${L}/caoa-chery.svg`,
-  "chery":        `${L}/caoa-chery.svg`,
-  "jetour":       `${L}/jetour.svg`,
-  "jaecoo":       `${L}/jaecoo.svg`,
-  "omoda":        `${L}/omoda.svg`,
-  "gac":          `${L}/gac.svg`,
-  "avatr":        `${L}/avatr.svg`,
-  "denza":        `${L}/denza.svg`,
-  "xpeng":        `${L}/xpeng.svg`,
-  "zeekr":        `${L}/zeekr.svg`,
-  // PNGs locais
-  "audi":         `${L}/audi.png`,
-  "mercedes-benz":`${L}/mercedes-benz.png`,
-  "mercedes":     `${L}/mercedes-benz.png`,
-  "mini":         `${L}/mini.png`,
-  "volvo":        `${L}/volvo.png`,
-};
-
+// ─── Brand Logo ──────────────────────────────────────────────────────────────
+// Mapa unificado em lib/brandLogos.ts — mesmos arquivos usados pelo filtro
+// do Estoque, garantindo consistência visual entre as duas seções.
 function BrandLogo({ marca }: { marca: string }) {
-  const url = BRAND_LOGO_URLS[marca.toLowerCase()];
+  const url = brandLogoFor(marca);
   if (url) {
     return <img src={url} alt={marca} className="w-full h-full object-contain" loading="lazy" />;
   }
-  // Fallback: initials in a circle
+  // Fallback: iniciais num círculo pra marcas fora do mapa
   const initials = marca.split(/[\s-]+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase();
   return (
     <svg viewBox="0 0 48 48" className="w-full h-full">
