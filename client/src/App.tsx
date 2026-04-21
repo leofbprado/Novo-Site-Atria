@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -11,17 +11,37 @@ import { ROUTES } from "@/lib/constants";
 // Eager-loaded (above the fold)
 import Home from "@/pages/Home";
 
+// Complementa vite:preloadError (em main.tsx) — cobre o caso onde o import()
+// dinâmico falha direto (sem preload anterior). Recarrega 1x pra pegar HTML
+// atual; compartilha o cooldown "chunk-reload-ts" pra não loopar.
+function lazyWithRetry<T extends ComponentType<any>>(
+  importFn: () => Promise<{ default: T }>
+): LazyExoticComponent<T> {
+  return lazy(async () => {
+    try {
+      return await importFn();
+    } catch (err) {
+      const last = Number(sessionStorage.getItem("chunk-reload-ts") || 0);
+      if (Date.now() - last < 30_000) throw err;
+      sessionStorage.setItem("chunk-reload-ts", String(Date.now()));
+      console.warn("[chunk-recovery] import() falhou, recarregando:", err);
+      window.location.reload();
+      return new Promise<{ default: T }>(() => {}); // segura o Suspense até o reload
+    }
+  });
+}
+
 // Lazy-loaded pages (below the fold / separate routes)
-const Estoque = lazy(() => import("@/pages/Estoque"));
-const VehicleDetail = lazy(() => import("@/pages/VehicleDetail"));
-const VendaSeuCarro = lazy(() => import("@/pages/VendaSeuCarro"));
-const Financiamento = lazy(() => import("@/pages/Financiamento"));
-const Sobre = lazy(() => import("@/pages/Sobre"));
-const Blog = lazy(() => import("@/pages/Blog"));
-const BlogPostPage = lazy(() => import("@/pages/BlogPost"));
-const Admin = lazy(() => import("@/pages/admin/Admin"));
-const NotFound = lazy(() => import("@/pages/not-found"));
-const MotorleadsRedirect = lazy(() => import("@/pages/MotorleadsRedirect"));
+const Estoque = lazyWithRetry(() => import("@/pages/Estoque"));
+const VehicleDetail = lazyWithRetry(() => import("@/pages/VehicleDetail"));
+const VendaSeuCarro = lazyWithRetry(() => import("@/pages/VendaSeuCarro"));
+const Financiamento = lazyWithRetry(() => import("@/pages/Financiamento"));
+const Sobre = lazyWithRetry(() => import("@/pages/Sobre"));
+const Blog = lazyWithRetry(() => import("@/pages/Blog"));
+const BlogPostPage = lazyWithRetry(() => import("@/pages/BlogPost"));
+const Admin = lazyWithRetry(() => import("@/pages/admin/Admin"));
+const NotFound = lazyWithRetry(() => import("@/pages/not-found"));
+const MotorleadsRedirect = lazyWithRetry(() => import("@/pages/MotorleadsRedirect"));
 
 // Simple full-page spinner for route transitions
 function PageLoader() {

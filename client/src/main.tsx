@@ -25,4 +25,15 @@ if ("serviceWorker" in navigator && !sessionStorage.getItem("sw-cleaned")) {
   }).catch(() => {});
 }
 
+// Chunk recovery — a cada deploy novo, Vite muda os hashes dos chunks.
+// Usuário com index.html em cache tenta buscar chunk antigo que 404 → tela branca.
+// Recarrega 1x pra pegar o HTML atual. Loop-safe via cooldown de 30s no sessionStorage.
+window.addEventListener("vite:preloadError", (event) => {
+  const last = Number(sessionStorage.getItem("chunk-reload-ts") || 0);
+  if (Date.now() - last < 30_000) return;
+  sessionStorage.setItem("chunk-reload-ts", String(Date.now()));
+  console.warn("[chunk-recovery] preloadError, recarregando pra pegar bundle novo:", event);
+  window.location.reload();
+});
+
 createRoot(document.getElementById("root")!).render(<App />);
