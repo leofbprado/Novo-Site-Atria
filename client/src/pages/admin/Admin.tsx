@@ -37,7 +37,6 @@ import {
   getSancesPendentes,
   type SancesPendenteStored,
   publishVeiculo,
-  unpublishVeiculo,
   getAdminConfig,
   saveAdminConfig,
   getAllLeads,
@@ -462,8 +461,14 @@ function VehicleDetailPage({
 
   const handlePublish = async () => {
     setPublishing(true);
-    if (vehicle.status === "publicado") await unpublishVeiculo(vehicle.autoconf_id);
-    else await publishVeiculo(vehicle.autoconf_id);
+    if (vehicle.status === "publicado") {
+      const despublicado = await despublishVeiculoSingle(vehicle.autoconf_id);
+      if (despublicado) {
+        try { await logDespublicacoes([despublicado], "manual"); } catch { /* ignora */ }
+      }
+    } else {
+      await publishVeiculo(vehicle.autoconf_id);
+    }
     setPublishing(false); onUpdate(); onBack();
   };
 

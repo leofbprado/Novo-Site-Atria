@@ -345,14 +345,14 @@ export interface DespublicacaoLog {
   placa_final: string;
   preco: number;
   data_despublicacao: Timestamp | null;
-  origem: "sync_batch" | "individual_resync";
+  origem: "sync_batch" | "individual_resync" | "manual";
 }
 
 const DESPUB_COLLECTION = "despublicacoes";
 
 export async function logDespublicacoes(
   veiculos: VeiculoAdmin[],
-  origem: "sync_batch" | "individual_resync",
+  origem: "sync_batch" | "individual_resync" | "manual",
 ): Promise<void> {
   if (!veiculos.length) return;
   const firestore = requireDb();
@@ -436,14 +436,6 @@ export async function publishVeiculo(autoconfId: number): Promise<void> {
   await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), {
     status: "publicado",
     data_publicacao: serverTimestamp(),
-  });
-}
-
-export async function unpublishVeiculo(autoconfId: number): Promise<void> {
-  const firestore = requireDb();
-  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), {
-    status: "rascunho",
-    data_publicacao: null,
   });
 }
 
