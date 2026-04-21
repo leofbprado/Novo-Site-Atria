@@ -126,11 +126,17 @@ function Hero() {
   const [highlightIdx, setHighlightIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const prefetchedRef = useRef(false);
 
-  // Carrega estoque em background pra autocomplete
-  useEffect(() => {
+  // Autocomplete data só é necessária quando o usuário demonstra intent de buscar.
+  // Baixar os 200+ veículos no mount competia com o hero image pelo LCP.
+  // Agora: dispara no primeiro mouseenter/focus — o tempo entre hover e digitar
+  // a segunda letra (~500ms) cobre de sobra o round-trip da query.
+  const prefetchVehicles = () => {
+    if (prefetchedRef.current) return;
+    prefetchedRef.current = true;
     getVehicles().then(setAllVehicles).catch(() => {});
-  }, []);
+  };
 
   // Filtra sugestões: busca fuzzy em marca + modelo + versao + ano
   const suggestions = useMemo(() => {
@@ -265,6 +271,7 @@ function Hero() {
         >
           <form
             onSubmit={handleSearch}
+            onMouseEnter={prefetchVehicles}
             className="flex gap-0 rounded overflow-hidden shadow-2xl"
           >
             <input
@@ -277,7 +284,7 @@ function Hero() {
                 setShowSuggestions(true);
                 setHighlightIdx(-1);
               }}
-              onFocus={() => setShowSuggestions(true)}
+              onFocus={() => { prefetchVehicles(); setShowSuggestions(true); }}
               onKeyDown={handleKeyDown}
               autoComplete="off"
               className="flex-1 px-5 py-4 font-inter text-atria-text-dark text-base bg-white outline-none"
@@ -611,19 +618,30 @@ function Simulador() {
 function BrandCarousel() {
   const [cards, setCards] = useState<CarouselCard[]>([]);
 
+  // Seção abaixo da fold — adiar fetch pra depois do LCP libera rede pra hero image.
+  // requestIdleCallback roda quando main thread tá ociosa; timeout 2s garante que
+  // não fica esperando demais se o browser nunca fica idle.
   useEffect(() => {
-    getVehicles().then((vehicles) => {
-      const counts: Record<string, number> = {};
-      vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
-      const sorted = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .map(([brand, count]) => ({
-          brand,
-          count,
-          svg: <BrandLogo marca={brand} />,
-        }));
-      setCards(sorted);
-    });
+    const run = () => {
+      getVehicles().then((vehicles) => {
+        const counts: Record<string, number> = {};
+        vehicles.forEach((v) => { counts[v.marca] = (counts[v.marca] || 0) + 1; });
+        const sorted = Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([brand, count]) => ({
+            brand,
+            count,
+            svg: <BrandLogo marca={brand} />,
+          }));
+        setCards(sorted);
+      }).catch(() => {});
+    };
+    if ("requestIdleCallback" in window) {
+      const id = (window as any).requestIdleCallback(run, { timeout: 2000 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(run, 800);
+    return () => clearTimeout(t);
   }, []);
 
   const handleClick = useCallback((brand: string) => {
@@ -679,8 +697,19 @@ function EstoqueDestaque() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TipoTab>("Todos");
 
+  // Mesma estratégia do BrandCarousel — seção abaixo da fold, adiar pra depois do LCP.
   useEffect(() => {
-    getFeaturedVehicles().then((v) => { setVehicles(v); setLoading(false); });
+    const run = () => {
+      getFeaturedVehicles()
+        .then((v) => { setVehicles(v); setLoading(false); })
+        .catch(() => setLoading(false));
+    };
+    if ("requestIdleCallback" in window) {
+      const id = (window as any).requestIdleCallback(run, { timeout: 2000 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(run, 800);
+    return () => clearTimeout(t);
   }, []);
 
   const filtered = tab === "Todos" ? vehicles : vehicles.filter((v) => v.tipo?.toLowerCase() === tab.toLowerCase());
