@@ -579,7 +579,7 @@ function VehicleDetailPage({
       </div>
 
       {/* ── Hero: foto (2/5) + resumo comercial (3/5) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
         <div className="lg:col-span-2 space-y-3">
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             {fotos.length > 0 ? (
@@ -642,7 +642,7 @@ function VehicleDetailPage({
         </div>
 
         <div className="lg:col-span-3">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-full">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
             <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Preço anunciado</p>
             <p className="text-4xl font-bold text-slate-900 mb-5">{fmt(vehicle.preco)}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -665,7 +665,7 @@ function VehicleDetailPage({
       </div>
 
       {/* ── Editor: descrição+tags+acessórios (1/2) · specs (1/2) ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
         <div className="space-y-4">
           {/* Descrição IA */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
@@ -677,7 +677,7 @@ function VehicleDetailPage({
               </button>
             </div>
             {aiError && <p className="text-red-500 text-xs mb-2 flex items-center gap-1"><AlertCircle size={11} /> {aiError}</p>}
-            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={8}
+            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={14}
               placeholder="Descrição do veículo..."
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700 leading-relaxed" />
             <button onClick={handleSaveDescricao} disabled={saving}
@@ -740,7 +740,7 @@ function VehicleDetailPage({
                 {searchingSpecs ? <><Spinner size={12} /> Pesquisando...</> : <><Sparkles size={12} /> Pesquisar specs</>}
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {SPEC_FIELDS.map(({ key, label, placeholder }) => (
                 <div key={key}>
                   <label className="text-slate-500 text-[11px] font-medium block mb-1">{label}</label>
@@ -759,22 +759,22 @@ function VehicleDetailPage({
               {savingSpecs ? <Spinner size={14} /> : <Save size={14} />}
               {savingSpecs ? "Salvando..." : "Salvar especificações"}
             </button>
-          </div>
 
-          {/* Preview inline das specs */}
-          {Object.values(specs).some((v) => v) && (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-              <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-3">Preview (como aparece no site)</p>
-              <div className="space-y-1.5">
-                {SPEC_FIELDS.filter(({ key }) => specs[key]).map(({ key, label }) => (
-                  <div key={key} className="flex justify-between items-baseline text-sm py-1.5 border-b border-slate-200 last:border-0">
-                    <span className="text-slate-500">{label.replace(/\s*\(.*\)/, "")}</span>
-                    <span className="text-slate-800 font-semibold">{specs[key]}</span>
-                  </div>
-                ))}
+            {/* Preview inline (só quando tem valores salvos) */}
+            {Object.values(specs).some((v) => v) && (
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2">Preview no site</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  {SPEC_FIELDS.filter(({ key }) => specs[key]).map(({ key, label }) => (
+                    <div key={key} className="flex justify-between items-baseline text-xs py-1 border-b border-slate-100">
+                      <span className="text-slate-500">{label.replace(/\s*\(.*\)/, "")}</span>
+                      <span className="text-slate-800 font-semibold">{specs[key]}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
