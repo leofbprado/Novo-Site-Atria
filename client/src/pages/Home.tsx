@@ -113,7 +113,11 @@ function LeadModal({ title, subtitle, source, extraData, prefillMsg, onClose }: 
 }
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
-const HERO_BG = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1920&q=80";
+// URL base da imagem + variantes responsivas. 80% do tráfego é mobile — servir 1920w
+// pra todos gastava ~265KB num viewport de 400px. Srcset deixa o browser escolher.
+const HERO_BASE = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80";
+const HERO_SRCSET = `${HERO_BASE}&w=480 480w, ${HERO_BASE}&w=768 768w, ${HERO_BASE}&w=1280 1280w, ${HERO_BASE}&w=1920 1920w`;
+const HERO_FALLBACK = `${HERO_BASE}&w=768`;
 
 function Hero() {
   const [query, setQuery] = useState("");
@@ -203,9 +207,15 @@ function Hero() {
 
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${HERO_BG})` }}
+      <img
+        src={HERO_FALLBACK}
+        srcSet={HERO_SRCSET}
+        sizes="100vw"
+        fetchPriority="high"
+        decoding="async"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover object-center"
       />
       <div className="absolute inset-0 bg-atria-navy/75" />
 

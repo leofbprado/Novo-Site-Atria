@@ -76,11 +76,13 @@
       rel="stylesheet"
     />
 
-    <!-- Preload hero image for LCP -->
+    <!-- Preload hero image — responsive via imagesrcset (browser escolhe por viewport) -->
     <link
       rel="preload"
       as="image"
-      href="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1920&q=80"
+      href="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=768"
+      imagesrcset="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=480 480w, https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=768 768w, https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=1280 1280w, https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=1920 1920w"
+      imagesizes="100vw"
       fetchpriority="high"
     />
     <!-- Preload logo -->
