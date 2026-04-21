@@ -2380,7 +2380,7 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
             </button>
             <button onClick={handleSave}
               className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-              <Save size={14} /> Salvar rascunho
+              <Save size={14} /> {editing ? "Atualizar" : "Salvar rascunho"}
             </button>
             {editing && (
               <button onClick={() => { handlePublish(editing.slug, editing.status); resetForm(); }}
