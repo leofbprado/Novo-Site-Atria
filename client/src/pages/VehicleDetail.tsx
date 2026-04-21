@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, type Vehicle, type SiteConfig } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
-import { track } from "@/lib/track";
+import { track, trackLead } from "@/lib/track";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
@@ -415,12 +415,24 @@ function PricePanel({ v }: { v: Vehicle }) {
   const handleWhatsClick = () => {
     trackVehicleEvent(v.slug, "clique_whatsapp_header").catch(() => {});
     trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
-    track("whatsapp_click", { source: "ficha-whatsapp-panel", ...trackProps });
+    trackLead({
+      clarityEvent: "lead_whatsapp_ficha",
+      gtmEvent: "whatsapp_click",
+      origem: "ficha",
+      source: "ficha-whatsapp-panel",
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+    });
   };
 
   const handleSimularCredere = () => {
     trackVehicleEvent(v.slug, "clique_simular_credere_header").catch(() => {});
-    track("cta_click", { source: "ficha-credere-panel", cta: "credere", ...trackProps });
+    trackLead({
+      clarityEvent: "lead_simular_credere_ficha",
+      gtmEvent: "cta_click",
+      origem: "ficha",
+      source: "ficha-credere-panel",
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+    });
     document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -521,7 +533,13 @@ function ActionBlock({ v }: { v: Vehicle }) {
 
   const handleSimularCredere = () => {
     trackVehicleEvent(v.slug, "clique_simular_credere_header").catch(() => {});
-    track("cta_click", { source: "ficha-credere-header", cta: "credere", ...trackProps });
+    trackLead({
+      clarityEvent: "lead_simular_credere_ficha",
+      gtmEvent: "cta_click",
+      origem: "ficha",
+      source: "ficha-credere-header",
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+    });
     document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -529,7 +547,13 @@ function ActionBlock({ v }: { v: Vehicle }) {
   const handleWhatsClick = () => {
     trackVehicleEvent(v.slug, "clique_whatsapp_header").catch(() => {});
     trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
-    track("whatsapp_click", { source: "ficha-whatsapp-header", ...trackProps });
+    trackLead({
+      clarityEvent: "lead_whatsapp_ficha",
+      gtmEvent: "whatsapp_click",
+      origem: "ficha",
+      source: "ficha-whatsapp-header",
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+    });
   };
 
   return (
@@ -639,14 +663,14 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
       });
       trackVehicleEvent(vehicle.slug, "vehicle_interesse_lead").catch(() => {});
       trackVehicleEvent(vehicle.slug, "lead").catch(() => {});
-      track("generate_lead", {
+      trackLead({
+        clarityEvent: "lead_tenho_interesse_ficha",
+        origem: "ficha",
         source: "vehicle-interesse",
-        vehicle_id: vehicle.slug,
-        vehicle_marca: vehicle.marca,
-        vehicle_modelo: vehicle.modelo,
-        vehicle_ano: vehicle.ano,
-        vehicle_preco: vehicle.preco,
-        value: vehicle.preco,
+        marca: vehicle.marca,
+        modelo: vehicle.modelo,
+        ano: vehicle.ano,
+        preco: vehicle.preco,
       });
     } catch { /* não bloqueia */ }
     setSending(false);
@@ -655,13 +679,12 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
 
   const handleOpenWhatsApp = () => {
     trackVehicleEvent(vehicle.slug, "clique_whatsapp").catch(() => {});
-    track("whatsapp_click", {
+    trackLead({
+      clarityEvent: "lead_whatsapp_ficha",
+      gtmEvent: "whatsapp_click",
+      origem: "ficha",
       source: "vehicle-interesse-success",
-      vehicle_id: vehicle.slug,
-      vehicle_marca: vehicle.marca,
-      vehicle_modelo: vehicle.modelo,
-      vehicle_ano: vehicle.ano,
-      vehicle_preco: vehicle.preco,
+      marca: vehicle.marca, modelo: vehicle.modelo, ano: vehicle.ano, preco: vehicle.preco,
     });
     onClose();
   };
@@ -963,6 +986,12 @@ function StoreLocations() {
         href={waLink("Olá! Gostaria de agendar uma visita presencial na loja. Qual a disponibilidade?")}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackLead({
+          clarityEvent: "lead_agendar_visita",
+          gtmEvent: "whatsapp_click",
+          origem: "ficha",
+          source: "ficha-agendar-visita",
+        })}
         className="mt-6 inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-xl transition-colors"
       >
         <Calendar size={16} />

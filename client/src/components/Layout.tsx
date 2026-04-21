@@ -1,7 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { track } from "@/lib/track";
+import { track, trackLead } from "@/lib/track";
 
 const WA_NUMBER = "5519996525211";
 
@@ -39,7 +39,13 @@ function WhatsAppFloat() {
     setPulse(false);
   };
 
-  const handleOption = (msg: string) => {
+  const handleOption = (label: string, msg: string) => {
+    trackLead({
+      clarityEvent: "lead_whatsapp_floating",
+      gtmEvent: "whatsapp_click",
+      origem: "floating",
+      source: `floating-${label.toLowerCase().replace(/\s+/g, "-")}`,
+    });
     window.open(
       `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,
       "_blank"
@@ -81,7 +87,7 @@ function WhatsAppFloat() {
               {WA_OPTIONS.map((opt) => (
                 <button
                   key={opt.label}
-                  onClick={() => handleOption(opt.msg)}
+                  onClick={() => handleOption(opt.label, opt.msg)}
                   className="w-full text-left px-3 py-2.5 rounded-lg border border-atria-gray-medium hover:border-green-400 hover:bg-green-50 font-inter text-sm text-atria-text-dark transition-all"
                 >
                   {opt.label}

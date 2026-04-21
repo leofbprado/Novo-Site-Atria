@@ -22,6 +22,9 @@
 declare global {
   interface Window {
     dataLayer?: Array<Record<string, unknown>>;
+    // Microsoft Clarity é injetado como tag dentro do GTM (não no HTML diretamente).
+    // Pode não existir se o GTM ainda não carregou ou adblock bloqueou.
+    clarity?: (method: string, ...args: unknown[]) => void;
   }
 }
 
@@ -74,5 +77,75 @@ export function track(event: TrackEvent, props: TrackProps = {}): void {
   if (typeof window !== "undefined" && (window as any).location?.hostname === "localhost") {
     // eslint-disable-next-line no-console
     console.log("[track]", event, payload);
+  }
+}
+
+// ─── Clarity-specific lead tracking ─────────────────────────────────────────
+// GTM events (generate_lead, whatsapp_click, etc) alimentam Ads/Meta/GA4.
+// Clarity precisa de eventos nomeados descritivamente pra virar SmartEvents
+// distintos — senão tudo colapsa num "Enviar formulário" genérico e contamina
+// conversão com busca. trackLead() dispara os dois de uma vez.
+
+export type ClarityLeadEvent =
+  | "lead_tenho_interesse_ficha"
+  | "lead_whatsapp_ficha"
+  | "lead_whatsapp_floating"
+  | "lead_simular_credere_ficha"
+  | "lead_agendar_visita"
+  | "lead_clickbait_home"
+  | "lead_vender_carro"
+  | "lead_contato_generico"
+  | "busca_realizada";
+
+export type LeadOrigin = "ficha" | "home" | "credere" | "floating" | "header";
+
+export interface TrackLeadProps {
+  clarityEvent: ClarityLeadEvent;
+  gtmEvent?: TrackEvent; // default "generate_lead"
+  origem: LeadOrigin;
+  modelo?: string;
+  marca?: string;
+  preco?: number;
+  ano?: number;
+  termoBusca?: string;
+  source?: string;
+  [key: string]: unknown;
+}
+
+function faixaDePreco(preco: number): string {
+  if (preco < 40_000) return "ate_40k";
+  if (preco < 70_000) return "40k_70k";
+  if (preco < 100_000) return "70k_100k";
+  if (preco < 150_000) return "100k_150k";
+  return "acima_150k";
+}
+
+// Chamar depois da confirmação real (saveLead resolve, fetch 200).
+// Pra links <a href="wa.me"> disparar no onClick (clique é commitment suficiente).
+export function trackLead(props: TrackLeadProps): void {
+  if (typeof window === "undefined") return;
+
+  // GTM pipeline
+  track(props.gtmEvent || "generate_lead", {
+    source: props.source || `${props.origem}-${props.clarityEvent}`,
+    vehicle_marca: props.marca,
+    vehicle_modelo: props.modelo,
+    vehicle_ano: props.ano,
+    vehicle_preco: props.preco,
+    value: props.preco,
+    termo_busca: props.termoBusca,
+  });
+
+  // Clarity — tags agregáveis + evento nomeado
+  if (!window.clarity) return;
+  try {
+    if (props.modelo) window.clarity("set", "modelo_interesse", props.modelo);
+    if (props.marca) window.clarity("set", "marca_interesse", props.marca);
+    if (props.preco) window.clarity("set", "faixa_preco", faixaDePreco(props.preco));
+    window.clarity("set", "origem_lead", props.origem);
+    window.clarity("event", props.clarityEvent);
+  } catch (err) {
+    // Nunca bloqueia UX por falha de analytics
+    console.warn("[track] Clarity call falhou:", err);
   }
 }

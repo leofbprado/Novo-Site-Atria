@@ -6,6 +6,7 @@ import { getFeaturedVehicles, getVehicles, saveLead, vehiclePath, type Vehicle }
 import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
+import { trackLead } from "@/lib/track";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -155,11 +156,27 @@ function Hero() {
     e.preventDefault();
     // Se tem sugestão highlightada, vai direto pro veículo
     if (highlightIdx >= 0 && suggestions[highlightIdx]) {
-      window.location.href = vehiclePath(suggestions[highlightIdx]);
+      const v = suggestions[highlightIdx];
+      trackLead({
+        clarityEvent: "busca_realizada",
+        gtmEvent: "cta_click",
+        origem: "header",
+        source: "hero-search-suggestion",
+        termoBusca: query.trim(),
+        marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+      });
+      window.location.href = vehiclePath(v);
       return;
     }
     // Senão, vai pro estoque com a query como busca
     const q = query.trim();
+    trackLead({
+      clarityEvent: "busca_realizada",
+      gtmEvent: "view_inventory",
+      origem: "header",
+      source: "hero-search-submit",
+      termoBusca: q,
+    });
     if (q) {
       window.location.href = `${ROUTES.estoque}?q=${encodeURIComponent(q)}`;
     } else {
@@ -391,6 +408,13 @@ function SimuladorResultModal({
         source,
         query: `Simulação: entrada ${fmtBRL(entrada)}, parcela ${fmtBRL(parcela)}/mês, faixa ${fmtBRL(precoMin)}–${fmtBRL(precoMax)}`,
         dados: { entrada, parcela, prazo: PRAZO_FIXO, precoMin, precoMax },
+      });
+      // Dispara só após o 200 do saveLead — lead confirmado, não tentativa
+      trackLead({
+        clarityEvent: "lead_clickbait_home",
+        origem: "home",
+        source,
+        preco: Math.round((precoMin + precoMax) / 2),
       });
     } catch (err) {
       console.error("[Simulador] erro ao salvar lead:", err);
