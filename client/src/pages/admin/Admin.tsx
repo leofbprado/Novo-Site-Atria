@@ -641,7 +641,8 @@ function VehicleDetailPage({
           </button>
         </div>
 
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-4">
+          {/* Preço + info grid */}
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
             <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Preço anunciado</p>
             <p className="text-4xl font-bold text-slate-900 mb-5">{fmt(vehicle.preco)}</p>
@@ -660,31 +661,6 @@ function VehicleDetailPage({
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Editor: descrição+tags+acessórios (1/2) · specs (1/2) ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        <div className="space-y-4">
-          {/* Descrição IA */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-slate-900 text-sm font-semibold">Descrição comercial</label>
-              <button onClick={handleGenerateAI} disabled={generating}
-                className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
-                {generating ? <><Spinner size={12} /> Gerando...</> : <><Sparkles size={12} /> Gerar com IA</>}
-              </button>
-            </div>
-            {aiError && <p className="text-red-500 text-xs mb-2 flex items-center gap-1"><AlertCircle size={11} /> {aiError}</p>}
-            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={14}
-              placeholder="Descrição do veículo..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700 leading-relaxed" />
-            <button onClick={handleSaveDescricao} disabled={saving}
-              className="mt-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition font-medium flex items-center gap-2">
-              {saving ? <Spinner size={14} /> : <Save size={14} />}
-              {saving ? "Salvando..." : "Salvar descrição"}
-            </button>
           </div>
 
           {/* Tags */}
@@ -728,10 +704,32 @@ function VehicleDetailPage({
             </div>
           )}
         </div>
+      </div>
 
-        <div className="space-y-4">
-          {/* Specs técnicas */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      {/* ── Editor: descrição (1/2) · specs (1/2) — colunas esticam pra mesma altura ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* Descrição IA — textarea estica pra preencher altura da coluna de specs */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col min-h-[480px]">
+          <div className="flex items-center justify-between mb-3 flex-shrink-0">
+            <label className="text-slate-900 text-sm font-semibold">Descrição comercial</label>
+            <button onClick={handleGenerateAI} disabled={generating}
+              className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
+              {generating ? <><Spinner size={12} /> Gerando...</> : <><Sparkles size={12} /> Gerar com IA</>}
+            </button>
+          </div>
+          {aiError && <p className="text-red-500 text-xs mb-2 flex items-center gap-1 flex-shrink-0"><AlertCircle size={11} /> {aiError}</p>}
+          <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)}
+            placeholder="Descrição do veículo..."
+            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-none text-slate-700 leading-relaxed flex-1 min-h-[280px]" />
+          <button onClick={handleSaveDescricao} disabled={saving}
+            className="mt-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition font-medium flex items-center gap-2 flex-shrink-0 self-start">
+            {saving ? <Spinner size={14} /> : <Save size={14} />}
+            {saving ? "Salvando..." : "Salvar descrição"}
+          </button>
+        </div>
+
+        {/* Specs técnicas */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <label className="text-slate-900 text-sm font-semibold">Especificações técnicas</label>
               <button onClick={handleSearchSpecs} disabled={searchingSpecs || doingAll}
@@ -760,21 +758,20 @@ function VehicleDetailPage({
               {savingSpecs ? "Salvando..." : "Salvar especificações"}
             </button>
 
-            {/* Preview inline (só quando tem valores salvos) */}
-            {Object.values(specs).some((v) => v) && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2">Preview no site</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                  {SPEC_FIELDS.filter(({ key }) => specs[key]).map(({ key, label }) => (
-                    <div key={key} className="flex justify-between items-baseline text-xs py-1 border-b border-slate-100">
-                      <span className="text-slate-500">{label.replace(/\s*\(.*\)/, "")}</span>
-                      <span className="text-slate-800 font-semibold">{specs[key]}</span>
-                    </div>
-                  ))}
-                </div>
+          {/* Preview inline (só quando tem valores salvos) */}
+          {Object.values(specs).some((v) => v) && (
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2">Preview no site</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {SPEC_FIELDS.filter(({ key }) => specs[key]).map(({ key, label }) => (
+                  <div key={key} className="flex justify-between items-baseline text-xs py-1 border-b border-slate-100">
+                    <span className="text-slate-500">{label.replace(/\s*\(.*\)/, "")}</span>
+                    <span className="text-slate-800 font-semibold">{specs[key]}</span>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
