@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
-import { brandLogoFor } from "@/lib/brandLogos";
+import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WA_NUMBER = "5519996525211";
@@ -328,8 +328,8 @@ function CheckList({
 
 // ─── CheckListWithCount ───────────────────────────────────────────────────────
 function CheckListWithCount({
-  options, selected, onChange,
-}: { options: [string, number][]; selected: string[]; onChange: (v: string[]) => void }) {
+  options, selected, onChange, labelFor,
+}: { options: [string, number][]; selected: string[]; onChange: (v: string[]) => void; labelFor?: (v: string) => string }) {
   const toggle = (val: string) =>
     onChange(selected.includes(val) ? selected.filter((x) => x !== val) : [...selected, val]);
   return (
@@ -351,7 +351,7 @@ function CheckListWithCount({
             )}
           </div>
           <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)} className="sr-only" />
-          <span className="font-inter text-sm text-atria-text-dark flex-1">{opt}</span>
+          <span className="font-inter text-sm text-atria-text-dark flex-1">{labelFor ? labelFor(opt) : opt}</span>
           <span className="font-inter text-xs text-atria-text-gray">({count})</span>
         </label>
       ))}
@@ -427,7 +427,7 @@ function MarcaFilter({
         {topBrands.map((b) => (
           <BrandLogoCard
             key={b.name}
-            name={b.name}
+            name={brandDisplayName(b.name)}
             logo={b.logo}
             selected={selected.includes(b.name)}
             onToggle={() => toggle(b.name)}
@@ -443,6 +443,7 @@ function MarcaFilter({
         options={allBrandCounts}
         selected={selected}
         onChange={onChange}
+        labelFor={brandDisplayName}
       />
     </div>
   );

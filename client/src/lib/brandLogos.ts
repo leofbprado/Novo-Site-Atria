@@ -38,10 +38,10 @@ export const BRAND_LOGOS: Record<string, string> = {
   "kia":           `${CL}/kia-logo.png`,
   "volvo":         `${CL}/volvo-logo.png`,
   "suzuki":        `${CL}/suzuki-logo.png`,
-  "caoa":          `${CL}/chery-logo.png`,
-  "caoa chery":    `${CL}/chery-logo.png`,
-  "caoa-chery":    `${CL}/chery-logo.png`,
-  "chery":         `${CL}/chery-logo.png`,
+  "caoa":          `${L}/caoa-chery.svg`,
+  "caoa chery":    `${L}/caoa-chery.svg`,
+  "caoa-chery":    `${L}/caoa-chery.svg`,
+  "chery":         `${L}/caoa-chery.svg`,
   "byd":           `${CL}/byd-logo.png`,
   "ram":           `${CL}/ram-trucks-logo.png`,
   "dodge":         `${CL}/dodge-logo.png`,
@@ -70,4 +70,18 @@ export const BRAND_LOGOS: Record<string, string> = {
 
 export function brandLogoFor(name: string): string {
   return BRAND_LOGOS[name.trim().toLowerCase()] || "";
+}
+
+// Aliases de display: a Átria trabalha com CAOA Chery (não a marca global Chery).
+// Mantemos o valor cru em Firestore intocado (pra não quebrar filtro/busca/SEO) e
+// normalizamos só na renderização.
+const DISPLAY_ALIASES: Record<string, string> = {
+  "chery": "CAOA Chery",
+  "caoa": "CAOA Chery",
+  "caoa chery": "CAOA Chery",
+  "caoa-chery": "CAOA Chery",
+};
+
+export function brandDisplayName(name: string): string {
+  return DISPLAY_ALIASES[name.trim().toLowerCase()] || name;
 }

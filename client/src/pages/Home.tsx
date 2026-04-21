@@ -7,7 +7,7 @@ import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
 import { trackLead } from "@/lib/track";
-import { brandLogoFor } from "@/lib/brandLogos";
+import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -632,6 +632,7 @@ function BrandCarousel() {
           .map(([brand, count]) => ({
             brand,
             count,
+            label: brandDisplayName(brand),
             svg: <BrandLogo marca={brand} />,
           }));
         setCards(sorted);

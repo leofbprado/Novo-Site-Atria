@@ -32,6 +32,7 @@ export interface CarouselCard {
   brand: string;
   count: number;
   svg: JSX.Element;
+  label?: string;
 }
 
 // ── Carousel ─────────────────────────────────────────────────────────────────
@@ -128,7 +129,7 @@ const Carousel = memo(function Carousel({
                 {card.svg}
               </div>
               <span className="font-barlow-condensed font-bold text-[9px] sm:text-xs md:text-sm text-gray-800 leading-tight text-center truncate w-full">
-                {card.brand}
+                {card.label ?? card.brand}
               </span>
             </div>
           </motion.div>
