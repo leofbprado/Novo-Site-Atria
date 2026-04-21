@@ -1166,6 +1166,23 @@ export default function VehicleDetail() {
               <p className="font-inter text-base text-atria-text-dark leading-relaxed">{vehicle.descricao}</p>
             </section>
 
+            {/* Highlights globais — logo após descrição, antes da ficha técnica (reforço comercial) */}
+            {siteConfig.highlights_padrao.length > 0 && (
+              <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                <h2 className="font-barlow-condensed font-bold text-xl text-emerald-900 mb-3 uppercase tracking-wide">
+                  Condições do negócio
+                </h2>
+                <ul className="space-y-2.5">
+                  {siteConfig.highlights_padrao.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2.5 font-inter text-base text-atria-text-dark">
+                      <CheckCircle size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <span>{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* Ficha Tecnica */}
             <FichaTecnica v={vehicle} />
 
@@ -1179,20 +1196,6 @@ export default function VehicleDetail() {
                   Opcionais e equipamentos
                 </h2>
                 <OpcionaisSection opcionais={vehicle.opcionais} />
-              </section>
-            )}
-
-            {/* Highlights globais */}
-            {siteConfig.highlights_padrao.length > 0 && (
-              <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-                <ul className="space-y-2">
-                  {siteConfig.highlights_padrao.map((h, i) => (
-                    <li key={i} className="flex items-start gap-2 font-inter text-sm text-atria-text-dark">
-                      <CheckCircle size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
               </section>
             )}
 

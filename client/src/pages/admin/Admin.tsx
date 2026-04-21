@@ -534,196 +534,206 @@ function VehicleDetailPage({
 
   return (
     <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      {/* ── Header: back · title+badge · ações (primária = Publicar) ── */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-start gap-4 min-w-0 flex-1">
           <button onClick={onBack}
-            className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm font-medium transition">
-            <ChevronLeft size={18} /> Voltar ao estoque
+            className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm font-medium transition flex-shrink-0 mt-1">
+            <ChevronLeft size={18} /> Voltar
           </button>
-          <div className="h-6 w-px bg-slate-200" />
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{vehicle.marca} {vehicle.modelo}</h1>
-            <p className="text-slate-500 text-sm">{vehicle.versao} &middot; ID: {vehicle.autoconf_id}</p>
+          <div className="h-6 w-px bg-slate-200 mt-1.5" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl font-bold text-slate-900 truncate">{vehicle.marca} {vehicle.modelo}</h1>
+              <Badge status={vehicle.status} />
+            </div>
+            <p className="text-slate-500 text-sm truncate mt-0.5">
+              {vehicle.versao}
+              <span className="text-slate-300 mx-1.5">·</span>
+              <span className="text-slate-400">ID {vehicle.autoconf_id}</span>
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge status={vehicle.status} />
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={handleResync} disabled={resyncing || publishing || doingAll}
-            title="Busca novamente esse veículo no AutoConf (fotos, specs, preço) sem rodar o sync batch"
-            className="bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-            {resyncing ? <Spinner size={14} /> : <RefreshCw size={14} />}
-            {resyncing ? "Sincronizando..." : "Re-sincronizar AutoConf"}
+            title="Busca novamente esse veículo no AutoConf (fotos, specs, preço)"
+            className="bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-600 w-10 h-10 rounded-lg transition flex items-center justify-center">
+            {resyncing ? <Spinner size={16} /> : <RefreshCw size={16} />}
           </button>
           <button onClick={handleDoEverything} disabled={doingAll || generating || searchingSpecs}
-            title="Pesquisa specs verídicas + gera descrição comercial em uma chamada (Sonnet + web_search)"
-            className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            title="Pesquisa specs + gera descrição via Claude (Sonnet + web_search)"
+            className="bg-white border border-violet-300 hover:bg-violet-50 disabled:opacity-50 text-violet-700 px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1.5 h-10">
             {doingAll ? <Spinner size={14} /> : <Sparkles size={14} />}
-            {doingAll ? "Processando..." : "Fazer tudo com IA"}
+            <span className="hidden sm:inline">{doingAll ? "Processando..." : "Fazer tudo com IA"}</span>
           </button>
           <button onClick={handlePublish} disabled={publishing}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 h-10 ${
               vehicle.status === "publicado"
                 ? "bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200"
-                : "bg-emerald-600 hover:bg-emerald-500 text-white"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
             } disabled:opacity-50`}>
             {publishing ? <Spinner size={14} /> : vehicle.status === "publicado" ? <EyeOff size={14} /> : <Eye size={14} />}
-            {publishing ? "Processando..." : vehicle.status === "publicado" ? "Despublicar" : "Publicar"}
+            {publishing ? "..." : vehicle.status === "publicado" ? "Despublicar" : "Publicar"}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Column 1: Photos + Basic Info */}
-        <div className="xl:col-span-1 space-y-4">
+      {/* ── Hero: foto (2/5) + resumo comercial (3/5) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-2 space-y-3">
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            {fotos.length > 0 && (
+            {fotos.length > 0 ? (
               <div>
-                <div className="relative aspect-[16/10] bg-slate-100">
+                <div className="relative aspect-[4/3] bg-slate-100">
                   <img src={fotos[photoIdx]} alt="" className="w-full h-full object-cover" />
                   {fotos.length > 1 && (
                     <>
                       <button onClick={() => setPhotoIdx((p) => (p - 1 + fotos.length) % fotos.length)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center">
-                        <ChevronLeft size={16} />
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition">
+                        <ChevronLeft size={18} />
                       </button>
                       <button onClick={() => setPhotoIdx((p) => (p + 1) % fotos.length)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center">
-                        <ChevronRight size={16} />
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition">
+                        <ChevronRight size={18} />
                       </button>
                     </>
                   )}
-                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-medium px-2 py-0.5 rounded-full">
                     {photoIdx + 1}/{fotos.length}
                   </span>
                 </div>
                 {fotos.length > 1 && (
-                  <div className="flex gap-1 p-2 overflow-x-auto">
+                  <div className="flex gap-1.5 p-2 overflow-x-auto">
                     {fotos.map((f, i) => (
                       <button key={i} onClick={() => setPhotoIdx(i)}
-                        className={`flex-shrink-0 w-14 h-10 rounded-md overflow-hidden border-2 transition ${i === photoIdx ? "border-blue-500" : "border-transparent opacity-50 hover:opacity-80"}`}>
+                        className={`flex-shrink-0 w-16 h-12 rounded-md overflow-hidden border-2 transition ${i === photoIdx ? "border-blue-500" : "border-transparent opacity-50 hover:opacity-80"}`}>
                         <img src={f} alt="" className="w-full h-full object-cover" />
                       </button>
                     ))}
                   </div>
                 )}
               </div>
+            ) : (
+              <div className="aspect-[4/3] bg-slate-100 flex items-center justify-center text-slate-400 text-sm">
+                Sem fotos
+              </div>
             )}
-            <div className="p-4 space-y-3">
-              {/* Toggle Fotos Provisórias */}
-              <button
-                onClick={() => {
-                  const next = !fotosProvisórias;
-                  setFotosProvisórias(next);
-                  updateVeiculoFotosProvisórias(vehicle.autoconf_id, next);
-                }}
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
-                  fotosProvisórias
-                    ? "bg-amber-50 border-amber-300 text-amber-700"
-                    : "bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300"
-                }`}>
-                <span className="flex items-center gap-2">
-                  <Camera size={14} />
-                  Fotos provisórias
-                </span>
-                <span className={`w-8 h-4.5 rounded-full relative transition-colors ${fotosProvisórias ? "bg-amber-400" : "bg-slate-300"}`}>
-                  <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-all ${fotosProvisórias ? "left-[calc(100%-1rem)]" : "left-0.5"}`} />
-                </span>
-              </button>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-slate-900">{fmt(vehicle.preco)}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  ["Ano", `${vehicle.ano_fabricacao}/${vehicle.ano_modelo}`],
-                  ["KM", fmtKm(vehicle.km)],
-                  ["Cambio", vehicle.cambio],
-                  ["Combustivel", vehicle.combustivel],
-                  ["Cor", vehicle.cor],
-                  ["Portas", String(vehicle.portas || "-")],
-                ].map(([l, v]) => (
-                  <div key={String(l)} className="bg-slate-50 rounded-lg px-3 py-2">
-                    <p className="text-slate-400 text-[10px] uppercase tracking-wider">{l}</p>
-                    <p className="text-slate-800 text-sm font-medium">{String(v)}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
-          {/* Tags */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Tags</label>
-            <div className="flex flex-wrap gap-1.5 mb-2.5">
-              {tags.map((tag) => <TagChip key={tag} tag={tag} onRemove={() => handleRemoveTag(tag)} />)}
-              {tags.length === 0 && <span className="text-slate-400 text-xs">Nenhuma tag</span>}
-            </div>
-            <div className="flex flex-wrap gap-1 mb-2">
-              {PRESET_TAGS.filter((t) => !tags.includes(t)).map((tag) => (
-                <button key={tag} onClick={() => handleAddTag(tag)}
-                  className="px-2 py-0.5 rounded-full text-[11px] border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 transition">
-                  + {tag}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-1.5">
-              <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag(newTag))}
-                placeholder="Tag customizada..."
-                className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
-              <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim()}
-                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 px-3 py-1.5 rounded-lg text-xs text-slate-700 transition font-medium">
-                <Tag size={12} />
-              </button>
-            </div>
-          </div>
-
-          {/* Accessories */}
-          {vehicle.acessorios && vehicle.acessorios.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">
-                Acessorios ({vehicle.acessorios.length})
-              </label>
-              <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
-                {vehicle.acessorios.map((a) => (
-                  <span key={a} className="bg-slate-50 text-slate-600 text-[11px] px-2 py-0.5 rounded-full border border-slate-100">{a}</span>
-                ))}
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => {
+              const next = !fotosProvisórias;
+              setFotosProvisórias(next);
+              updateVeiculoFotosProvisórias(vehicle.autoconf_id, next);
+            }}
+            className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition ${
+              fotosProvisórias
+                ? "bg-amber-50 border-amber-300 text-amber-700"
+                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}>
+            <span className="flex items-center gap-2">
+              <Camera size={14} />
+              Fotos provisórias
+            </span>
+            <span className={`w-10 h-5 rounded-full relative transition-colors ${fotosProvisórias ? "bg-amber-400" : "bg-slate-300"}`}>
+              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${fotosProvisórias ? "left-[calc(100%-1.125rem)]" : "left-0.5"}`} />
+            </span>
+          </button>
         </div>
 
-        {/* Column 2: Description + Highlights + Disclaimer */}
-        <div className="xl:col-span-1 space-y-4">
-          {/* AI Description */}
+        <div className="lg:col-span-3">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-full">
+            <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Preço anunciado</p>
+            <p className="text-4xl font-bold text-slate-900 mb-5">{fmt(vehicle.preco)}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {[
+                ["Ano", `${vehicle.ano_fabricacao}/${vehicle.ano_modelo}`],
+                ["KM", fmtKm(vehicle.km)],
+                ["Câmbio", vehicle.cambio || "—"],
+                ["Combustível", vehicle.combustivel || "—"],
+                ["Cor", vehicle.cor || "—"],
+                ["Portas", String(vehicle.portas || "—")],
+              ].map(([l, v]) => (
+                <div key={String(l)} className="bg-slate-50 rounded-lg px-3 py-2.5">
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider font-medium">{l}</p>
+                  <p className="text-slate-800 text-sm font-semibold mt-0.5">{String(v)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Editor: descrição+tags+acessórios (1/2) · specs (1/2) ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          {/* Descrição IA */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium">Descricao IA</label>
+              <label className="text-slate-900 text-sm font-semibold">Descrição comercial</label>
               <button onClick={handleGenerateAI} disabled={generating}
                 className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
                 {generating ? <><Spinner size={12} /> Gerando...</> : <><Sparkles size={12} /> Gerar com IA</>}
               </button>
             </div>
             {aiError && <p className="text-red-500 text-xs mb-2 flex items-center gap-1"><AlertCircle size={11} /> {aiError}</p>}
-            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={6}
-              placeholder="Descricao do veiculo..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
+            <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={8}
+              placeholder="Descrição do veículo..."
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700 leading-relaxed" />
             <button onClick={handleSaveDescricao} disabled={saving}
-              className="mt-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs px-4 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
-              {saving ? <Spinner size={12} /> : <Save size={12} />}
-              {saving ? "Salvando..." : "Salvar descricao"}
+              className="mt-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg transition font-medium flex items-center gap-2">
+              {saving ? <Spinner size={14} /> : <Save size={14} />}
+              {saving ? "Salvando..." : "Salvar descrição"}
             </button>
           </div>
 
+          {/* Tags */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <label className="text-slate-900 text-sm font-semibold block mb-3">Tags</label>
+            <div className="flex flex-wrap gap-1.5 mb-3 min-h-[24px]">
+              {tags.map((tag) => <TagChip key={tag} tag={tag} onRemove={() => handleRemoveTag(tag)} />)}
+              {tags.length === 0 && <span className="text-slate-400 text-xs italic">Nenhuma tag adicionada</span>}
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {PRESET_TAGS.filter((t) => !tags.includes(t)).map((tag) => (
+                <button key={tag} onClick={() => handleAddTag(tag)}
+                  className="px-2.5 py-1 rounded-full text-xs border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition">
+                  + {tag}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag(newTag))}
+                placeholder="Tag customizada..."
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
+              <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim()}
+                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 px-3 py-2 rounded-lg text-sm text-slate-700 transition font-medium flex items-center gap-1.5">
+                <Tag size={12} /> Adicionar
+              </button>
+            </div>
+          </div>
+
+          {/* Acessórios */}
+          {vehicle.acessorios && vehicle.acessorios.length > 0 && (
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+              <label className="text-slate-900 text-sm font-semibold block mb-3">
+                Acessórios <span className="text-slate-400 font-normal">({vehicle.acessorios.length})</span>
+              </label>
+              <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto">
+                {vehicle.acessorios.map((a) => (
+                  <span key={a} className="bg-slate-50 text-slate-600 text-xs px-2.5 py-1 rounded-full border border-slate-200">{a}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Column 3: Technical Specs */}
-        <div className="xl:col-span-1 space-y-4">
+        <div className="space-y-4">
+          {/* Specs técnicas */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-slate-500 text-xs uppercase tracking-wider font-medium">
-                Especificações Técnicas
-              </label>
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-slate-900 text-sm font-semibold">Especificações técnicas</label>
               <button onClick={handleSearchSpecs} disabled={searchingSpecs || doingAll}
                 title="Pesquisa specs verídicas em CarrosNaWeb, iCarros, Quatro Rodas (Sonnet + web_search)"
                 className="text-violet-600 hover:text-violet-700 disabled:opacity-50 text-xs font-medium flex items-center gap-1 transition">
@@ -733,7 +743,7 @@ function VehicleDetailPage({
             <div className="grid grid-cols-2 gap-3">
               {SPEC_FIELDS.map(({ key, label, placeholder }) => (
                 <div key={key}>
-                  <label className="text-slate-500 text-[11px] block mb-1">{label}</label>
+                  <label className="text-slate-500 text-[11px] font-medium block mb-1">{label}</label>
                   <input
                     type="text"
                     value={specs[key] || ""}
@@ -751,15 +761,15 @@ function VehicleDetailPage({
             </button>
           </div>
 
-          {/* Quick preview of existing values */}
+          {/* Preview inline das specs */}
           {Object.values(specs).some((v) => v) && (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2">Preview</p>
-              <div className="space-y-1">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <p className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-3">Preview (como aparece no site)</p>
+              <div className="space-y-1.5">
                 {SPEC_FIELDS.filter(({ key }) => specs[key]).map(({ key, label }) => (
-                  <div key={key} className="flex justify-between text-sm">
+                  <div key={key} className="flex justify-between items-baseline text-sm py-1.5 border-b border-slate-200 last:border-0">
                     <span className="text-slate-500">{label.replace(/\s*\(.*\)/, "")}</span>
-                    <span className="text-slate-800 font-medium">{specs[key]}</span>
+                    <span className="text-slate-800 font-semibold">{specs[key]}</span>
                   </div>
                 ))}
               </div>
