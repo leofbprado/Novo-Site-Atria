@@ -80,8 +80,6 @@ export interface Vehicle {
   slug: string;
   createdAt: Date;
   technical_specs?: Record<string, number>;
-  disclaimer?: string;
-  highlights?: string[];
   bloco_final?: string;
 }
 
@@ -152,8 +150,6 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     slug: v.slug || "",
     createdAt: v.data_importacao?.toDate?.() || new Date(),
     ...(v.technical_specs ? { technical_specs: v.technical_specs } : {}),
-    ...(v.disclaimer ? { disclaimer: v.disclaimer } : {}),
-    ...(v.highlights?.length ? { highlights: v.highlights } : {}),
     ...(v.bloco_final ? { bloco_final: v.bloco_final } : {}),
   };
 }
@@ -252,6 +248,28 @@ const MOCK_VEHICLES: Vehicle[] = [
 // ── Public queries ──────────────────────────────────────────────────────────
 
 const ADMIN_COLLECTION = "veiculos_admin";
+
+// Configs globais renderizadas em todos os veículos (highlights + disclaimer padrão).
+// Admin edita em /admin/configuracoes; lido pelo VehicleDetail público.
+export interface SiteConfig {
+  highlights_padrao: string[];
+  disclaimer_padrao: string;
+}
+
+export async function getSiteConfig(): Promise<SiteConfig> {
+  if (!db) return { highlights_padrao: [], disclaimer_padrao: "" };
+  try {
+    const snap = await getDoc(doc(db, "config", "admin"));
+    if (!snap.exists()) return { highlights_padrao: [], disclaimer_padrao: "" };
+    const data = snap.data();
+    return {
+      highlights_padrao: Array.isArray(data.highlights_padrao) ? (data.highlights_padrao as string[]) : [],
+      disclaimer_padrao: (data.disclaimer_padrao as string) || "",
+    };
+  } catch {
+    return { highlights_padrao: [], disclaimer_padrao: "" };
+  }
+}
 
 export async function getVehicles(
   filters?: Partial<{

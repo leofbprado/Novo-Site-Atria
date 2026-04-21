@@ -46,8 +46,6 @@ export interface VeiculoAdmin {
   data_importacao: Timestamp | null;
   data_publicacao: Timestamp | null;
   technical_specs?: Record<string, number>;
-  disclaimer?: string;
-  highlights?: string[];
   bloco_final?: string;
   descricao_final?: string;
   fotos_provisorias?: boolean;
@@ -441,17 +439,29 @@ export async function publishVeiculo(autoconfId: number): Promise<void> {
 
 // ── Config (OpenAI key etc) ──────────────────────────────────────────────────
 
-export async function getAdminConfig(): Promise<{ openai_key: string; claude_key: string }> {
+export interface AdminConfig {
+  openai_key: string;
+  claude_key: string;
+  highlights_padrao: string[];
+  disclaimer_padrao: string;
+}
+
+export async function getAdminConfig(): Promise<AdminConfig> {
   const firestore = requireDb();
   const snap = await getDoc(doc(firestore, CONFIG_COLLECTION, "admin"));
   if (snap.exists()) {
     const data = snap.data();
-    return { openai_key: (data.openai_key as string) || "", claude_key: (data.claude_key as string) || "" };
+    return {
+      openai_key: (data.openai_key as string) || "",
+      claude_key: (data.claude_key as string) || "",
+      highlights_padrao: Array.isArray(data.highlights_padrao) ? (data.highlights_padrao as string[]) : [],
+      disclaimer_padrao: (data.disclaimer_padrao as string) || "",
+    };
   }
-  return { openai_key: "", claude_key: "" };
+  return { openai_key: "", claude_key: "", highlights_padrao: [], disclaimer_padrao: "" };
 }
 
-export async function saveAdminConfig(config: Partial<{ openai_key: string; claude_key: string }>): Promise<void> {
+export async function saveAdminConfig(config: Partial<AdminConfig>): Promise<void> {
   const firestore = requireDb();
   await setDoc(doc(firestore, CONFIG_COLLECTION, "admin"), config, { merge: true });
 }

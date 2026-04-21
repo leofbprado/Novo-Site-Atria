@@ -8,7 +8,7 @@ import {
   Cog, Users, TrendingDown, X, ZoomIn,
   Heart, MessageCircle, Camera,
 } from "lucide-react";
-import { getVehicleBySlug, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, type Vehicle, type SiteConfig } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
 import { track } from "@/lib/track";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -977,14 +977,28 @@ export default function VehicleDetail() {
   const { slug } = useParams<{ slug: string }>();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>({ highlights_padrao: [], disclaimer_padrao: "" });
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const actionBlockRef = useRef<HTMLDivElement>(null);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
 
   useEffect(() => {
-    Promise.all([getVehicleBySlug(slug), getVehicles()]).then(([v, all]) => {
+    if (!actionBlockRef.current) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowStickyCTA(!entry.isIntersecting),
+      { threshold: 0, rootMargin: "0px 0px -10% 0px" },
+    );
+    obs.observe(actionBlockRef.current);
+    return () => obs.disconnect();
+  }, [vehicle?.slug]);
+
+  useEffect(() => {
+    Promise.all([getVehicleBySlug(slug), getVehicles(), getSiteConfig()]).then(([v, all, cfg]) => {
       if (!v) setNotFound(true);
       else setVehicle(v);
       setAllVehicles(all);
+      setSiteConfig(cfg);
       setLoading(false);
     });
   }, [slug]);
@@ -1117,7 +1131,7 @@ export default function VehicleDetail() {
             <PhotoGallery fotos={vehicle.fotos} titulo={titulo} slug={vehicle.slug} />
 
             {/* Action Block — CTAs contextualizados (mobile-first) */}
-            <div className="lg:hidden">
+            <div ref={actionBlockRef} className="lg:hidden">
               <ActionBlock v={vehicle} />
             </div>
 
@@ -1168,14 +1182,28 @@ export default function VehicleDetail() {
               </section>
             )}
 
+            {/* Highlights globais */}
+            {siteConfig.highlights_padrao.length > 0 && (
+              <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                <ul className="space-y-2">
+                  {siteConfig.highlights_padrao.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2 font-inter text-sm text-atria-text-dark">
+                      <CheckCircle size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <span>{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* Disclaimer */}
-            {(vehicle.bloco_final || vehicle.disclaimer) && (
+            {(vehicle.bloco_final || siteConfig.disclaimer_padrao) && (
               <section className="bg-atria-gray-light border border-atria-gray-medium rounded-xl p-5 space-y-2">
                 {vehicle.bloco_final && (
                   <p className="font-inter text-sm font-bold text-atria-text-dark">{vehicle.bloco_final}</p>
                 )}
-                {vehicle.disclaimer && (
-                  <p className="font-inter text-xs text-atria-text-gray leading-relaxed">{vehicle.disclaimer}</p>
+                {siteConfig.disclaimer_padrao && (
+                  <p className="font-inter text-xs text-atria-text-gray leading-relaxed">{siteConfig.disclaimer_padrao}</p>
                 )}
               </section>
             )}

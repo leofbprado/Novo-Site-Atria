@@ -356,8 +356,6 @@ function VehicleDetailPage({
     )
   );
   const [savingSpecs, setSavingSpecs] = useState(false);
-  const [disclaimer, setDisclaimer] = useState(vehicle.disclaimer || "");
-  const [highlights, setHighlights] = useState((vehicle.highlights || []).join("\n"));
   const [fotosProvisórias, setFotosProvisórias] = useState(vehicle.fotos_provisorias ?? false);
 
   const handleAddTag = (tag: string) => {
@@ -717,32 +715,6 @@ function VehicleDetailPage({
             </button>
           </div>
 
-          {/* Highlights */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-3">
-              Highlights (um por linha)
-            </label>
-            <textarea value={highlights} onChange={(e) => setHighlights(e.target.value)} rows={4}
-              placeholder={"IPVA 2025 pago\nUnico dono\nRevisoes em dia"}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
-            {highlights && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {highlights.split("\n").filter(Boolean).map((h, i) => (
-                  <span key={i} className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full border border-emerald-200">{h}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Disclaimer */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <label className="text-slate-500 text-xs uppercase tracking-wider font-medium block mb-3">
-              Disclaimer
-            </label>
-            <textarea value={disclaimer} onChange={(e) => setDisclaimer(e.target.value)} rows={3}
-              placeholder="Valores sujeitos a alteracao sem aviso previo..."
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
-          </div>
         </div>
 
         {/* Column 3: Technical Specs */}
@@ -2502,6 +2474,33 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
   const [milestoneDias, setMilestoneDias] = useState(milestoneConfig.dias.join(", "));
   const [savingMs, setSavingMs] = useState(false);
   const [savedMs, setSavedMs] = useState(false);
+  const [highlightsPadrao, setHighlightsPadrao] = useState("");
+  const [disclaimerPadrao, setDisclaimerPadrao] = useState("");
+  const [savingGlobais, setSavingGlobais] = useState(false);
+  const [savedGlobais, setSavedGlobais] = useState(false);
+
+  useEffect(() => {
+    getAdminConfig()
+      .then((c) => {
+        setHighlightsPadrao((c.highlights_padrao || []).join("\n"));
+        setDisclaimerPadrao(c.disclaimer_padrao || "");
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSaveGlobais = async () => {
+    setSavingGlobais(true);
+    try {
+      const arr = highlightsPadrao.split("\n").map((s) => s.trim()).filter(Boolean);
+      await saveAdminConfig({
+        highlights_padrao: arr,
+        disclaimer_padrao: disclaimerPadrao.trim(),
+      });
+      setSavedGlobais(true);
+      setTimeout(() => setSavedGlobais(false), 3000);
+    } catch { /* ignore */ }
+    setSavingGlobais(false);
+  };
   const [crmChecking, setCrmChecking] = useState(true);
   const [crmOk, setCrmOk] = useState<boolean | null>(null);
   const [crmDetail, setCrmDetail] = useState("");
@@ -2664,6 +2663,49 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
               Chave configurada (****{claudeKey.slice(-4)})
             </p>
           )}
+        </div>
+
+        {/* Textos padrão da ficha (aplicados em TODOS os veículos) */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Sparkles size={18} className="text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Textos padrão da ficha</h3>
+              <p className="text-slate-500 text-xs">Highlights e disclaimer aplicados em todos os veículos automaticamente</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-slate-600 text-xs font-medium block mb-1.5">
+                Highlights (um por linha)
+              </label>
+              <textarea value={highlightsPadrao} onChange={(e) => setHighlightsPadrao(e.target.value)} rows={4}
+                placeholder={"Valores para pagamento à vista ou financiamento sem troca\nAceitamos seu usado na troca"}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
+              {highlightsPadrao.trim() && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {highlightsPadrao.split("\n").map((s) => s.trim()).filter(Boolean).map((h, i) => (
+                    <span key={i} className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full border border-emerald-200">{h}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="text-slate-600 text-xs font-medium block mb-1.5">
+                Disclaimer
+              </label>
+              <textarea value={disclaimerPadrao} onChange={(e) => setDisclaimerPadrao(e.target.value)} rows={3}
+                placeholder="Em caso de divergência de informações, entre em contato pelo WhatsApp para confirmar."
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 resize-y text-slate-700" />
+            </div>
+            <button onClick={handleSaveGlobais} disabled={savingGlobais}
+              className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              {savingGlobais ? <Spinner size={14} /> : savedGlobais ? <CheckCircle2 size={14} /> : <Save size={14} />}
+              {savingGlobais ? "Salvando..." : savedGlobais ? "Salvo!" : "Salvar textos padrão"}
+            </button>
+          </div>
         </div>
 
         {/* Sync settings */}
