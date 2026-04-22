@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, type Vehicle, type SiteConfig } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
-import { track, trackLead } from "@/lib/track";
+import { track, trackLead, trackIntent } from "@/lib/track";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
@@ -408,6 +408,10 @@ function PricePanel({ v }: { v: Vehicle }) {
   const handleInteresseClick = () => {
     trackVehicleEvent(v.slug, "clique_interesse_header").catch(() => {});
     track("cta_click", { source: "ficha-interesse-panel", cta: "interesse", ...trackProps });
+    trackIntent("lead_tenho_interesse_aberto", {
+      origem: "ficha",
+      marca: v.marca, modelo: v.modelo, preco: v.preco,
+    });
     setDrawerOpen(true);
   };
 
@@ -528,6 +532,10 @@ function ActionBlock({ v }: { v: Vehicle }) {
   const handleInteresseClick = () => {
     trackVehicleEvent(v.slug, "clique_interesse_header").catch(() => {});
     track("cta_click", { source: "ficha-interesse-header", cta: "interesse", ...trackProps });
+    trackIntent("lead_tenho_interesse_aberto", {
+      origem: "ficha",
+      marca: v.marca, modelo: v.modelo, preco: v.preco,
+    });
     setDrawerOpen(true);
   };
 

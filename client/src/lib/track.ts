@@ -88,8 +88,10 @@ export function track(event: TrackEvent, props: TrackProps = {}): void {
 
 export type ClarityLeadEvent =
   | "lead_tenho_interesse_ficha"
+  | "lead_tenho_interesse_aberto"
   | "lead_whatsapp_ficha"
   | "lead_whatsapp_floating"
+  | "lead_whatsapp_floating_aberto"
   | "lead_simular_credere_ficha"
   | "lead_agendar_visita"
   | "lead_clickbait_home"
@@ -147,5 +149,28 @@ export function trackLead(props: TrackLeadProps): void {
   } catch (err) {
     // Nunca bloqueia UX por falha de analytics
     console.warn("[track] Clarity call falhou:", err);
+  }
+}
+
+// Intent-only: dispara apenas no Clarity (funil de fricção).
+// NÃO vai pro GTM/Ads/Meta porque "abriu drawer" não é conversão — Smart Bidding
+// otimizaria pra intent em vez de lead real. Usar pra eventos *_aberto.
+export interface TrackIntentProps {
+  origem: LeadOrigin;
+  modelo?: string;
+  marca?: string;
+  preco?: number;
+}
+
+export function trackIntent(clarityEvent: ClarityLeadEvent, props: TrackIntentProps): void {
+  if (typeof window === "undefined" || !window.clarity) return;
+  try {
+    if (props.modelo) window.clarity("set", "modelo_interesse", props.modelo);
+    if (props.marca) window.clarity("set", "marca_interesse", props.marca);
+    if (props.preco) window.clarity("set", "faixa_preco", faixaDePreco(props.preco));
+    window.clarity("set", "origem_lead", props.origem);
+    window.clarity("event", clarityEvent);
+  } catch (err) {
+    console.warn("[track] Clarity intent falhou:", err);
   }
 }

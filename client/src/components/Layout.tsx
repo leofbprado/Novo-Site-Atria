@@ -1,7 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { track, trackLead } from "@/lib/track";
+import { track, trackLead, trackIntent } from "@/lib/track";
 
 const WA_NUMBER = "5519996525211";
 
@@ -35,6 +35,9 @@ function WhatsAppFloat() {
 
   // Parar de pulsar quando abrir o chat
   const handleToggle = () => {
+    if (!open) {
+      trackIntent("lead_whatsapp_floating_aberto", { origem: "floating" });
+    }
     setOpen((o) => !o);
     setPulse(false);
   };
