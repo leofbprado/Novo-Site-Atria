@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
-import { ChevronDown, Search, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
+import { ChevronDown, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
 import { trackLead } from "@/lib/track";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
+import { HeroSection } from "@/components/home/HeroSection";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -110,270 +111,6 @@ function LeadModal({ title, subtitle, source, extraData, prefillMsg, onClose }: 
         )}
       </motion.div>
     </div>
-  );
-}
-
-// ─── Hero ─────────────────────────────────────────────────────────────────────
-// URL base da imagem + variantes responsivas. 80% do tráfego é mobile — servir 1920w
-// pra todos gastava ~265KB num viewport de 400px. Srcset deixa o browser escolher.
-const HERO_BASE = "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80";
-const HERO_SRCSET = `${HERO_BASE}&w=480 480w, ${HERO_BASE}&w=768 768w, ${HERO_BASE}&w=1280 1280w, ${HERO_BASE}&w=1920 1920w`;
-const HERO_FALLBACK = `${HERO_BASE}&w=768`;
-
-function Hero() {
-  const [query, setQuery] = useState("");
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [highlightIdx, setHighlightIdx] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const prefetchedRef = useRef(false);
-
-  // Autocomplete data só é necessária quando o usuário demonstra intent de buscar.
-  // Baixar os 200+ veículos no mount competia com o hero image pelo LCP.
-  // Agora: dispara no primeiro mouseenter/focus — o tempo entre hover e digitar
-  // a segunda letra (~500ms) cobre de sobra o round-trip da query.
-  const prefetchVehicles = () => {
-    if (prefetchedRef.current) return;
-    prefetchedRef.current = true;
-    getVehicles().then(setAllVehicles).catch(() => {});
-  };
-
-  // Filtra sugestões: busca fuzzy em marca + modelo + versao + ano
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q || q.length < 2) return [];
-    const tokens = q.split(/\s+/).filter(Boolean);
-    return allVehicles
-      .filter((v) => {
-        const haystack = `${v.marca} ${v.modelo} ${v.versao} ${v.ano}`.toLowerCase();
-        return tokens.every((t) => haystack.includes(t));
-      })
-      .slice(0, 6);
-  }, [query, allVehicles]);
-
-  // Fecha dropdown ao clicar fora
-  useEffect(() => {
-    const onClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Se tem sugestão highlightada, vai direto pro veículo
-    if (highlightIdx >= 0 && suggestions[highlightIdx]) {
-      const v = suggestions[highlightIdx];
-      trackLead({
-        clarityEvent: "busca_realizada",
-        gtmEvent: "cta_click",
-        origem: "header",
-        source: "hero-search-suggestion",
-        termoBusca: query.trim(),
-        marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
-      });
-      window.location.href = vehiclePath(v);
-      return;
-    }
-    // Senão, vai pro estoque com a query como busca
-    const q = query.trim();
-    trackLead({
-      clarityEvent: "busca_realizada",
-      gtmEvent: "view_inventory",
-      origem: "header",
-      source: "hero-search-submit",
-      termoBusca: q,
-    });
-    if (q) {
-      window.location.href = `${ROUTES.estoque}?q=${encodeURIComponent(q)}`;
-    } else {
-      window.location.href = ROUTES.estoque;
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || suggestions.length === 0) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setHighlightIdx((i) => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setHighlightIdx((i) => Math.max(i - 1, -1));
-    } else if (e.key === "Escape") {
-      setShowSuggestions(false);
-      setHighlightIdx(-1);
-    }
-  };
-
-  const fmtPrice = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-  return (
-    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-      <img
-        src={HERO_FALLBACK}
-        srcSet={HERO_SRCSET}
-        sizes="100vw"
-        fetchPriority="high"
-        decoding="async"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-      />
-      <div className="absolute inset-0 bg-atria-navy/75" />
-
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-4 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-        >
-          <p className="section-label mb-4 text-atria-yellow">Campinas • SP</p>
-          <h1 className="font-barlow-condensed font-black text-4xl sm:text-5xl md:text-7xl uppercase text-white leading-none mb-4">
-            Guiada por você.
-            <br />
-            <span className="text-atria-yellow">+10.000 escolhas certas.</span>
-          </h1>
-          <p className="font-inter text-white/70 text-base sm:text-lg mb-6 sm:mb-8 max-w-xl mx-auto">
-            200+ seminovos com garantia, perícia e financiamento facilitado. 3 lojas em Campinas há mais de 12 anos.
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-row items-center justify-center gap-3 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <a
-            href={ROUTES.estoque}
-            className="bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-xs sm:text-sm px-4 sm:px-7 py-3 sm:py-4 rounded transition-colors"
-          >
-            Ver estoque completo
-          </a>
-          <a
-            href={ROUTES.venderCarro}
-            className="bg-white/10 hover:bg-white/20 text-white font-inter font-bold uppercase tracking-wider text-xs sm:text-sm px-4 sm:px-7 py-3 sm:py-4 rounded border border-white/30 transition-colors"
-          >
-            Quero vender meu carro
-          </a>
-        </motion.div>
-
-        <motion.div
-          ref={wrapperRef}
-          className="relative"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.5 }}
-        >
-          <form
-            onSubmit={handleSearch}
-            onMouseEnter={prefetchVehicles}
-            className="flex gap-0 rounded overflow-hidden shadow-2xl"
-          >
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Buscar marca, modelo ou ano..."
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setShowSuggestions(true);
-                setHighlightIdx(-1);
-              }}
-              onFocus={() => { prefetchVehicles(); setShowSuggestions(true); }}
-              onKeyDown={handleKeyDown}
-              autoComplete="off"
-              className="flex-1 px-5 py-4 font-inter text-atria-text-dark text-base bg-white outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-atria-navy hover:bg-atria-navy/90 text-white px-5 sm:px-7 py-4 font-inter font-bold uppercase tracking-wider flex items-center gap-2 transition-colors"
-            >
-              <Search size={18} />
-              <span className="hidden sm:inline">Buscar</span>
-            </button>
-          </form>
-
-          {/* Dropdown de sugestões */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl overflow-hidden z-20 text-left">
-              {suggestions.map((v, idx) => (
-                <a
-                  key={v.id}
-                  href={vehiclePath(v)}
-                  className={`flex items-center gap-3 px-4 py-3 border-b border-atria-gray-medium last:border-b-0 transition-colors ${
-                    idx === highlightIdx ? "bg-atria-gray-light" : "hover:bg-atria-gray-light"
-                  }`}
-                  onMouseEnter={() => setHighlightIdx(idx)}
-                >
-                  {v.fotos?.[0] ? (
-                    <img
-                      src={v.fotos[0]}
-                      alt={`${v.marca} ${v.modelo}`}
-                      className="w-14 h-10 object-cover rounded flex-shrink-0"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-14 h-10 bg-atria-gray-light rounded flex items-center justify-center flex-shrink-0">
-                      <Car size={16} className="text-atria-gray-medium" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-inter font-semibold text-sm text-atria-text-dark truncate">
-                      {v.marca} {v.modelo}
-                    </p>
-                    <p className="font-inter text-xs text-atria-text-gray truncate">
-                      {v.ano} · {v.km?.toLocaleString("pt-BR")} km · {v.combustivel}
-                    </p>
-                  </div>
-                  <span className="font-barlow-condensed font-bold text-base text-atria-navy whitespace-nowrap hidden sm:block">
-                    {fmtPrice(v.preco)}
-                  </span>
-                </a>
-              ))}
-              {suggestions.length >= 6 && (
-                <a
-                  href={`${ROUTES.estoque}?q=${encodeURIComponent(query)}`}
-                  className="block text-center py-3 bg-atria-navy text-white font-inter font-bold text-xs uppercase tracking-wider hover:bg-atria-navy/90 transition-colors"
-                >
-                  Ver todos os resultados →
-                </a>
-              )}
-            </div>
-          )}
-        </motion.div>
-
-        <motion.div
-          className="flex items-center justify-center gap-4 mt-5 flex-wrap"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          {["SUV", "Sedan", "Hatch", "Pickup"].map((tag) => (
-            <a
-              key={tag}
-              href={`${ROUTES.estoque}?tipo=${tag.toLowerCase()}`}
-              className="font-inter text-xs text-white/60 hover:text-atria-yellow transition-colors uppercase tracking-wider"
-            >
-              {tag}
-            </a>
-          ))}
-        </motion.div>
-      </div>
-
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-      >
-        <ChevronDown size={28} className="text-white/40" />
-      </motion.div>
-    </section>
   );
 }
 
@@ -1524,7 +1261,7 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
+      <HeroSection />
       <Simulador />
       <BrandCarousel />
       <EstoqueDestaque />
