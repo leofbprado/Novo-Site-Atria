@@ -76,12 +76,21 @@
       rel="stylesheet"
     />
 
-    <!-- Preload hero image — foto local 4:5 (família + SUV) do hero CarMax-style -->
+    <!-- Preload hero image (Cloudflare Image Transformations em cima do R2).
+         Preloads responsivos via media query: mobile baixa 800×1000 q78, desktop 1600×700 q75.
+         format=auto negocia WebP/JPG via Accept header. -->
     <link
       rel="preload"
       as="image"
-      href="/hero-family-suv.webp"
-      type="image/webp"
+      media="(max-width: 1023px)"
+      href="https://atriaveiculos.com/cdn-cgi/image/width=800,height=1000,fit=cover,gravity=center,quality=78,format=auto/https://hero.atriaveiculos.com/hero-1-mobile.png"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      media="(min-width: 1024px)"
+      href="https://atriaveiculos.com/cdn-cgi/image/width=1600,height=700,fit=cover,gravity=right,quality=75,format=auto/https://hero.atriaveiculos.com/hero-1-desktop.png"
       fetchpriority="high"
     />
     <!-- Preload logo -->
