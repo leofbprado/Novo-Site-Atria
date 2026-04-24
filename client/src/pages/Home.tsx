@@ -1210,11 +1210,11 @@ function CTAFinal() {
     <section className="py-24 bg-atria-navy relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <p className="section-label mb-4">Pronto para começar?</p>
+        <p className="section-label text-atria-yellow-light mb-4">Pronto para começar?</p>
         <h2 className="section-title-white mb-6 max-w-2xl mx-auto">
           Encontre o Veículo Perfeito
           <br />
-          <span className="text-atria-yellow">para Você Hoje</span>
+          <span className="text-atria-yellow-light">para Você Hoje</span>
         </h2>
         <p className="font-inter text-white/70 text-lg mb-10 max-w-xl mx-auto">
           Fale com nossos especialistas, faça sua simulação e saia dirigindo sem complicações.
@@ -1222,11 +1222,11 @@ function CTAFinal() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => setShowLeadModal(true)}
-            className="btn-yellow rounded px-8"
+            className="btn-yellow px-8"
           >
             Falar com especialista
           </button>
-          <a href={ROUTES.estoque} className="btn-outline-white rounded px-8">
+          <a href={ROUTES.estoque} className="btn-outline-white px-8">
             Ver estoque completo
           </a>
         </div>

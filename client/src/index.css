@@ -134,11 +134,11 @@
   }
 
   .btn-outline-white {
-    @apply border-2 border-white text-white hover:bg-white hover:text-atria-navy font-inter font-bold uppercase tracking-wider px-6 py-3 transition-all duration-200;
+    @apply border-2 border-white text-white hover:bg-white hover:text-atria-navy font-inter font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all duration-200;
   }
 
   .btn-outline-navy {
-    @apply border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold uppercase tracking-wider px-6 py-3 transition-all duration-200;
+    @apply border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all duration-200;
   }
 }
 
