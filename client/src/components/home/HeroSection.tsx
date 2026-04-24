@@ -342,7 +342,7 @@ export function HeroSection() {
 
       {/* Trust row — staggered fade-in sutil (dispara 1x ao entrar no viewport) */}
       <motion.div
-        className="px-5 lg:px-8 mt-5 lg:mt-8 mb-8 lg:mb-12 flex items-center justify-between lg:justify-center lg:gap-8 text-[11px] lg:text-xs uppercase tracking-wide text-atria-text-gray font-barlow-condensed font-bold"
+        className="px-5 lg:px-8 mt-5 lg:mt-8 mb-8 lg:mb-12 flex items-center justify-between lg:justify-center lg:gap-8 text-xs lg:text-sm uppercase tracking-wide text-atria-navy font-barlow-condensed font-bold"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
