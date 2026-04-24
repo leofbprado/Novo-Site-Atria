@@ -880,11 +880,22 @@ export default function Estoque() {
         return canonical ? [canonical] : [raw];
       })(),
       marcas: p.get("marca") ? p.get("marca")!.split(",") : [],
+      cambio: (() => {
+        const raw = p.get("cambio");
+        if (!raw) return [];
+        const canonical = CAMBIOS.find((c) => c.toLowerCase() === raw.toLowerCase());
+        return canonical ? [canonical] : [];
+      })(),
       preco: [
         Number.isFinite(min) && min > 0 ? min : f.preco[0],
         Number.isFinite(max) && max > 0 ? max : f.preco[1],
       ],
     }));
+    // Deep-link mobile: ?openFilters=1 abre o drawer no mount (só se mobile).
+    // Usado pela pill "Marcas" no hero pra economizar clique no mobile.
+    if (p.get("openFilters") === "1" && typeof window !== "undefined" && window.innerWidth < 1024) {
+      setDrawerOpen(true);
+    }
   }, []);
 
   // Sync URL on change
@@ -894,9 +905,10 @@ export default function Estoque() {
     if (filters.tipos.length === 1) p.set("tipo", filters.tipos[0]);
     if (filters.marcas.length) p.set("marca", filters.marcas.join(","));
     if ((filters.modelos ?? []).length) p.set("modelo", (filters.modelos ?? []).join(","));
+    if (filters.cambio.length === 1) p.set("cambio", filters.cambio[0]);
     const url = `${window.location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
     window.history.replaceState({}, "", url);
-  }, [filters.busca, filters.tipos, filters.marcas, filters.modelos]);
+  }, [filters.busca, filters.tipos, filters.marcas, filters.modelos, filters.cambio]);
 
   // Filter change flash — feedback visual pra usuário saber que filtro recomputou
   const [filterFlash, setFilterFlash] = useState(false);

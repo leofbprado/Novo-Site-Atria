@@ -17,16 +17,16 @@ const HERO_SRC = `https://hero.atriaveiculos.com/${HERO_ID}`;
 const HERO_MOBILE = `${CF}/width=800,height=1000,fit=cover,gravity=center,quality=78,format=auto/${HERO_SRC}-mobile.png`;
 const HERO_DESKTOP = `${CF}/width=1600,height=700,fit=cover,gravity=right,quality=75,format=auto/${HERO_SRC}-desktop.png`;
 
-// Pills de filtro mapeadas pras queries que o Estoque já lê (`?tipo=`, `?precoMax=`).
-// "Automáticos" fica sem filtro (?cambio= não é lido hoje — backlog).
+// Pills de filtro mapeadas pras queries que o Estoque lê: ?tipo=, ?precoMax=,
+// ?cambio=, ?openFilters=1 (deep-link mobile que abre o drawer de filtros).
 const QUICK_FILTERS: Array<{ label: string; href: string; highlight?: boolean }> = [
   { label: "Ver todos",    href: ROUTES.estoque, highlight: true },
   { label: "SUVs",         href: `${ROUTES.estoque}?tipo=SUV` },
   { label: "Até R$ 60k",   href: `${ROUTES.estoque}?precoMax=60000` },
   { label: "Hatches",      href: `${ROUTES.estoque}?tipo=Hatch` },
   { label: "Sedãs",        href: `${ROUTES.estoque}?tipo=Sedan` },
-  { label: "Picapes",      href: `${ROUTES.estoque}?tipo=Pickup` },
-  { label: "Automáticos",  href: ROUTES.estoque },
+  { label: "Automáticos",  href: `${ROUTES.estoque}?cambio=Automática` },
+  { label: "Marcas",       href: `${ROUTES.estoque}?openFilters=1` },
 ];
 
 const fmtPrice = (v: number) =>
