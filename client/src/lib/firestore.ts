@@ -127,6 +127,18 @@ function normalizeCombustivel(raw: string | undefined | null): Vehicle["combusti
   return "Flex";
 }
 
+// Normaliza câmbio do AutoConf pros 3 rótulos canônicos do filtro.
+// AutoConf varia muito: "Automático" (m), "Automatica" (sem acento),
+// "Automatizado", "Semi-automático", "CVT-8", etc. Match exato no filtro
+// quebra silenciosamente. Essa função colapsa todas as variantes.
+function normalizeCambio(raw: string | undefined | null): Vehicle["cambio"] {
+  const s = (raw || "").toLowerCase().trim();
+  if (!s) return "Manual";
+  if (s.includes("cvt")) return "CVT";
+  if (s.includes("autom")) return "Automática"; // automática/automático/automatica/automatizado/automatizada
+  return "Manual";
+}
+
 function adminToVehicle(v: VeiculoAdmin): Vehicle {
   const fotos = normalizeFotos(v.fotos);
   const fotoPrincipal = v.foto_principal || fotos[0] || "";
@@ -141,7 +153,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     preco: v.preco || 0,
     km: v.km || 0,
     cor: v.cor || "",
-    cambio: (v.cambio || "Manual") as Vehicle["cambio"],
+    cambio: normalizeCambio(v.cambio),
     combustivel: normalizeCombustivel(v.combustivel),
     fotos: fotos.length ? fotos : fotoPrincipal ? [fotoPrincipal] : [],
     descricao: v.descricao_ia || v.observacao || "",
