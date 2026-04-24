@@ -340,7 +340,7 @@ export function HeroSection() {
         <Dot />
         <span>3 lojas</span>
         <Dot />
-        <span>Garantia 90d</span>
+        <span>Até 1 ano de garantia</span>
       </div>
     </section>
   );
