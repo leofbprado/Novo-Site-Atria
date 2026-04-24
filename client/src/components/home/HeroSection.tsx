@@ -1,6 +1,8 @@
-import { Search, ChevronRight } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Search, ChevronRight, Car } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { trackLead } from "@/lib/track";
+import { getVehicles, vehiclePath, type Vehicle } from "@/lib/firestore";
 
 // ─── Hero images: Cloudflare R2 + Image Transformations ──────────────────────
 // Original PNGs vivem no R2 (hero.atriaveiculos.com). O Cloudflare transforma
@@ -27,7 +29,94 @@ const QUICK_FILTERS: Array<{ label: string; href: string; highlight?: boolean }>
   { label: "Automáticos",  href: ROUTES.estoque },
 ];
 
+const fmtPrice = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
 export function HeroSection() {
+  // Autocomplete state
+  const [query, setQuery] = useState("");
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightIdx, setHighlightIdx] = useState(-1);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
+  const prefetchedRef = useRef(false);
+
+  // Autocomplete data só carrega no primeiro contato com a busca. Antes baixava
+  // 200+ veículos no mount e competia com o hero image pelo LCP. Agora: mouseenter
+  // ou focus no input (tempo médio até o usuário digitar a segunda letra cobre o
+  // round-trip do getVehicles).
+  const prefetchVehicles = () => {
+    if (prefetchedRef.current) return;
+    prefetchedRef.current = true;
+    getVehicles().then(setAllVehicles).catch(() => {});
+  };
+
+  // Fuzzy search em marca + modelo + versão + ano (todas as tokens precisam bater)
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || q.length < 2) return [];
+    const tokens = q.split(/\s+/).filter(Boolean);
+    return allVehicles
+      .filter((v) => {
+        const haystack = `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano}`.toLowerCase();
+        return tokens.every((t) => haystack.includes(t));
+      })
+      .slice(0, 6);
+  }, [query, allVehicles]);
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Se tem sugestão highlightada via teclado, vai direto pro veículo
+    if (highlightIdx >= 0 && suggestions[highlightIdx]) {
+      const v = suggestions[highlightIdx];
+      trackLead({
+        clarityEvent: "busca_realizada",
+        gtmEvent: "cta_click",
+        origem: "home",
+        source: "hero-search-suggestion",
+        termoBusca: query.trim(),
+        marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+      });
+      window.location.href = vehiclePath(v);
+      return;
+    }
+    // Senão, vai pro estoque com a query como busca
+    const q = query.trim();
+    trackLead({
+      clarityEvent: "busca_realizada",
+      gtmEvent: "view_inventory",
+      origem: "home",
+      source: "hero-search-submit",
+      termoBusca: q,
+    });
+    window.location.href = q ? `${ROUTES.estoque}?q=${encodeURIComponent(q)}` : ROUTES.estoque;
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIdx((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIdx((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setHighlightIdx(-1);
+    }
+  };
+
   const handlePillClick = (label: string) => {
     trackLead({
       clarityEvent: "busca_realizada",
@@ -38,7 +127,7 @@ export function HeroSection() {
     });
   };
 
-  const handleCtaClick = () => {
+  const handleHeroCtaClick = () => {
     trackLead({
       clarityEvent: "busca_realizada",
       gtmEvent: "view_inventory",
@@ -58,19 +147,85 @@ export function HeroSection() {
 
   return (
     <section className="bg-white font-inter text-atria-text-dark lg:max-w-7xl lg:mx-auto">
-      {/* Busca (pill com sombra suave) */}
+      {/* Busca com autocomplete (pill + dropdown) */}
       <div className="px-4 pt-4 lg:pt-8">
-        <a
-          href={ROUTES.estoque}
-          onClick={handleCtaClick}
-          aria-label="Buscar veículo"
-          className="flex w-full items-center gap-3 rounded-full bg-white px-5 py-3.5 lg:py-4 text-left shadow-[0_2px_10px_-2px_rgba(0,26,140,0.15)] ring-1 ring-black/5 hover:ring-atria-navy/20 transition-shadow"
-        >
-          <span className="flex-1 text-[15px] lg:text-base text-atria-text-gray">
-            Que carro você está procurando?
-          </span>
-          <Search size={20} strokeWidth={2.5} className="text-atria-navy" />
-        </a>
+        <div ref={searchWrapperRef} className="relative">
+          <form onSubmit={handleSearchSubmit}>
+            <div className="flex w-full items-center gap-3 rounded-full bg-white px-5 py-3.5 lg:py-4 shadow-[0_2px_10px_-2px_rgba(0,26,140,0.15)] ring-1 ring-black/5 focus-within:ring-atria-navy/30 transition-shadow">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setShowSuggestions(true);
+                  setHighlightIdx(-1);
+                }}
+                onFocus={() => { prefetchVehicles(); setShowSuggestions(true); }}
+                onMouseEnter={prefetchVehicles}
+                onKeyDown={handleKeyDown}
+                placeholder="Que carro você está procurando?"
+                autoComplete="off"
+                aria-label="Buscar veículo"
+                className="flex-1 min-w-0 bg-transparent text-[15px] lg:text-base text-atria-text-dark placeholder:text-atria-text-gray outline-none"
+              />
+              <button
+                type="submit"
+                aria-label="Buscar"
+                className="text-atria-navy hover:text-atria-navy-dark transition-colors flex-shrink-0"
+              >
+                <Search size={20} strokeWidth={2.5} />
+              </button>
+            </div>
+          </form>
+
+          {/* Dropdown de sugestões — fuzzy match de marca + modelo + versão + ano */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,26,140,0.3)] overflow-hidden z-30 text-left ring-1 ring-black/5">
+              {suggestions.map((v, idx) => (
+                <a
+                  key={v.id}
+                  href={vehiclePath(v)}
+                  className={`flex items-center gap-3 px-4 py-3 border-b border-atria-gray-medium last:border-b-0 transition-colors ${
+                    idx === highlightIdx ? "bg-atria-gray-light" : "hover:bg-atria-gray-light"
+                  }`}
+                  onMouseEnter={() => setHighlightIdx(idx)}
+                >
+                  {v.fotos?.[0] ? (
+                    <img
+                      src={v.fotos[0]}
+                      alt=""
+                      loading="lazy"
+                      className="w-14 h-10 object-cover rounded flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-14 h-10 bg-atria-gray-light rounded flex items-center justify-center flex-shrink-0">
+                      <Car size={16} className="text-atria-gray-medium" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-inter font-semibold text-sm text-atria-text-dark truncate">
+                      {v.marca} {v.modelo}
+                    </p>
+                    <p className="font-inter text-xs text-atria-text-gray truncate">
+                      {v.ano} · {v.km?.toLocaleString("pt-BR")} km · {v.combustivel}
+                    </p>
+                  </div>
+                  <span className="font-barlow-condensed font-bold text-base text-atria-navy whitespace-nowrap hidden sm:block">
+                    {fmtPrice(v.preco)}
+                  </span>
+                </a>
+              ))}
+              {suggestions.length >= 6 && (
+                <a
+                  href={`${ROUTES.estoque}?q=${encodeURIComponent(query)}`}
+                  className="block text-center py-3 bg-atria-navy text-white font-inter font-bold text-xs uppercase tracking-wider hover:bg-atria-navy/90 transition-colors"
+                >
+                  Ver todos os resultados →
+                </a>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Pills — mobile: scroll horizontal | desktop: wrap centralizado */}
@@ -133,7 +288,7 @@ export function HeroSection() {
             </p>
             <a
               href={ROUTES.estoque}
-              onClick={handleCtaClick}
+              onClick={handleHeroCtaClick}
               className="mt-4 lg:mt-7 inline-flex whitespace-nowrap items-center justify-center rounded-full px-7 lg:px-10 py-3.5 lg:py-4.5 font-barlow-condensed font-bold text-[16px] lg:text-lg tracking-wide text-atria-navy shadow-[0_6px_16px_-4px_rgba(0,26,140,0.35)] active:translate-y-[1px] active:shadow-[0_3px_8px_-2px_rgba(0,26,140,0.35)] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105"
             >
               Encontre seu carro
