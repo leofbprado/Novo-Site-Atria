@@ -25,36 +25,16 @@ const SORT_OPTIONS = [
 ] as const;
 type SortKey = typeof SORT_OPTIONS[number]["key"];
 
-const TIPO_ICONS: Record<string, JSX.Element> = {
-  SUV: (
-    <svg viewBox="0 0 64 32" fill="currentColor" className="w-10 h-5">
-      <rect x="6" y="14" width="52" height="12" rx="3"/>
-      <path d="M16 14 C18 6 22 4 32 4 C42 4 46 6 48 14Z"/>
-      <circle cx="16" cy="27" r="5"/><circle cx="48" cy="27" r="5"/>
-    </svg>
-  ),
-  Sedan: (
-    <svg viewBox="0 0 64 32" fill="currentColor" className="w-10 h-5">
-      <rect x="4" y="16" width="56" height="10" rx="2"/>
-      <path d="M14 16 C16 8 20 6 32 6 C44 6 48 8 50 16Z"/>
-      <circle cx="15" cy="27" r="5"/><circle cx="49" cy="27" r="5"/>
-    </svg>
-  ),
-  Hatch: (
-    <svg viewBox="0 0 64 32" fill="currentColor" className="w-10 h-5">
-      <rect x="4" y="16" width="56" height="10" rx="2"/>
-      <path d="M16 16 C16 8 20 5 36 5 C48 5 52 8 52 16Z"/>
-      <circle cx="15" cy="27" r="5"/><circle cx="49" cy="27" r="5"/>
-    </svg>
-  ),
-  Pickup: (
-    <svg viewBox="0 0 64 32" fill="currentColor" className="w-10 h-5">
-      <rect x="4" y="14" width="56" height="12" rx="2"/>
-      <path d="M16 14 C18 6 22 4 36 4 C44 4 46 8 46 14Z"/>
-      <line x1="46" y1="14" x2="46" y2="26" stroke="white" strokeWidth="2"/>
-      <circle cx="14" cy="27" r="5"/><circle cx="50" cy="27" r="5"/>
-    </svg>
-  ),
+// Ilustrações dos tipos de carroceria — PNGs no R2 servidas via Cloudflare
+// Image Transformations (format=auto negocia WebP/JPG pelo Accept header,
+// width=160 dá folga pra retina em viewport onde o ícone aparece em ~56px).
+const ICON_CF = "https://atriaveiculos.com/cdn-cgi/image";
+const ICON_BASE = "https://icons.atriaveiculos.com";
+const TIPO_ICONS: Record<string, string> = {
+  SUV:    `${ICON_CF}/width=160,format=auto/${ICON_BASE}/suv-model.png`,
+  Sedan:  `${ICON_CF}/width=160,format=auto/${ICON_BASE}/sedan-model.png`,
+  Hatch:  `${ICON_CF}/width=160,format=auto/${ICON_BASE}/hatch-model.png`,
+  Pickup: `${ICON_CF}/width=160,format=auto/${ICON_BASE}/pickup-model.png`,
 };
 
 // ─── Filter State ─────────────────────────────────────────────────────────────
@@ -585,16 +565,24 @@ function Sidebar({
               key={tipo}
               type="button"
               onClick={() => set({ tipos: toggleArr(filters.tipos, tipo) })}
-              className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg border-2 text-xs font-inter font-semibold transition-all ${
+              className={`flex flex-col items-center gap-2 py-3 px-2 rounded-lg border-2 text-xs font-inter font-semibold transition-all ${
                 filters.tipos.includes(tipo)
                   ? "border-atria-navy bg-atria-navy text-white"
                   : "border-atria-gray-medium text-atria-text-dark hover:border-atria-navy"
               }`}
               aria-pressed={filters.tipos.includes(tipo)}
             >
-              <span className={filters.tipos.includes(tipo) ? "text-white" : "text-atria-text-gray"}>
-                {TIPO_ICONS[tipo]}
-              </span>
+              <img
+                src={TIPO_ICONS[tipo]}
+                alt={`Ilustração ${tipo}`}
+                width={80}
+                height={40}
+                loading="lazy"
+                decoding="async"
+                className={`h-10 w-auto object-contain transition-[filter] ${
+                  filters.tipos.includes(tipo) ? "brightness-0 invert" : ""
+                }`}
+              />
               {tipo}
             </button>
           ))}
