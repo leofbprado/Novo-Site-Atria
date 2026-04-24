@@ -302,7 +302,7 @@ export function HeroSection() {
         <a
           href={ROUTES.venderCarro}
           onClick={handleSellClick}
-          className="flex items-center gap-4 lg:gap-6 rounded-2xl bg-white p-3 lg:p-5 pr-4 lg:pr-5 shadow-[0_2px_10px_-2px_rgba(0,26,140,0.12)] ring-1 ring-black/5 hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-4 lg:gap-6 rounded-2xl bg-white p-3 lg:p-5 pr-4 lg:pr-5 shadow-[0_2px_10px_-2px_rgba(0,26,140,0.12)] ring-1 ring-atria-navy/40 hover:ring-atria-navy hover:bg-slate-50 transition-all"
         >
           {/* Ilustração servida pelo Cloudflare R2 + Image Transformations */}
           <img
