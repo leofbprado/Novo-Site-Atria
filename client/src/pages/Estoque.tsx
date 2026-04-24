@@ -568,22 +568,22 @@ function Sidebar({
                 type="button"
                 onClick={() => set({ tipos: toggleArr(filters.tipos, tipo) })}
                 aria-pressed={selected}
-                className={`flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border-2 transition-all duration-150 ${
-                  selected
-                    ? "border-atria-navy bg-blue-50"
-                    : "border-atria-gray-medium hover:border-atria-navy bg-white"
-                }`}
+                className="flex flex-col items-center gap-1.5 transition-all"
               >
-                <div className="h-12 flex items-center justify-center">
+                <div className={`w-full aspect-square rounded-xl overflow-hidden transition-all ${
+                  selected
+                    ? "ring-2 ring-atria-navy ring-offset-2 ring-offset-white"
+                    : "hover:opacity-80"
+                }`}>
                   <img
                     src={TIPO_ICONS[tipo]}
                     alt={`Ilustração ${tipo}`}
                     loading="lazy"
                     decoding="async"
-                    className="max-h-12 max-w-[72px] object-contain"
+                    className="w-full h-full object-cover"
                   />
                 </div>
-                <span className={`font-inter text-[11px] font-semibold leading-tight text-center ${
+                <span className={`text-[11px] font-inter font-semibold ${
                   selected ? "text-atria-navy" : "text-atria-text-dark"
                 }`}>
                   {tipo}
