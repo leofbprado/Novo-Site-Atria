@@ -94,7 +94,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="p-2 border border-white/20 rounded hover:border-atria-yellow hover:text-atria-yellow text-white/60 transition-all"
+                  className="p-2 border border-white/20 rounded hover:border-atria-yellow hover:text-atria-yellow-bright text-white/60 transition-all"
                 >
                   {icon}
                 </a>
@@ -104,7 +104,7 @@ export function Footer() {
 
           {/* Institucional */}
           <div>
-            <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow mb-5">
+            <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow-bright mb-5">
               Institucional
             </h4>
             <ul className="space-y-2.5">
@@ -120,7 +120,7 @@ export function Footer() {
 
           {/* Veículos */}
           <div>
-            <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow mb-5">
+            <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow-bright mb-5">
               Veículos
             </h4>
             <ul className="space-y-2.5">
@@ -136,7 +136,7 @@ export function Footer() {
 
           {/* Lojas */}
           <div>
-            <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow mb-5">
+            <h4 className="font-barlow-condensed font-bold uppercase tracking-widest text-sm text-atria-yellow-bright mb-5">
               Nossas Lojas
             </h4>
             <div className="space-y-5">
@@ -150,7 +150,7 @@ export function Footer() {
                   </p>
                   <a
                     href={`tel:${loja.tel.replace(/\D/g, "")}`}
-                    className="font-inter text-xs text-atria-yellow hover:text-atria-yellow-light transition-colors mt-0.5 inline-block"
+                    className="font-inter text-xs text-atria-yellow-bright hover:text-atria-yellow-light transition-colors mt-0.5 inline-block"
                   >
                     {loja.tel}
                   </a>
@@ -164,7 +164,7 @@ export function Footer() {
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-white/40 text-xs font-inter">
           <p>© {new Date().getFullYear()} Átria Veículos. Todos os direitos reservados.</p>
           <p>
-            <a href={WA} target="_blank" rel="noopener noreferrer" className="hover:text-atria-yellow transition-colors">
+            <a href={WA} target="_blank" rel="noopener noreferrer" className="hover:text-atria-yellow-bright transition-colors">
               (19) 99652-5211
             </a>
             {" · "}Campinas, São Paulo

@@ -57,7 +57,7 @@ function Hero() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
-          <span className="inline-block bg-atria-yellow/20 text-atria-yellow font-inter font-semibold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
+          <span className="inline-block bg-atria-yellow/20 text-atria-yellow-bright font-inter font-semibold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
             Compra ou Consignação
           </span>
           <h1 className="font-barlow-condensed font-black text-4xl md:text-5xl lg:text-6xl text-white leading-tight">
@@ -577,7 +577,7 @@ function SocialProof() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {stats.map((s) => (
               <div key={s.label}>
-                <p className="font-barlow-condensed font-black text-4xl md:text-5xl text-atria-yellow">{s.value}</p>
+                <p className="font-barlow-condensed font-black text-4xl md:text-5xl text-atria-yellow-bright">{s.value}</p>
                 <p className="font-inter text-white/70 text-sm mt-1 uppercase tracking-wider">{s.label}</p>
               </div>
             ))}

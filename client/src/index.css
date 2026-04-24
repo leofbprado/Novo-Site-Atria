@@ -114,7 +114,7 @@
 
 @layer utilities {
   .section-label {
-    @apply font-inter text-xs font-semibold uppercase tracking-[0.3em] text-atria-yellow;
+    @apply font-inter text-xs font-semibold uppercase tracking-[0.3em] text-atria-yellow-bright;
   }
 
   .section-title {

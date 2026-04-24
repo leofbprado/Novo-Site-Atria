@@ -27,9 +27,9 @@ function Hero() {
     <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Financiamento</p>
+          <p className="font-inter text-atria-yellow-bright text-xs uppercase tracking-widest font-bold mb-4">Financiamento</p>
           <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
-            Financiamento <span className="text-atria-yellow">Facilitado</span>
+            Financiamento <span className="text-atria-yellow-bright">Facilitado</span>
           </h1>
           <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
             As melhores taxas do mercado com aprovação em até 24h
@@ -492,9 +492,9 @@ function CTAFinal() {
     <section className="py-20 bg-atria-navy relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <Shield size={40} className="text-atria-yellow mx-auto mb-4" />
+        <Shield size={40} className="text-atria-yellow-bright mx-auto mb-4" />
         <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase mb-4">
-          Fale com Nosso Especialista <span className="text-atria-yellow">em Financiamento</span>
+          Fale com Nosso Especialista <span className="text-atria-yellow-bright">em Financiamento</span>
         </h2>
         <p className="font-inter text-white/70 mb-8 max-w-lg mx-auto">
           Tire suas dúvidas e encontre a melhor condição para o seu perfil.

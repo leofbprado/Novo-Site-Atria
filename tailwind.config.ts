@@ -70,6 +70,7 @@ export default {
           yellow: "#f9a825",
           "yellow-dark": "#f57f17",
           "yellow-light": "#FFE95C",
+          "yellow-bright": "#FFDD00",
           "gray-light": "#f5f5f5",
           "gray-medium": "#e0e0e0",
           "text-dark": "#1a1a2e",

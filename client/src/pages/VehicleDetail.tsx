@@ -494,7 +494,7 @@ function PricePanel({ v }: { v: Vehicle }) {
           <div className="border-t border-atria-gray-medium pt-4 space-y-2.5">
             {[
               { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veículo inspecionado com laudo" },
-              { icon: <Star size={16} className="text-atria-yellow" />, text: "Garantia de 90 dias" },
+              { icon: <Star size={16} className="text-atria-yellow-bright" />, text: "Garantia de 90 dias" },
               { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
               { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
             ].map((item) => (

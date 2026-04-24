@@ -393,7 +393,7 @@ function BrandCarousel() {
     <section className="py-10 sm:py-16 bg-gradient-to-b from-[#001A8C] to-[#000D47] overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
-          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-2">Navegue</p>
+          <p className="font-inter text-atria-yellow-bright text-xs uppercase tracking-widest font-bold mb-2">Navegue</p>
           <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase">
             Escolha por Marca
           </h2>
@@ -588,14 +588,14 @@ function VendaSeuCarro() {
             <h2 className="section-title-white mb-6">
               Venda Seu Carro
               <br />
-              <span className="text-atria-yellow">com Rapidez</span>
+              <span className="text-atria-yellow-bright">com Rapidez</span>
             </h2>
 
             {/* Urgência */}
             <div className="flex items-center gap-3 bg-atria-yellow/10 border border-atria-yellow/30 rounded-lg px-4 py-3 mb-6 w-fit">
-              <Clock size={18} className="text-atria-yellow flex-shrink-0" />
+              <Clock size={18} className="text-atria-yellow-bright flex-shrink-0" />
               <div>
-                <p className="font-inter text-atria-yellow text-xs font-semibold uppercase tracking-wider">
+                <p className="font-inter text-atria-yellow-bright text-xs font-semibold uppercase tracking-wider">
                   Avaliação em até 2 horas
                 </p>
                 <p className="font-barlow-condensed font-black text-xl text-white">
@@ -610,7 +610,7 @@ function VendaSeuCarro() {
             <ul className="space-y-3">
               {["Avaliação presencial ou online", "Pagamento à vista em até 24h", "Documentação facilitada", "Sem taxas ou intermediários"].map((item) => (
                 <li key={item} className="flex items-center gap-3 font-inter text-white/80">
-                  <CheckCircle size={18} className="text-atria-yellow flex-shrink-0" />
+                  <CheckCircle size={18} className="text-atria-yellow-bright flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -752,7 +752,7 @@ function ComoFunciona() {
               )}
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-full bg-atria-navy flex items-center justify-center mb-4">
-                  <span className="font-barlow-condensed font-black text-lg text-atria-yellow">{s.n}</span>
+                  <span className="font-barlow-condensed font-black text-lg text-atria-yellow-bright">{s.n}</span>
                 </div>
                 <h3 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-2">{s.title}</h3>
                 <p className="font-inter text-sm text-atria-text-gray leading-relaxed">{s.desc}</p>
@@ -799,7 +799,7 @@ function Stats() {
             { label: "Lojas em Campinas", value: 3, suffix: "" },
           ].map((s) => (
             <div key={s.label}>
-              <p className="font-barlow-condensed font-black text-5xl md:text-6xl text-atria-yellow">
+              <p className="font-barlow-condensed font-black text-5xl md:text-6xl text-atria-yellow-bright">
                 <Counter target={s.value} suffix={s.suffix} />
               </p>
               <p className="font-inter text-sm text-white/60 mt-1 uppercase tracking-wider">{s.label}</p>
@@ -1040,7 +1040,7 @@ function BlogSection() {
                 </div>
               )}
               <div className="p-5">
-                <span className="font-inter text-xs font-semibold text-atria-yellow uppercase tracking-wider">{CATEGORIA_LABELS[p.categoria] || p.categoria}</span>
+                <span className="font-inter text-xs font-semibold text-atria-yellow-bright uppercase tracking-wider">{CATEGORIA_LABELS[p.categoria] || p.categoria}</span>
                 <h3 className="font-barlow-condensed font-bold text-lg text-atria-text-dark mt-1 mb-2 leading-tight group-hover:text-atria-navy transition-colors">{p.titulo}</h3>
                 <p className="font-inter text-sm text-atria-text-gray">{blogExcerpt(p.conteudo)}</p>
               </div>
@@ -1210,11 +1210,11 @@ function CTAFinal() {
     <section className="py-24 bg-atria-navy relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <p className="section-label text-[#FFDD00] mb-4">Pronto para começar?</p>
+        <p className="section-label text-atria-yellow-bright mb-4">Pronto para começar?</p>
         <h2 className="section-title-white mb-6 max-w-2xl mx-auto">
           Encontre o Veículo Perfeito
           <br />
-          <span className="text-[#FFDD00]">para Você Hoje</span>
+          <span className="text-atria-yellow-bright">para Você Hoje</span>
         </h2>
         <p className="font-inter text-white/70 text-lg mb-10 max-w-xl mx-auto">
           Fale com nossos especialistas, faça sua simulação e saia dirigindo sem complicações.

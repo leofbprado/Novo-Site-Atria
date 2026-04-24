@@ -55,7 +55,7 @@ export function Header() {
               href={WHATSAPP}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white text-xs font-inter flex items-center gap-1.5 hover:text-atria-yellow transition-colors"
+              className="text-white text-xs font-inter flex items-center gap-1.5 hover:text-atria-yellow-bright transition-colors"
             >
               <Phone size={11} />
               (19) 99652-5211
@@ -94,7 +94,7 @@ export function Header() {
               href={l.href}
               className={`font-inter text-sm font-semibold uppercase tracking-wider transition-colors ${
                 isNavy
-                  ? "text-white/80 hover:text-atria-yellow"
+                  ? "text-white/80 hover:text-atria-yellow-bright"
                   : "text-atria-text-dark hover:text-atria-navy"
               }`}
             >

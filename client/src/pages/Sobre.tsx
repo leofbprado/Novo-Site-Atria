@@ -27,9 +27,9 @@ function Hero() {
     <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="font-inter text-atria-yellow text-xs uppercase tracking-widest font-bold mb-4">Sobre Nós</p>
+          <p className="font-inter text-atria-yellow-bright text-xs uppercase tracking-widest font-bold mb-4">Sobre Nós</p>
           <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
-            Sobre a <span className="text-atria-yellow">Átria Veículos</span>
+            Sobre a <span className="text-atria-yellow-bright">Átria Veículos</span>
           </h1>
           <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
             +10.000 carros vendidos · 12 anos guiando você na melhor escolha
@@ -191,8 +191,8 @@ function Numeros() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {stats.map((s) => (
             <div key={s.label}>
-              <div className="text-atria-yellow mx-auto mb-2 flex justify-center">{s.icon}</div>
-              <p className="font-barlow-condensed font-black text-4xl md:text-5xl text-atria-yellow">
+              <div className="text-atria-yellow-bright mx-auto mb-2 flex justify-center">{s.icon}</div>
+              <p className="font-barlow-condensed font-black text-4xl md:text-5xl text-atria-yellow-bright">
                 <Counter target={s.value} suffix={s.suffix} />
               </p>
               <p className="font-inter text-xs text-white/60 mt-1 uppercase tracking-wider">{s.label}</p>
@@ -280,7 +280,7 @@ function CTA() {
     <section className="py-20 bg-atria-navy relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <Calendar size={40} className="text-atria-yellow mx-auto mb-4" />
+        <Calendar size={40} className="text-atria-yellow-bright mx-auto mb-4" />
         <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase mb-4">
           Visite-nos
         </h2>
