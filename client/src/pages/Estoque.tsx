@@ -570,17 +570,17 @@ function Sidebar({
                 aria-pressed={selected}
                 className="flex flex-col items-center gap-1.5 transition-all"
               >
-                <div className={`w-full aspect-square rounded-xl overflow-hidden transition-all ${
+                <div className={`w-full aspect-square rounded-xl overflow-hidden bg-[#e0edf7] transition-all ${
                   selected
                     ? "ring-2 ring-atria-navy ring-offset-2 ring-offset-white"
-                    : "hover:opacity-80"
+                    : "hover:opacity-90"
                 }`}>
                   <img
                     src={TIPO_ICONS[tipo]}
                     alt={`Ilustração ${tipo}`}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <span className={`text-[11px] font-inter font-semibold ${
