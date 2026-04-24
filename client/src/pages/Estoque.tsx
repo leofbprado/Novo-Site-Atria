@@ -27,14 +27,14 @@ type SortKey = typeof SORT_OPTIONS[number]["key"];
 
 // Ilustrações dos tipos de carroceria — PNGs no R2 servidas via Cloudflare
 // Image Transformations (format=auto negocia WebP/JPG pelo Accept header,
-// width=160 dá folga pra retina em viewport onde o ícone aparece em ~56px).
+// width=320 dá folga pra retina agora que a imagem ocupa o botão inteiro).
 const ICON_CF = "https://atriaveiculos.com/cdn-cgi/image";
 const ICON_BASE = "https://icons.atriaveiculos.com";
 const TIPO_ICONS: Record<string, string> = {
-  SUV:    `${ICON_CF}/width=160,format=auto/${ICON_BASE}/suv-model.png`,
-  Sedan:  `${ICON_CF}/width=160,format=auto/${ICON_BASE}/sedan-model.png`,
-  Hatch:  `${ICON_CF}/width=160,format=auto/${ICON_BASE}/hatch-model.png`,
-  Pickup: `${ICON_CF}/width=160,format=auto/${ICON_BASE}/pickup-model.png`,
+  SUV:    `${ICON_CF}/width=320,format=auto/${ICON_BASE}/suv-model.png`,
+  Sedan:  `${ICON_CF}/width=320,format=auto/${ICON_BASE}/sedan-model.png`,
+  Hatch:  `${ICON_CF}/width=320,format=auto/${ICON_BASE}/hatch-model.png`,
+  Pickup: `${ICON_CF}/width=320,format=auto/${ICON_BASE}/pickup-model.png`,
 };
 
 // ─── Filter State ─────────────────────────────────────────────────────────────
@@ -560,32 +560,35 @@ function Sidebar({
       {/* ── Tipo de Carroceria ── */}
       <FilterAccordion title="Tipo de carroceria" defaultOpen hasActive={filters.tipos.length > 0}>
         <div className="grid grid-cols-2 gap-2">
-          {TIPOS.map((tipo) => (
-            <button
-              key={tipo}
-              type="button"
-              onClick={() => set({ tipos: toggleArr(filters.tipos, tipo) })}
-              className={`flex flex-col items-center gap-2 py-3 px-2 rounded-lg border-2 text-xs font-inter font-semibold transition-all ${
-                filters.tipos.includes(tipo)
-                  ? "border-atria-navy bg-atria-navy text-white"
-                  : "border-atria-gray-medium text-atria-text-dark hover:border-atria-navy"
-              }`}
-              aria-pressed={filters.tipos.includes(tipo)}
-            >
-              <img
-                src={TIPO_ICONS[tipo]}
-                alt={`Ilustração ${tipo}`}
-                width={80}
-                height={40}
-                loading="lazy"
-                decoding="async"
-                className={`h-10 w-auto object-contain transition-[filter] ${
-                  filters.tipos.includes(tipo) ? "brightness-0 invert" : ""
+          {TIPOS.map((tipo) => {
+            const selected = filters.tipos.includes(tipo);
+            return (
+              <button
+                key={tipo}
+                type="button"
+                onClick={() => set({ tipos: toggleArr(filters.tipos, tipo) })}
+                aria-pressed={selected}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
+                  selected
+                    ? "bg-atria-navy/5 ring-2 ring-atria-navy"
+                    : "hover:bg-atria-gray-light ring-2 ring-transparent"
                 }`}
-              />
-              {tipo}
-            </button>
-          ))}
+              >
+                <img
+                  src={TIPO_ICONS[tipo]}
+                  alt={`Ilustração ${tipo}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full aspect-[3/2] object-contain"
+                />
+                <span className={`text-xs font-inter font-semibold ${
+                  selected ? "text-atria-navy" : "text-atria-text-dark"
+                }`}>
+                  {tipo}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </FilterAccordion>
 
