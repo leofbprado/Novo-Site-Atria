@@ -783,7 +783,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
         <a
           href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no estoque da Átria. Tenho interesse!`)}
           target="_blank" rel="noopener noreferrer"
-          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider py-2.5 rounded text-center transition-colors"
+          className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider py-2.5 rounded text-center transition-colors"
         >
           QUERO ESSE
         </a>

@@ -162,7 +162,7 @@ export function Header() {
                   href={WHATSAPP}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm py-3 rounded transition-colors"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold uppercase tracking-wider text-sm py-3 rounded transition-colors"
                 >
                   <WaIcon />
                   WhatsApp

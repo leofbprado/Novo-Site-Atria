@@ -195,7 +195,7 @@ function ComparisonTable() {
             href={waLink("Olá! Quero vender meu carro mas não sei se compra ou consignação é melhor pra mim. Podem me orientar?")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-full transition-colors"
+            className="inline-flex items-center gap-2 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-full transition-colors"
           >
             <Phone size={16} />
             Falar com um consultor

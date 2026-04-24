@@ -292,7 +292,7 @@ function CTA() {
             href={waLink("Olá! Gostaria de agendar uma visita presencial na loja Átria.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
           >
             <Phone size={18} />
             Falar via WhatsApp

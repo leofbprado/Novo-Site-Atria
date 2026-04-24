@@ -105,7 +105,7 @@ function WhatsAppFloat() {
       <button
         onClick={handleToggle}
         aria-label="Falar no WhatsApp"
-        className={`relative flex items-center justify-center w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${
+        className={`relative flex items-center justify-center w-14 h-14 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${
           pulse ? "animate-bounce" : ""
         }`}
       >
