@@ -69,7 +69,7 @@ export default {
           "navy-light": "#1a3cc9",
           yellow: "#f9a825",
           "yellow-dark": "#f57f17",
-          "yellow-light": "#fdd835",
+          "yellow-light": "#FFE95C",
           "gray-light": "#f5f5f5",
           "gray-medium": "#e0e0e0",
           "text-dark": "#1a1a2e",
