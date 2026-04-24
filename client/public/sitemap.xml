@@ -2,37 +2,55 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.atriaveiculos.com.br/</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/estoque-carros-usados-seminovos-campinas-sp</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/vender-carro-usado-campinas-sp</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/financiamento-carro-usado-seminovo-campinas-sp</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/sobre-atria-veiculos-campinas-sp</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/blog</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-fiat-strada-freedom-1-3-flex-8v-cs-plus-picapes-2020-usado-seminovo</loc>
+    <lastmod>2026-04-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-ford-fiesta-sel-1-6-16v-flex-aut-5p-hatch-2017-usado-seminovo</loc>
+    <lastmod>2026-04-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-hyundai-hb20-comf-c-plus-c-style-1-0-flex-12v-hatch-2016-usado-seminovo</loc>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -63,6 +81,12 @@
   <url>
     <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-honda-city-hatchback-touring-1-5-flex-16v-aut-hatch-2022-usado-seminovo</loc>
     <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-ford-focus-2-0-16v-se-se-plus-flex-5p-aut-hatch-2018-usado-seminovo</loc>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -278,12 +302,6 @@
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-volkswagen-polo-highline-200-tsi-1-0-flex-12v-aut-hatch-2019-usado-seminovo</loc>
-    <lastmod>2026-04-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-chery-tiggo-7-txs-1-5-16v-turbo-flex-aut-suv-utilitario-esportivo-2021-usado-seminovo</loc>
     <lastmod>2026-04-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1166,12 +1184,6 @@
   </url>
   <url>
     <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-chevrolet-spin-premier-1-8-8v-econo-flex-5p-aut-suv-utilitario-esportivo-2022-usado-seminovo</loc>
-    <lastmod>2026-03-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.atriaveiculos.com.br/campinas-sp/comprar-chery-arrizo-5-rxt-1-5-16v-turbo-flex-aut-sedan-2019-usado-seminovo-2234</loc>
     <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

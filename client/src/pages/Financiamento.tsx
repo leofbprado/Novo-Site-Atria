@@ -162,7 +162,7 @@ function SimuladorResultModal({
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-lg hover:brightness-95 transition-all disabled:opacity-60"
+                className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-full hover:brightness-95 transition-all disabled:opacity-60"
               >
                 {sending ? "Calculando..." : "Ver minha faixa de preço →"}
               </button>
@@ -182,7 +182,7 @@ function SimuladorResultModal({
             </p>
             <button
               onClick={handleVerEstoque}
-              className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-lg hover:brightness-95 transition-all"
+              className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-full hover:brightness-95 transition-all"
             >
               Ver o que tem nessa faixa de valor →
             </button>
@@ -243,7 +243,7 @@ function Simulador() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-lg transition-all"
+            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-full transition-all"
           >
             Simular agora →
           </button>
@@ -476,7 +476,7 @@ function SimulacaoCPF() {
         </p>
         <a
           href={ROUTES.estoque}
-          className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
+          className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
         >
           <Car size={18} />
           Ver Estoque
@@ -504,12 +504,12 @@ function CTAFinal() {
             href={waLink("Olá! Tenho interesse em financiamento de veículos. Podem me ajudar?")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
           >
             <Send size={18} />
             Falar via WhatsApp
           </a>
-          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-white text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
+          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-white text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors">
             Ver Estoque
           </a>
         </div>

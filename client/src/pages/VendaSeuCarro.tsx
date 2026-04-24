@@ -69,14 +69,14 @@ function Hero() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <a
               href="#formulario-compra"
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
             >
               <DollarSign size={18} />
               Quero proposta de compra
             </a>
             <a
               href="#consignacao"
-              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
             >
               <Handshake size={18} />
               Quero vender por consignação
@@ -195,7 +195,7 @@ function ComparisonTable() {
             href={waLink("Olá! Quero vender meu carro mas não sei se compra ou consignação é melhor pra mim. Podem me orientar?")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-full transition-colors"
           >
             <Phone size={16} />
             Falar com um consultor
@@ -296,7 +296,7 @@ function ConsignmentBlock() {
           <button
             type="button"
             onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
-            className="inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors shadow-lg shadow-atria-navy/20"
+            className="inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors shadow-lg shadow-atria-navy/20"
           >
             <Handshake size={18} />
             Quero consignar meu carro
@@ -435,7 +435,7 @@ function PurchaseForm() {
                     type="button"
                     onClick={goNext}
                     disabled={!canAdvance1}
-                    className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                    className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-full transition-all"
                   >
                     Continuar →
                   </button>
@@ -479,7 +479,7 @@ function PurchaseForm() {
                     <button
                       type="button"
                       onClick={goBack}
-                      className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                      className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-4 rounded-full transition-all"
                     >
                       ← Voltar
                     </button>
@@ -487,7 +487,7 @@ function PurchaseForm() {
                       type="button"
                       onClick={goNext}
                       disabled={!canAdvance2}
-                      className="flex-[2] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                      className="flex-[2] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-full transition-all"
                     >
                       Continuar →
                     </button>
@@ -534,14 +534,14 @@ function PurchaseForm() {
                     <button
                       type="button"
                       onClick={goBack}
-                      className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                      className="flex-1 bg-white border border-atria-gray-medium hover:bg-atria-gray-light text-atria-text-dark font-inter font-semibold text-sm uppercase tracking-wider py-4 rounded-full transition-all"
                     >
                       ← Voltar
                     </button>
                     <button
                       type="submit"
                       disabled={!canSubmit || sending}
-                      className="flex-[2] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                      className="flex-[2] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-full transition-all flex items-center justify-center gap-2"
                     >
                       <Send size={16} />
                       {sending ? "Enviando..." : "Receber proposta"}
@@ -611,7 +611,7 @@ function BottomCTA() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#formulario-compra"
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
             >
               <DollarSign size={18} />
               Proposta de compra
@@ -619,7 +619,7 @@ function BottomCTA() {
             <button
               type="button"
               onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
-              className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
             >
               <Handshake size={18} />
               Consignar meu carro

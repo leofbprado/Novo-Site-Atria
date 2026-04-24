@@ -17,7 +17,8 @@ export type AnalyticsEvent =
   | "clique_whatsapp_header"
   | "vehicle_interesse_lead"
   | "gallery_swipe"
-  | "gallery_lightbox_open";
+  | "gallery_lightbox_open"
+  | "clique_interesse_sticky";
 
 export interface VehicleAnalytics {
   slug: string;
@@ -54,6 +55,7 @@ const EVENT_FIELD: Record<AnalyticsEvent, string> = {
   vehicle_interesse_lead: "leads_interesse",
   gallery_swipe: "gallery_swipes",
   gallery_lightbox_open: "gallery_lightbox_opens",
+  clique_interesse_sticky: "cliques_interesse_sticky",
 };
 
 // ─── Track Event ─────────────────────────────────────────────────────────────

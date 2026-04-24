@@ -990,7 +990,7 @@ export default function Estoque() {
           </div>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="flex lg:hidden items-center gap-2 px-4 py-2.5 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy rounded-lg font-inter text-sm font-bold uppercase tracking-wider whitespace-nowrap shadow-sm"
+            className="flex lg:hidden items-center gap-2 px-4 py-2.5 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy rounded-full font-inter text-sm font-bold uppercase tracking-wider whitespace-nowrap shadow-sm"
             aria-label="Abrir filtros"
           >
             <SlidersHorizontal size={15} />

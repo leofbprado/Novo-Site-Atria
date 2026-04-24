@@ -466,7 +466,7 @@ function PricePanel({ v }: { v: Vehicle }) {
           {/* Primary CTA: Interesse */}
           <button
             onClick={handleInteresseClick}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-full py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
           >
             <Heart size={18} fill="currentColor" /> Tenho interesse neste {v.modelo}
           </button>
@@ -574,7 +574,7 @@ function ActionBlock({ v }: { v: Vehicle }) {
 
         <button
           onClick={handleInteresseClick}
-          className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-xl py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-full py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
         >
           <Heart size={18} fill="currentColor" /> Tenho interesse neste {v.modelo}
         </button>
@@ -733,7 +733,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleOpenWhatsApp}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-lg py-3.5 flex items-center justify-center gap-2 transition-colors"
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-inter font-bold text-base rounded-full py-3.5 flex items-center justify-center gap-2 transition-colors"
             >
               <MessageCircle size={18} /> Abrir WhatsApp agora
             </a>
@@ -778,7 +778,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-inter font-bold text-base rounded-lg py-3.5 flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-inter font-bold text-base rounded-full py-3.5 flex items-center justify-center gap-2 transition-colors"
               >
                 <MessageCircle size={18} />
                 {sending ? "Enviando..." : "Enviar e abrir WhatsApp"}
@@ -1000,7 +1000,7 @@ function StoreLocations() {
           origem: "ficha",
           source: "ficha-agendar-visita",
         })}
-        className="mt-6 inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-xl transition-colors"
+        className="mt-6 inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-full transition-colors"
       >
         <Calendar size={16} />
         Agendar Visita

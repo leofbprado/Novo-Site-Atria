@@ -292,12 +292,12 @@ function CTA() {
             href={waLink("Olá! Gostaria de agendar uma visita presencial na loja Átria.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
           >
             <Phone size={18} />
             Falar via WhatsApp
           </a>
-          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
+          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors">
             <Car size={18} />
             Ver Estoque
           </a>

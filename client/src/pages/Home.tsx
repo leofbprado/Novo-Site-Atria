@@ -243,7 +243,7 @@ function SimuladorResultModal({
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-lg hover:brightness-95 transition-all disabled:opacity-60"
+                className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-full hover:brightness-95 transition-all disabled:opacity-60"
               >
                 {sending ? "Calculando..." : "Ver minha faixa de preço →"}
               </button>
@@ -263,7 +263,7 @@ function SimuladorResultModal({
             </p>
             <button
               onClick={handleVerEstoque}
-              className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-lg hover:brightness-95 transition-all"
+              className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-full hover:brightness-95 transition-all"
             >
               Ver o que tem nessa faixa de valor →
             </button>
@@ -326,7 +326,7 @@ function Simulador() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-lg transition-all"
+            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-full transition-all"
           >
             Simular agora →
           </button>
@@ -1191,7 +1191,7 @@ function Contato() {
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm py-4 rounded-xl transition-colors disabled:opacity-50"
+                className="w-full bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm py-4 rounded-full transition-colors disabled:opacity-50"
               >
                 {sending ? "Enviando..." : "Enviar Mensagem"}
               </button>
