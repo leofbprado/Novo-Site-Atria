@@ -289,7 +289,7 @@ export function HeroSection() {
             <a
               href={ROUTES.estoque}
               onClick={handleHeroCtaClick}
-              className="mt-4 lg:mt-7 inline-flex whitespace-nowrap items-center justify-center rounded-full px-7 lg:px-10 py-3.5 lg:py-4.5 font-barlow-condensed font-bold text-[16px] lg:text-lg tracking-wide text-atria-navy shadow-[0_6px_16px_-4px_rgba(0,26,140,0.35)] active:translate-y-[1px] active:shadow-[0_3px_8px_-2px_rgba(0,26,140,0.35)] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105"
+              className="mt-4 lg:mt-7 inline-flex whitespace-nowrap items-center justify-center rounded-full px-10 lg:px-14 py-4 lg:py-5 font-barlow-condensed font-bold text-lg lg:text-xl tracking-wide text-atria-navy shadow-[0_6px_16px_-4px_rgba(0,26,140,0.35)] active:translate-y-[1px] active:shadow-[0_3px_8px_-2px_rgba(0,26,140,0.35)] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105"
             >
               Encontre seu carro
             </a>
