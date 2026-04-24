@@ -297,7 +297,7 @@ function CTA() {
             <Phone size={18} />
             Falar via WhatsApp
           </a>
-          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
+          <a href={ROUTES.estoque} className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-xl transition-colors">
             <Car size={18} />
             Ver Estoque
           </a>

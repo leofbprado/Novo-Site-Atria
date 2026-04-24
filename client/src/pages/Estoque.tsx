@@ -748,7 +748,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
           )}
           <div className="absolute top-3 left-3 flex gap-1.5">
             {v.destaque && (
-              <span className="bg-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
+              <span className="bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
             )}
           </div>
           <span className="absolute top-3 right-3 bg-black/50 text-white text-xs font-inter font-bold px-2.5 py-1 rounded">
@@ -990,7 +990,7 @@ export default function Estoque() {
           </div>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="flex lg:hidden items-center gap-2 px-4 py-2.5 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy rounded-lg font-inter text-sm font-bold uppercase tracking-wider whitespace-nowrap shadow-sm"
+            className="flex lg:hidden items-center gap-2 px-4 py-2.5 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy rounded-lg font-inter text-sm font-bold uppercase tracking-wider whitespace-nowrap shadow-sm"
             aria-label="Abrir filtros"
           >
             <SlidersHorizontal size={15} />

@@ -243,7 +243,7 @@ function SimuladorResultModal({
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full bg-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-lg hover:brightness-95 transition-all disabled:opacity-60"
+                className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-3 rounded-lg hover:brightness-95 transition-all disabled:opacity-60"
               >
                 {sending ? "Calculando..." : "Ver minha faixa de preço →"}
               </button>
@@ -263,7 +263,7 @@ function SimuladorResultModal({
             </p>
             <button
               onClick={handleVerEstoque}
-              className="w-full bg-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-lg hover:brightness-95 transition-all"
+              className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-lg hover:brightness-95 transition-all"
             >
               Ver o que tem nessa faixa de valor →
             </button>
@@ -522,7 +522,7 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
             </div>
           )}
           {v.destaque && (
-            <span className="absolute top-3 left-3 bg-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">
+            <span className="absolute top-3 left-3 bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">
               Destaque
             </span>
           )}

@@ -146,7 +146,7 @@ export default function BlogPostPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href={ROUTES.estoque}
-              className="bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-bold uppercase tracking-wider text-sm px-8 py-3 rounded-xl transition">
+              className="bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-bold uppercase tracking-wider text-sm px-8 py-3 rounded-xl transition">
               Ver estoque completo
             </a>
             <a href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_MSG)}`} target="_blank" rel="noopener noreferrer"

@@ -69,7 +69,7 @@ function Hero() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <a
               href="#formulario-compra"
-              className="inline-flex items-center justify-center gap-2 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
             >
               <DollarSign size={18} />
               Quero proposta de compra
@@ -435,7 +435,7 @@ function PurchaseForm() {
                     type="button"
                     onClick={goNext}
                     disabled={!canAdvance1}
-                    className="w-full bg-atria-yellow hover:bg-atria-yellow-dark disabled:opacity-50 disabled:cursor-not-allowed text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                    className="w-full bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
                   >
                     Continuar →
                   </button>
@@ -487,7 +487,7 @@ function PurchaseForm() {
                       type="button"
                       onClick={goNext}
                       disabled={!canAdvance2}
-                      className="flex-[2] bg-atria-yellow hover:bg-atria-yellow-dark disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
+                      className="flex-[2] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all"
                     >
                       Continuar →
                     </button>
@@ -541,7 +541,7 @@ function PurchaseForm() {
                     <button
                       type="submit"
                       disabled={!canSubmit || sending}
-                      className="flex-[2] bg-atria-yellow hover:bg-atria-yellow-dark disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                      className="flex-[2] bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 disabled:opacity-50 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider py-4 rounded-xl transition-all flex items-center justify-center gap-2"
                     >
                       <Send size={16} />
                       {sending ? "Enviando..." : "Receber proposta"}
@@ -611,7 +611,7 @@ function BottomCTA() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#formulario-compra"
-              className="inline-flex items-center justify-center gap-2 bg-atria-yellow hover:bg-atria-yellow-dark text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-yellow-light to-atria-yellow hover:brightness-105 text-atria-navy font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-xl transition-colors"
             >
               <DollarSign size={18} />
               Proposta de compra
