@@ -296,7 +296,7 @@ function ConsignmentBlock() {
           <button
             type="button"
             onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
-            className="inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors shadow-lg shadow-atria-navy/20"
+            className="inline-flex items-center gap-2 bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors shadow-lg shadow-atria-navy/20"
           >
             <Handshake size={18} />
             Quero consignar meu carro
@@ -619,7 +619,7 @@ function BottomCTA() {
             <button
               type="button"
               onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
-              className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
             >
               <Handshake size={18} />
               Consignar meu carro

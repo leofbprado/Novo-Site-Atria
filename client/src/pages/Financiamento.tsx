@@ -243,7 +243,7 @@ function Simulador() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-full transition-all"
+            className="w-full bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-full transition-all"
           >
             Simular agora →
           </button>
@@ -476,7 +476,7 @@ function SimulacaoCPF() {
         </p>
         <a
           href={ROUTES.estoque}
-          className="inline-flex items-center justify-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
+          className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
         >
           <Car size={18} />
           Ver Estoque

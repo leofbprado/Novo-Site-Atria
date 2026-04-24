@@ -1000,7 +1000,7 @@ function StoreLocations() {
           origem: "ficha",
           source: "ficha-agendar-visita",
         })}
-        className="mt-6 inline-flex items-center gap-2 bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-full transition-colors"
+        className="mt-6 inline-flex items-center gap-2 bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider px-6 py-3 rounded-full transition-colors"
       >
         <Calendar size={16} />
         Agendar Visita

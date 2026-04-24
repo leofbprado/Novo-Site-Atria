@@ -326,7 +326,7 @@ function Simulador() {
 
           <button
             onClick={() => setShowModal(true)}
-            className="w-full bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-full transition-all"
+            className="w-full bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold text-base uppercase tracking-wider py-4 rounded-full transition-all"
           >
             Simular agora →
           </button>
@@ -1191,7 +1191,7 @@ function Contato() {
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full bg-atria-navy hover:bg-atria-navy-dark text-white font-inter font-bold uppercase tracking-wider text-sm py-4 rounded-full transition-colors disabled:opacity-50"
+                className="w-full bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold uppercase tracking-wider text-sm py-4 rounded-full transition-colors disabled:opacity-50"
               >
                 {sending ? "Enviando..." : "Enviar Mensagem"}
               </button>
