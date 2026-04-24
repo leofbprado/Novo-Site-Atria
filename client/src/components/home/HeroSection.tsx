@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { motion } from "framer-motion";
 import { Search, ChevronRight, Car, Clock } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { trackLead } from "@/lib/track";
@@ -31,6 +32,13 @@ const QUICK_FILTERS: Array<{ label: string; href: string; highlight?: boolean }>
 
 const fmtPrice = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+// Variants do trust row — fade + leve subida, respeitado automaticamente
+// por prefers-reduced-motion via framer-motion.
+const trustItemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
 
 export function HeroSection() {
   // Autocomplete state
@@ -332,16 +340,25 @@ export function HeroSection() {
         </a>
       </div>
 
-      {/* Trust row */}
-      <div className="px-5 lg:px-8 mt-5 lg:mt-8 mb-8 lg:mb-12 flex items-center justify-between lg:justify-center lg:gap-8 text-[11px] lg:text-xs uppercase tracking-wide text-atria-text-gray font-barlow-condensed font-bold">
-        <span>+12 anos</span>
+      {/* Trust row — staggered fade-in sutil (dispara 1x ao entrar no viewport) */}
+      <motion.div
+        className="px-5 lg:px-8 mt-5 lg:mt-8 mb-8 lg:mb-12 flex items-center justify-between lg:justify-center lg:gap-8 text-[11px] lg:text-xs uppercase tracking-wide text-atria-text-gray font-barlow-condensed font-bold"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+        }}
+      >
+        <motion.span variants={trustItemVariants}>+12 anos</motion.span>
         <Dot />
-        <span>+10k carros</span>
+        <motion.span variants={trustItemVariants}>+10k carros</motion.span>
         <Dot />
-        <span>3 lojas</span>
+        <motion.span variants={trustItemVariants}>3 lojas</motion.span>
         <Dot />
-        <span>Até 1 ano de garantia</span>
-      </div>
+        <motion.span variants={trustItemVariants}>Até 1 ano de garantia</motion.span>
+      </motion.div>
     </section>
   );
 }
