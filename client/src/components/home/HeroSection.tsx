@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search, ChevronRight, Car } from "lucide-react";
+import { Search, ChevronRight, Car, Clock } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { trackLead } from "@/lib/track";
 import { getVehicles, vehiclePath, type Vehicle } from "@/lib/firestore";
@@ -297,28 +297,41 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Card "Vender seu carro?" — consignação first */}
+      {/* Card "Consignação Átria" — imagem R2 + CTA "Quero avaliar" */}
       <div className="px-4 mt-4 lg:mt-6">
         <a
           href={ROUTES.venderCarro}
           onClick={handleSellClick}
-          className="flex items-center gap-3 lg:gap-5 rounded-2xl bg-white p-3 lg:p-5 pr-4 lg:pr-6 shadow-[0_2px_10px_-2px_rgba(0,26,140,0.12)] ring-1 ring-black/5 hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-4 lg:gap-6 rounded-2xl bg-white p-3 lg:p-5 pr-4 lg:pr-5 shadow-[0_2px_10px_-2px_rgba(0,26,140,0.12)] ring-1 ring-black/5 hover:bg-slate-50 transition-colors"
         >
-          <div className="relative flex h-14 w-14 lg:h-16 lg:w-16 flex-shrink-0 items-center justify-center rounded-xl bg-atria-gray-light">
-            <CarIcon className="h-8 w-8 lg:h-9 lg:w-9 text-atria-navy" />
-            <span className="absolute -top-1 -right-1 rounded-md px-1.5 py-0.5 text-[8px] lg:text-[9px] font-barlow-condensed font-black tracking-wide text-atria-navy leading-none bg-gradient-to-b from-atria-yellow-light to-atria-yellow">
-              R$
-            </span>
-          </div>
+          {/* Ilustração servida pelo Cloudflare R2 + Image Transformations */}
+          <img
+            src="https://atriaveiculos.com/cdn-cgi/image/width=200,format=auto/https://botoes.atriaveiculos.com/vender-carro.png"
+            alt=""
+            aria-hidden
+            loading="lazy"
+            decoding="async"
+            className="h-16 w-16 lg:h-20 lg:w-20 flex-shrink-0 object-contain"
+          />
+
           <div className="flex-1 min-w-0">
-            <div className="font-barlow-condensed font-bold text-[15px] lg:text-lg tracking-wide text-atria-navy uppercase leading-tight">
-              Vender seu carro?
+            <div className="font-inter text-[10px] lg:text-[11px] font-semibold uppercase tracking-widest text-atria-yellow mb-0.5">
+              Consignação Átria
             </div>
-            <div className="text-[13px] lg:text-sm text-atria-text-gray leading-snug mt-0.5">
-              Receba uma oferta real em 2 minutos
+            <div className="font-barlow-condensed font-black text-[15px] lg:text-xl tracking-wide text-atria-navy uppercase leading-tight">
+              Receba uma oferta pelo seu carro
+            </div>
+            <div className="flex items-center gap-1.5 text-[12px] lg:text-xs text-atria-text-gray leading-snug mt-1">
+              <Clock size={12} className="flex-shrink-0" />
+              <span>Avaliação em 2 minutos · sem compromisso</span>
             </div>
           </div>
-          <ChevronRight size={20} strokeWidth={2.5} className="text-atria-navy" />
+
+          {/* Mobile: chevron · Desktop: botão outline "Quero avaliar" */}
+          <ChevronRight size={20} strokeWidth={2.5} className="text-atria-navy sm:hidden flex-shrink-0" />
+          <span className="hidden sm:inline-flex flex-shrink-0 items-center justify-center rounded-full border-2 border-atria-navy text-atria-navy font-barlow-condensed font-bold text-xs lg:text-sm uppercase tracking-wide px-4 py-2 lg:px-6 lg:py-2.5 hover:bg-atria-navy hover:text-white transition-colors">
+            Quero avaliar
+          </span>
         </a>
       </div>
 
@@ -340,25 +353,6 @@ function Dot() {
   return <span aria-hidden className="h-1 w-1 rounded-full bg-atria-gray-medium" />;
 }
 
-// Ícone de carro usado no card "Vender seu carro?" — não há equivalente exato
-// no lucide-react (o Car do lucide é lateral; queríamos frontal/3-quartos).
-function CarIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2" />
-      <circle cx="6.5" cy="16.5" r="2.5" />
-      <circle cx="16.5" cy="16.5" r="2.5" />
-    </svg>
-  );
-}
+// CarIcon removido — substituído por <img> servido pelo R2 (botoes.atriaveiculos.com)
 
 export default HeroSection;
