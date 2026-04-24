@@ -284,7 +284,7 @@ export function HeroSection() {
               por você.
             </h1>
             <p className="mt-2 lg:mt-4 font-inter font-semibold text-[15px] lg:text-xl leading-snug text-atria-navy max-w-[85%] lg:max-w-[90%]">
-              A gente descomplica comprar e vender seu seminovo.
+              O carro certo pra próxima fase da sua vida.
             </p>
             <a
               href={ROUTES.estoque}
