@@ -315,9 +315,6 @@ export function HeroSection() {
           />
 
           <div className="flex-1 min-w-0">
-            <div className="font-inter text-[10px] lg:text-[11px] font-semibold uppercase tracking-widest text-atria-yellow mb-0.5">
-              Consignação Átria
-            </div>
             <div className="font-barlow-condensed font-black text-[15px] lg:text-xl tracking-wide text-atria-navy uppercase leading-tight">
               Receba uma oferta pelo seu carro
             </div>
