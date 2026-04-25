@@ -596,20 +596,26 @@ function SocialProof() {
 }
 
 // ---- Bottom CTA ---------------------------------------------------------
+// Padrão canônico de fechamento de página (espelha CTAFinal de Financiamento):
+// navy bg com radial gradient + ícone amarelo + SectionHeader inverted +
+// botão primário (yellow gradient) + secundário (outline white).
 function BottomCTA() {
   return (
-    <section className="py-16 bg-atria-gray-light">
-      <div className="container mx-auto px-4 text-center">
+    <section className="relative py-20 bg-atria-navy overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
+      <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
+          <Handshake size={40} className="text-atria-yellow-bright mx-auto mb-4" />
           <SectionHeader
-            title="Pronto pra vender?"
+            title={<>Pronto pra <span className="text-atria-yellow-bright">vender</span>?</>}
             subtitle="Escolha a opção que faz mais sentido e fale com a gente."
+            inverted
             centered
-            className="mb-6"
+            className="mb-8"
           />
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -622,7 +628,7 @@ function BottomCTA() {
             <button
               type="button"
               onClick={() => openConsignacaoWa("Olá! Quero saber mais sobre consignação do meu carro.")}
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
+              className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:border-white text-white font-inter font-bold text-sm uppercase tracking-wider px-8 py-4 rounded-full transition-colors"
             >
               <Handshake size={18} />
               Consignar meu carro
