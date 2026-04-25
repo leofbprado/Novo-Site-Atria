@@ -1248,7 +1248,10 @@ export default function Estoque() {
         const aHas = a.fotos.length > 0 ? 1 : 0;
         const bHas = b.fotos.length > 0 ? 1 : 0;
         if (bHas !== aHas) return bHas - aHas;
-        return +b.createdAt - +a.createdAt;
+        const aTagged = (a.tags?.length ?? 0) > 0 || getPrecoExibicao(a).emPromocao ? 1 : 0;
+        const bTagged = (b.tags?.length ?? 0) > 0 || getPrecoExibicao(b).emPromocao ? 1 : 0;
+        if (bTagged !== aTagged) return bTagged - aTagged;
+        return +a.createdAt - +b.createdAt;
       }); break;
     }
     return res;

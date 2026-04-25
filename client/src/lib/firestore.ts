@@ -78,6 +78,7 @@ export interface Vehicle {
   descricao: string;
   opcionais?: string[];
   destaque: boolean;
+  tags: string[];
   slug: string;
   createdAt: Date;
   technical_specs?: Record<string, number>;
@@ -161,6 +162,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     descricao: v.descricao_ia || v.observacao || "",
     opcionais: normalizeAcessorios(v.acessorios),
     destaque: (v.tags || []).includes("destaque"),
+    tags: Array.isArray(v.tags) ? v.tags : [],
     slug: v.slug || "",
     createdAt: v.data_importacao?.toDate?.() || new Date(),
     ...(v.technical_specs ? { technical_specs: v.technical_specs } : {}),
@@ -202,6 +204,7 @@ const MOCK_VEHICLES: Vehicle[] = [
       "Bluetooth", "Som Harman Kardon", "Head-up display", "Vidros elétricos", "Travas elétricas",
     ],
     destaque: true,
+    tags: ["destaque"],
     slug: "bmw-x5-2023",
     createdAt: new Date("2024-01-15"),
   },
@@ -228,6 +231,7 @@ const MOCK_VEHICLES: Vehicle[] = [
       "Tela MBUX 10.25\"", "Apple CarPlay", "Android Auto", "Câmera de ré",
     ],
     destaque: true,
+    tags: ["destaque"],
     slug: "mercedes-c300-2022",
     createdAt: new Date("2024-01-10"),
   },
@@ -254,6 +258,7 @@ const MOCK_VEHICLES: Vehicle[] = [
       "Apple CarPlay", "Android Auto", "Câmera de ré",
     ],
     destaque: true,
+    tags: ["destaque"],
     slug: "audi-a4-2023",
     createdAt: new Date("2024-01-05"),
   },
