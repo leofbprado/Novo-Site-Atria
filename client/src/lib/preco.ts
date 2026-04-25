@@ -4,9 +4,9 @@
 // `em_oferta` no painel. Qualquer outro caso NÃO é oferta — exibe o número
 // disponível sem badge nem de/por.
 //
-// Default de `em_oferta`: undefined é tratado como true (retrocompat com
-// estoque já cadastrado antes da feature). Só fica fora da oferta quando
-// o admin explicitamente marca false.
+// Default de `em_oferta`: opt-in. Só vira oferta quando o admin
+// explicitamente liga o toggle (em_oferta === true). undefined ou false
+// = sem badge.
 
 export interface PrecoExibicao {
   precoFinal: number;          // o número grande do card (o que o cliente paga)
@@ -17,7 +17,7 @@ export interface PrecoExibicao {
 export function getPrecoExibicao(v: { preco: number; preco_promocao?: number | null; em_oferta?: boolean }): PrecoExibicao {
   const p = Number(v.preco) || 0;
   const promo = Number(v.preco_promocao ?? 0) || 0;
-  const ofertaOk = v.em_oferta !== false;
+  const ofertaOk = v.em_oferta === true;
   if (ofertaOk && p > 0 && promo > 0 && promo < p) {
     return { precoFinal: promo, precoCheio: p, emPromocao: true };
   }

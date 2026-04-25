@@ -368,8 +368,8 @@ function VehicleDetailPage({
   const [savingTags, setSavingTags] = useState(false);
   const [savedTags, setSavedTags] = useState(false);
 
-  // Toggle "Em oferta" — undefined no doc é tratado como true (retrocompat).
-  const [emOferta, setEmOferta] = useState<boolean>(vehicle.em_oferta !== false);
+  // Toggle "Em oferta" — opt-in: só liga se admin explicitamente marcar.
+  const [emOferta, setEmOferta] = useState<boolean>(vehicle.em_oferta === true);
   const [savingOferta, setSavingOferta] = useState(false);
   const ofertaPrecosValidos = vehicle.preco > 0 && (vehicle.preco_promocao ?? 0) > 0 && (vehicle.preco_promocao ?? 0) < vehicle.preco;
 
