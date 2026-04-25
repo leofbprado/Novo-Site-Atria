@@ -524,10 +524,10 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
             </div>
           )}
           {(() => {
-            // Regra: máx 1 badge total. Tag manual ganha; senão, oferta.
+            // Regra: máx 1 badge. Oferta (auto pelo preço) ganha; senão, tag manual.
             const { emPromocao } = getPrecoExibicao(v);
             const primeiraTag = (v.tags || []).find((t) => t !== "oferta");
-            const tagFinal = primeiraTag ?? (emPromocao ? "oferta" : null);
+            const tagFinal = emPromocao ? "oferta" : primeiraTag ?? null;
             if (!tagFinal) return null;
             return (
               <div className="absolute top-3 left-3">
