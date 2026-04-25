@@ -1342,10 +1342,21 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               const modeloOK = (c: SancesMatch) =>
                 tokensAceitos.length === 0 || tokensAceitos.some((t) => normModelo(c.modelo).includes(t));
               const kmAutoconf = Number(v.km) || 0;
-              const kmOK = (c: SancesMatch) => c.km === kmAutoconf;
-              const compat = candidates.filter((c) => modeloOK(c) && kmOK(c));
-              if (compat.length === 1) match = compat[0];
-              // Se 0 ou múltiplos compatíveis, não arrisca (evita false match)
+              // Filtra primeiro por modelo. KM antes era filtro estrito (=== exato),
+              // mas isso quebrava quando Sances atualizava km real e AutoConf ficava
+              // atrasado (ex: Chery Tiggo 5X GJQ6C37 — match falhava). Agora KM
+              // entra só como tie-breaker quando há múltiplos candidatos modelo-OK.
+              const compatModelo = candidates.filter(modeloOK);
+              if (compatModelo.length === 1) {
+                match = compatModelo[0];
+              } else if (compatModelo.length > 1 && kmAutoconf > 0) {
+                // Múltiplos com mesmo modelo+marca+ano+placa-fp: pega o KM mais próximo
+                const sorted = [...compatModelo].sort(
+                  (a, b) => Math.abs(a.km - kmAutoconf) - Math.abs(b.km - kmAutoconf)
+                );
+                match = sorted[0];
+              }
+              // Se 0 modelo-OK, não arrisca (evita false match entre carros distintos)
             }
           }
 
