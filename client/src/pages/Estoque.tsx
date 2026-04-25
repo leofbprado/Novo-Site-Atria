@@ -536,6 +536,50 @@ function Sidebar({
           step={10000}
           formatValue={fmt}
         />
+        {/* Inputs numéricos pra digitar mínimo/máximo direto */}
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <label className="block">
+            <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Mínimo</span>
+            <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
+              <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">R$</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={precoMaxStock}
+                step={1000}
+                value={filters.preco[0] || ""}
+                placeholder="0"
+                onChange={(e) => {
+                  const v = Number(e.target.value) || 0;
+                  set({ preco: [Math.max(0, Math.min(v, filters.preco[1])), filters.preco[1]] });
+                }}
+                className="w-full py-2 pr-2 font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+          </label>
+          <label className="block">
+            <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Máximo</span>
+            <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
+              <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">R$</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={precoMaxStock}
+                step={1000}
+                value={filters.preco[1] < precoMaxStock ? filters.preco[1] : ""}
+                placeholder={String(precoMaxStock)}
+                onChange={(e) => {
+                  const raw = Number(e.target.value);
+                  const v = raw > 0 ? Math.min(raw, precoMaxStock) : precoMaxStock;
+                  set({ preco: [filters.preco[0], Math.max(filters.preco[0], v)] });
+                }}
+                className="w-full py-2 pr-2 font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+          </label>
+        </div>
       </FilterAccordion>
 
       {/* ── Marca ── */}
