@@ -1202,7 +1202,7 @@ export default function VehicleDetail() {
               </h2>
               <p className="font-inter text-base text-atria-text-dark leading-relaxed">{vehicle.descricao}</p>
               {siteConfig.highlights_padrao.length > 0 && (
-                <ul className="mt-3 list-disc list-inside font-inter text-base text-atria-text-dark leading-relaxed space-y-1">
+                <ul className="mt-3 list-disc list-inside font-inter text-base font-bold text-atria-text-dark leading-relaxed space-y-1">
                   {siteConfig.highlights_padrao.map((h, i) => (
                     <li key={i}>{h}</li>
                   ))}
