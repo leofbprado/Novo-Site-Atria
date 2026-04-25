@@ -1472,7 +1472,10 @@ export default function Estoque() {
 
       {/* Layout: Sidebar + Grid */}
       <div className="container mx-auto px-4">
-        <div className="flex gap-0 lg:gap-8 items-start py-6">
+        {/* items-stretch (default) é crítico pro sticky da sidebar funcionar
+            no desktop — o aside precisa esticar até a altura do grid pra
+            posição sticky ter espaço de scroll dentro do container pai. */}
+        <div className="flex gap-0 lg:gap-8 py-6">
 
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-[280px] shrink-0" aria-label="Filtros de busca">
