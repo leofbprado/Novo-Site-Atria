@@ -363,25 +363,36 @@ function VehicleDetailPage({
   const [fotosProvisórias, setFotosProvisórias] = useState(vehicle.fotos_provisorias ?? false);
   const tagConfigs = useTagConfigs();
 
+  const [tagsDirty, setTagsDirty] = useState(false);
+  const [savingTags, setSavingTags] = useState(false);
+  const [savedTags, setSavedTags] = useState(false);
+
   const handleAddTag = (tag: string) => {
     const t = tag.trim().toLowerCase();
     if (t && !tags.includes(t)) {
-      const updated = [...tags, t];
-      setTags(updated);
-      console.log("[TAGS] Salvando tags para", vehicle.autoconf_id, ":", updated);
-      updateVeiculoTags(vehicle.autoconf_id, updated)
-        .then(() => console.log("[TAGS] Salvo com sucesso"))
-        .catch((err) => console.error("[TAGS] Erro ao salvar:", err));
+      setTags([...tags, t]);
+      setTagsDirty(true);
     }
     setNewTag("");
   };
 
   const handleRemoveTag = (tag: string) => {
-    const updated = tags.filter((t) => t !== tag);
-    setTags(updated);
-    updateVeiculoTags(vehicle.autoconf_id, updated)
-      .then(() => console.log("[TAGS] Removido com sucesso"))
-      .catch((err) => console.error("[TAGS] Erro ao remover:", err));
+    setTags(tags.filter((t) => t !== tag));
+    setTagsDirty(true);
+  };
+
+  const handleSaveTags = async () => {
+    setSavingTags(true);
+    try {
+      await updateVeiculoTags(vehicle.autoconf_id, tags);
+      setTagsDirty(false);
+      setSavedTags(true);
+      setTimeout(() => setSavedTags(false), 2500);
+    } catch (err) {
+      console.error("[TAGS] Erro ao salvar:", err);
+      window.alert("Erro ao salvar tags. Veja o console.");
+    }
+    setSavingTags(false);
   };
 
   const [searchingSpecs, setSearchingSpecs] = useState(false);
@@ -732,6 +743,21 @@ function VehicleDetailPage({
                 Essa tag ainda não tem visual em Configurações → Tags. Adicionar lá pra ela aparecer como badge no site.
               </p>
             )}
+
+            {/* Save button — alterações ficam locais até clicar */}
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100">
+              <button
+                onClick={handleSaveTags}
+                disabled={savingTags || !tagsDirty}
+                className="bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+              >
+                {savingTags ? <Spinner size={14} /> : savedTags ? <CheckCircle2 size={14} /> : <Save size={14} />}
+                {savingTags ? "Salvando..." : savedTags ? "Salvo!" : "Salvar tags"}
+              </button>
+              {tagsDirty && !savedTags && (
+                <span className="text-xs text-amber-600">Alterações não salvas</span>
+              )}
+            </div>
           </div>
 
           {/* Acessórios */}
