@@ -270,6 +270,14 @@ export async function upsertVeiculoFromAutoConf(
     if (novaPlaca.includes("*") && placaSalva && !placaSalva.includes("*")) {
       delete updateFields.placa_final;
     }
+    // Ressurreição: veículo despublicado que voltou a aparecer no AutoConf
+    // (foi vendido e cancelou? voltou pra estoque?) é re-promovido pra rascunho
+    // pra admin revisar antes de republicar — evita reaparecer no site público
+    // com dados antigos sem ninguém ter conferido.
+    if (existing.data().status === "despublicado") {
+      updateFields.status = "rascunho";
+      updateFields.data_remocao = null;
+    }
     await updateDoc(docRef, updateFields);
     return "updated";
   } else {
