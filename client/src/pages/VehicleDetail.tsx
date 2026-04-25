@@ -11,6 +11,7 @@ import {
 import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, type Vehicle, type SiteConfig } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
 import { track, trackLead, trackIntent } from "@/lib/track";
+import { getPrecoExibicao, precoEfetivo } from "@/lib/preco";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
@@ -37,10 +38,10 @@ function useVehicleSEO(v: Vehicle | null) {
   const opcionaisStr = v?.opcionais?.slice(0, 3).join(", ") || "";
   useSEO({
     title: v
-      ? `Comprar ${v.marca} ${v.modelo} ${v.ano} Usado em Campinas | ${fmt(v.preco)} | Átria Veículos`
+      ? `Comprar ${v.marca} ${v.modelo} ${v.ano} Usado em Campinas | ${fmt(precoEfetivo(v))} | Átria Veículos`
       : "Veículo | Átria Veículos",
     description: v
-      ? `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} com ${fmtKm(v.km)}, ${v.cambio}, ${v.combustivel}.${opcionaisStr ? ` ${opcionaisStr}.` : ""} ${fmt(v.preco)} à vista. Átria Veículos Campinas.`
+      ? `${v.marca} ${v.modelo} ${v.versao ?? ""} ${v.ano} com ${fmtKm(v.km)}, ${v.cambio}, ${v.combustivel}.${opcionaisStr ? ` ${opcionaisStr}.` : ""} ${fmt(precoEfetivo(v))} à vista. Átria Veículos Campinas.`
       : "Veículo seminovo na Átria Veículos em Campinas SP.",
     path: v ? vehiclePath(v) : ROUTES.estoque,
     ogImage: v?.fotos?.[0],
@@ -71,7 +72,7 @@ function useVehicleSEO(v: Vehicle | null) {
       "description": v.descricao,
       "offers": {
         "@type": "Offer",
-        "price": v.preco,
+        "price": precoEfetivo(v),
         "priceCurrency": "BRL",
         "availability": "https://schema.org/InStock",
         "seller": {
@@ -401,8 +402,8 @@ function PricePanel({ v }: { v: Vehicle }) {
     vehicle_marca: v.marca,
     vehicle_modelo: v.modelo,
     vehicle_ano: v.ano,
-    vehicle_preco: v.preco,
-    value: v.preco,
+    vehicle_preco: precoEfetivo(v),
+    value: precoEfetivo(v),
   };
 
   const handleInteresseClick = () => {
@@ -410,12 +411,12 @@ function PricePanel({ v }: { v: Vehicle }) {
     track("cta_click", { source: "ficha-interesse-panel", cta: "interesse", ...trackProps });
     trackIntent("lead_tenho_interesse_aberto", {
       origem: "ficha",
-      marca: v.marca, modelo: v.modelo, preco: v.preco,
+      marca: v.marca, modelo: v.modelo, preco: precoEfetivo(v),
     });
     setDrawerOpen(true);
   };
 
-  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(v.preco)}). Poderia me atender?`;
+  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(precoEfetivo(v))}). Poderia me atender?`;
   const handleWhatsClick = () => {
     trackVehicleEvent(v.slug, "clique_whatsapp_header").catch(() => {});
     trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
@@ -424,7 +425,7 @@ function PricePanel({ v }: { v: Vehicle }) {
       gtmEvent: "whatsapp_click",
       origem: "ficha",
       source: "ficha-whatsapp-panel",
-      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: precoEfetivo(v),
     });
   };
 
@@ -435,7 +436,7 @@ function PricePanel({ v }: { v: Vehicle }) {
       gtmEvent: "cta_click",
       origem: "ficha",
       source: "ficha-credere-panel",
-      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: precoEfetivo(v),
     });
     document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -457,9 +458,19 @@ function PricePanel({ v }: { v: Vehicle }) {
 
           {/* Price */}
           <div>
-            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
+              {getPrecoExibicao(v).emPromocao && (
+                <span className="bg-red-600 text-white text-[10px] font-inter font-bold uppercase tracking-wide px-2 py-0.5 rounded">Oferta</span>
+              )}
+            </div>
+            {getPrecoExibicao(v).precoCheio && (
+              <p className="font-inter text-base text-atria-text-gray line-through leading-tight">
+                {fmt(getPrecoExibicao(v).precoCheio!)}
+              </p>
+            )}
             <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">
-              {fmt(v.preco)}
+              {fmt(getPrecoExibicao(v).precoFinal)}
             </p>
           </div>
 
@@ -525,8 +536,8 @@ function ActionBlock({ v }: { v: Vehicle }) {
     vehicle_marca: v.marca,
     vehicle_modelo: v.modelo,
     vehicle_ano: v.ano,
-    vehicle_preco: v.preco,
-    value: v.preco,
+    vehicle_preco: precoEfetivo(v),
+    value: precoEfetivo(v),
   };
 
   const handleInteresseClick = () => {
@@ -534,7 +545,7 @@ function ActionBlock({ v }: { v: Vehicle }) {
     track("cta_click", { source: "ficha-interesse-header", cta: "interesse", ...trackProps });
     trackIntent("lead_tenho_interesse_aberto", {
       origem: "ficha",
-      marca: v.marca, modelo: v.modelo, preco: v.preco,
+      marca: v.marca, modelo: v.modelo, preco: precoEfetivo(v),
     });
     setDrawerOpen(true);
   };
@@ -546,12 +557,12 @@ function ActionBlock({ v }: { v: Vehicle }) {
       gtmEvent: "cta_click",
       origem: "ficha",
       source: "ficha-credere-header",
-      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: precoEfetivo(v),
     });
     document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(v.preco)}). Poderia me atender?`;
+  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(precoEfetivo(v))}). Poderia me atender?`;
   const handleWhatsClick = () => {
     trackVehicleEvent(v.slug, "clique_whatsapp_header").catch(() => {});
     trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
@@ -560,7 +571,7 @@ function ActionBlock({ v }: { v: Vehicle }) {
       gtmEvent: "whatsapp_click",
       origem: "ficha",
       source: "ficha-whatsapp-header",
-      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco: precoEfetivo(v),
     });
   };
 
@@ -568,8 +579,18 @@ function ActionBlock({ v }: { v: Vehicle }) {
     <>
       <section className="bg-atria-gray-light border border-atria-gray-medium rounded-2xl p-5 space-y-3 shadow-sm">
         <div>
-          <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
-          <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">{fmt(v.preco)}</p>
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
+            {getPrecoExibicao(v).emPromocao && (
+              <span className="bg-red-600 text-white text-[10px] font-inter font-bold uppercase tracking-wide px-2 py-0.5 rounded">Oferta</span>
+            )}
+          </div>
+          {getPrecoExibicao(v).precoCheio && (
+            <p className="font-inter text-base text-atria-text-gray line-through leading-tight">
+              {fmt(getPrecoExibicao(v).precoCheio!)}
+            </p>
+          )}
+          <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">{fmt(getPrecoExibicao(v).precoFinal)}</p>
         </div>
 
         <button
@@ -615,7 +636,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const titulo = vehicle.titulo ?? `${vehicle.marca} ${vehicle.modelo}`;
-  const waMsg = `Olá! Me chamo ${nome}, tenho interesse no ${titulo} ${vehicle.ano} (${fmt(vehicle.preco)}). Qual a disponibilidade?`;
+  const waMsg = `Olá! Me chamo ${nome}, tenho interesse no ${titulo} ${vehicle.ano} (${fmt(precoEfetivo(vehicle))}). Qual a disponibilidade?`;
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -664,7 +685,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
           marca: vehicle.marca,
           modelo: vehicle.modelo,
           ano: vehicle.ano,
-          preco: vehicle.preco,
+          preco: precoEfetivo(vehicle),
           placa: (vehicle as any).placa_final || (vehicle as any).placa || undefined,
           km: vehicle.km,
         },
@@ -678,7 +699,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
         marca: vehicle.marca,
         modelo: vehicle.modelo,
         ano: vehicle.ano,
-        preco: vehicle.preco,
+        preco: precoEfetivo(vehicle),
       });
     } catch { /* não bloqueia */ }
     setSending(false);
@@ -692,7 +713,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
       gtmEvent: "whatsapp_click",
       origem: "ficha",
       source: "vehicle-interesse-success",
-      marca: vehicle.marca, modelo: vehicle.modelo, ano: vehicle.ano, preco: vehicle.preco,
+      marca: vehicle.marca, modelo: vehicle.modelo, ano: vehicle.ano, preco: precoEfetivo(vehicle),
     });
     onClose();
   };
@@ -745,7 +766,7 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
                 Tenho interesse no {vehicle.modelo}
               </h3>
               <p className="font-inter text-white/70 text-sm mt-1">
-                {vehicle.marca} {vehicle.modelo} {vehicle.ano} — {fmt(vehicle.preco)}
+                {vehicle.marca} {vehicle.modelo} {vehicle.ano} — {fmt(precoEfetivo(vehicle))}
               </p>
             </div>
             <form className="px-6 py-5 space-y-4" onSubmit={handleSubmit}>
@@ -927,7 +948,7 @@ function FinancingSection({ v }: { v: Vehicle }) {
         data-marca={v.marca}
         data-modelo={v.modelo}
         data-ano={String(v.ano)}
-        data-preco={String(v.preco)}
+        data-preco={String(precoEfetivo(v))}
       />
     </section>
   );
@@ -959,7 +980,15 @@ function SimilarCard({ v }: { v: Vehicle }) {
         <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider mb-0.5">{v.marca}</p>
         <p className="font-barlow-condensed font-bold text-lg text-atria-text-dark leading-tight group-hover:text-atria-navy transition-colors">{titulo}</p>
         <p className="font-inter text-xs text-atria-text-gray mt-1">{v.ano} &middot; {fmtKm(v.km)}</p>
-        <p className="font-barlow-condensed font-black text-xl text-atria-navy mt-2">{fmt(v.preco)}</p>
+        <div className="flex items-baseline gap-2 flex-wrap mt-2">
+          {getPrecoExibicao(v).precoCheio && (
+            <span className="font-inter text-xs text-atria-text-gray line-through">{fmt(getPrecoExibicao(v).precoCheio!)}</span>
+          )}
+          <p className="font-barlow-condensed font-black text-xl text-atria-navy">{fmt(getPrecoExibicao(v).precoFinal)}</p>
+          {getPrecoExibicao(v).emPromocao && (
+            <span className="bg-red-600 text-white text-[10px] font-inter font-bold uppercase tracking-wide px-1.5 py-0.5 rounded">Oferta</span>
+          )}
+        </div>
       </div>
     </a>
   );
@@ -1080,16 +1109,16 @@ export default function VehicleDetail() {
    */
   const similar = useMemo(() => {
     if (!vehicle) return [];
-    const myPrice = vehicle.preco || 0;
+    const myPrice = precoEfetivo(vehicle) || 0;
     if (myPrice === 0) return [];
 
     const candidates = allVehicles
-      .filter((v) => v.id !== vehicle.id && (v.preco || 0) > 0)
+      .filter((v) => v.id !== vehicle.id && (precoEfetivo(v) || 0) > 0)
       .map((v) => {
         let score = 0;
 
         // 1. Faixa de valor — peso máximo
-        const priceDiff = Math.abs(v.preco - myPrice);
+        const priceDiff = Math.abs(precoEfetivo(v) - myPrice);
         const priceRatio = priceDiff / myPrice; // 0 = mesmo preço, 1 = 100% mais caro/barato
         if (priceRatio <= 0.15) score += 100;          // ±15% = match perfeito
         else if (priceRatio <= 0.30) score += 70;      // ±30%

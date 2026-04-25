@@ -4,6 +4,7 @@ import { Search, ChevronRight, Car, Clock } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { trackLead } from "@/lib/track";
 import { getVehicles, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { getPrecoExibicao, precoEfetivo } from "@/lib/preco";
 
 // ─── Hero images: Cloudflare R2 + Image Transformations ──────────────────────
 // Original PNGs vivem no R2 (hero.atriaveiculos.com). O Cloudflare transforma
@@ -94,7 +95,7 @@ export function HeroSection() {
         origem: "home",
         source: "hero-search-suggestion",
         termoBusca: query.trim(),
-        marca: v.marca, modelo: v.modelo, ano: v.ano, preco: v.preco,
+        marca: v.marca, modelo: v.modelo, ano: v.ano, preco: precoEfetivo(v),
       });
       window.location.href = vehiclePath(v);
       return;
@@ -219,7 +220,10 @@ export function HeroSection() {
                     </p>
                   </div>
                   <span className="font-barlow-condensed font-bold text-base text-atria-navy whitespace-nowrap hidden sm:block">
-                    {fmtPrice(v.preco)}
+                    {getPrecoExibicao(v).emPromocao && (
+                      <span className="bg-red-600 text-white text-[9px] font-inter font-bold uppercase tracking-wide px-1.5 py-0.5 rounded mr-1.5 align-middle">Oferta</span>
+                    )}
+                    {fmtPrice(getPrecoExibicao(v).precoFinal)}
                   </span>
                 </a>
               ))}

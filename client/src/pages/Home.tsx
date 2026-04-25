@@ -3,6 +3,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { getPrecoExibicao } from "@/lib/preco";
 import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
@@ -521,18 +522,36 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
               <Car size={48} className="text-atria-gray-medium" />
             </div>
           )}
-          {v.destaque && (
-            <span className="absolute top-3 left-3 bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">
-              Destaque
-            </span>
-          )}
+          {(() => {
+            const { emPromocao } = getPrecoExibicao(v);
+            return (
+              <div className="absolute top-3 left-3 flex gap-1.5">
+                {emPromocao && (
+                  <span className="bg-red-600 text-white text-xs font-inter font-bold uppercase tracking-wide px-2.5 py-1 rounded">Oferta</span>
+                )}
+                {v.destaque && !emPromocao && (
+                  <span className="bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
+                )}
+              </div>
+            );
+          })()}
         </div>
         <div className="p-5 pb-3">
           <p className="font-barlow-condensed font-bold text-lg text-atria-text-dark leading-tight mb-1">{titulo}</p>
           <p className="font-inter text-sm text-atria-text-gray mb-2">
             {v.ano} · {v.km?.toLocaleString("pt-BR")} km · {v.combustivel}
           </p>
-          <span className="font-barlow-condensed font-black text-2xl text-atria-navy">{fmt(v.preco)}</span>
+          {(() => {
+            const { precoFinal, precoCheio } = getPrecoExibicao(v);
+            return (
+              <div className="flex items-baseline gap-2 flex-wrap">
+                {precoCheio && (
+                  <span className="font-inter text-sm text-atria-text-gray line-through">{fmt(precoCheio)}</span>
+                )}
+                <span className="font-barlow-condensed font-black text-2xl text-atria-navy">{fmt(precoFinal)}</span>
+              </div>
+            );
+          })()}
         </div>
       </a>
       <div className="px-5 pb-4 mt-2">

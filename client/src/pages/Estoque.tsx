@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
+import { getPrecoExibicao } from "@/lib/preco";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WA_NUMBER = "5519996525211";
@@ -48,6 +49,7 @@ interface FilterState {
   km: [number, number];
   combustivel: string[];
   cambio: string[];
+  soPromocao: boolean;
   sort: SortKey;
 }
 
@@ -67,6 +69,7 @@ const EMPTY_FILTERS: FilterState = {
   km: [...DEFAULT_RANGES.km],
   combustivel: [],
   cambio: [],
+  soPromocao: false,
   sort: "recente",
 };
 
@@ -78,6 +81,7 @@ function isFilterActive(f: FilterState): boolean {
     f.tipos.length > 0 ||
     f.combustivel.length > 0 ||
     f.cambio.length > 0 ||
+    f.soPromocao ||
     f.preco[0] > DEFAULT_RANGES.preco[0] ||
     f.preco[1] < DEFAULT_RANGES.preco[1] ||
     f.ano[0] > DEFAULT_RANGES.ano[0] ||
@@ -117,7 +121,7 @@ function usePageSEO(vehicles: Vehicle[]) {
           "brand": { "@type": "Brand", "name": v.marca },
           "model": v.modelo, "vehicleModelDate": String(v.ano),
           "mileageFromOdometer": { "@type": "QuantitativeValue", "value": v.km, "unitCode": "KMT" },
-          "offers": { "@type": "Offer", "price": v.preco, "priceCurrency": "BRL", "availability": "https://schema.org/InStock" },
+          "offers": { "@type": "Offer", "price": getPrecoExibicao(v).precoFinal, "priceCurrency": "BRL", "availability": "https://schema.org/InStock" },
           "url": `${SITE_URL}/campinas-sp/${v.slug}`,
         },
       })),
@@ -248,7 +252,10 @@ function PriceHistogram({ vehicles, range, max }: { vehicles: Vehicle[]; range: 
       const lo = allMin + i * binW;
       const hi = lo + binW;
       // Última barra inclui o limite superior (carro mais caro)
-      return vehicles.filter((v) => v.preco >= lo && (i === BINS - 1 ? v.preco <= hi : v.preco < hi)).length;
+      return vehicles.filter((v) => {
+        const p = getPrecoExibicao(v).precoFinal;
+        return p >= lo && (i === BINS - 1 ? p <= hi : p < hi);
+      }).length;
     }),
     [vehicles, binW, allMin]
   );
@@ -822,7 +829,10 @@ function Sidebar({
   const reduceMotion = useReducedMotion();
 
   const precoMaxStock = useMemo(() => {
-    const maxPreco = vehicles.reduce((m, v) => v.preco > m ? v.preco : m, 0);
+    const maxPreco = vehicles.reduce((m, v) => {
+      const p = getPrecoExibicao(v).precoFinal;
+      return p > m ? p : m;
+    }, 0);
     return Math.max(10000, Math.ceil(maxPreco / 10000) * 10000);
   }, [vehicles]);
 
@@ -854,6 +864,33 @@ function Sidebar({
             exit={{ x: -slide, opacity: 0 }}
             transition={{ duration: dur, ease: "easeOut" }}
           >
+            <button
+              type="button"
+              onClick={() => onChange({ ...filters, soPromocao: !filters.soPromocao })}
+              aria-pressed={filters.soPromocao}
+              className="w-full min-h-[48px] flex items-center justify-between py-3 px-1 -mx-1 border-b border-atria-gray-medium hover:bg-atria-gray-light/40 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
+            >
+              <span className="flex items-center gap-2">
+                <span className="font-inter font-semibold text-sm text-atria-text-dark">
+                  Só promoções
+                </span>
+                {filters.soPromocao && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 flex-shrink-0" aria-hidden="true" />
+                )}
+              </span>
+              <span
+                className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
+                  filters.soPromocao ? "bg-red-600" : "bg-atria-gray-medium"
+                }`}
+                aria-hidden="true"
+              >
+                <span
+                  className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                    filters.soPromocao ? "translate-x-[18px]" : "translate-x-0.5"
+                  }`}
+                />
+              </span>
+            </button>
             <FilterIndex
               filters={filters}
               precoMaxStock={precoMaxStock}
@@ -897,6 +934,7 @@ function ActiveFilters({ filters, onChange }: { filters: FilterState; onChange: 
     const result: ActiveChip[] = [];
 
     if (filters.busca) result.push({ label: `"${filters.busca}"`, onRemove: () => set({ busca: "" }) });
+    if (filters.soPromocao) result.push({ label: "Só promoções", onRemove: () => set({ soPromocao: false }) });
     if (filters.preco[0] > DEFAULT_RANGES.preco[0] || filters.preco[1] < DEFAULT_RANGES.preco[1])
       result.push({ label: `${fmt(filters.preco[0])} – ${fmt(filters.preco[1])}`, onRemove: () => set({ preco: [...DEFAULT_RANGES.preco] }) });
     filters.marcas.forEach((m) => result.push({ label: m, onRemove: () => set({ marcas: filters.marcas.filter((x) => x !== m) }) }));
@@ -958,6 +996,7 @@ function CardSkeleton() {
 // ─── Vehicle Card ─────────────────────────────────────────────────────────────
 function VehicleCard({ v }: { v: Vehicle }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
+  const { precoFinal, precoCheio, emPromocao } = getPrecoExibicao(v);
   return (
     <motion.article
       layout
@@ -985,7 +1024,10 @@ function VehicleCard({ v }: { v: Vehicle }) {
             </div>
           )}
           <div className="absolute top-3 left-3 flex gap-1.5">
-            {v.destaque && (
+            {emPromocao && (
+              <span className="bg-red-600 text-white text-xs font-inter font-bold uppercase tracking-wide px-2.5 py-1 rounded">Oferta</span>
+            )}
+            {v.destaque && !emPromocao && (
               <span className="bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
             )}
           </div>
@@ -1010,16 +1052,21 @@ function VehicleCard({ v }: { v: Vehicle }) {
                 </li>
               ))}
           </ul>
-          <p className="font-barlow-condensed font-black text-2xl text-atria-navy" itemProp="offers" itemScope itemType="https://schema.org/Offer">
-            <span itemProp="price" content={String(v.preco)}>{fmt(v.preco)}</span>
+          <div className="flex items-baseline gap-2 flex-wrap" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+            {precoCheio && (
+              <span className="font-inter text-sm text-atria-text-gray line-through">{fmt(precoCheio)}</span>
+            )}
+            <p className="font-barlow-condensed font-black text-2xl text-atria-navy">
+              <span itemProp="price" content={String(precoFinal)}>{fmt(precoFinal)}</span>
+            </p>
             <meta itemProp="priceCurrency" content="BRL" />
             <meta itemProp="availability" content="https://schema.org/InStock" />
-          </p>
+          </div>
         </div>
       </a>
       <div className="px-5 pb-5 flex gap-2 mt-2">
         <a
-          href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(v.preco)} no estoque da Átria. Tenho interesse!`)}
+          href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(precoFinal)} no estoque da Átria. Tenho interesse!`)}
           target="_blank" rel="noopener noreferrer"
           className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider py-2.5 rounded text-center transition-colors"
         >
@@ -1178,7 +1225,9 @@ export default function Estoque() {
         const vTipo = (v.tipo || "").toLowerCase();
         if (!filters.tipos.some((t) => t.toLowerCase() === vTipo)) return false;
       }
-      if (v.preco > 0 && (v.preco < filters.preco[0] || v.preco > filters.preco[1])) return false;
+      const precoVisivel = getPrecoExibicao(v).precoFinal;
+      if (precoVisivel > 0 && (precoVisivel < filters.preco[0] || precoVisivel > filters.preco[1])) return false;
+      if (filters.soPromocao && !getPrecoExibicao(v).emPromocao) return false;
       if (v.ano > 0 && (v.ano < filters.ano[0] || v.ano > filters.ano[1])) return false;
       if (v.km >= 0 && (v.km < filters.km[0] || v.km > filters.km[1])) return false;
       if (filters.combustivel.length && !filters.combustivel.includes(v.combustivel)) return false;
@@ -1189,8 +1238,8 @@ export default function Estoque() {
     });
 
     switch (filters.sort) {
-      case "preco_asc": res = [...res].sort((a, b) => a.preco - b.preco); break;
-      case "preco_desc": res = [...res].sort((a, b) => b.preco - a.preco); break;
+      case "preco_asc": res = [...res].sort((a, b) => getPrecoExibicao(a).precoFinal - getPrecoExibicao(b).precoFinal); break;
+      case "preco_desc": res = [...res].sort((a, b) => getPrecoExibicao(b).precoFinal - getPrecoExibicao(a).precoFinal); break;
       case "km_asc": res = [...res].sort((a, b) => a.km - b.km); break;
       case "km_desc": res = [...res].sort((a, b) => b.km - a.km); break;
       case "ano_desc": res = [...res].sort((a, b) => b.ano - a.ano); break;

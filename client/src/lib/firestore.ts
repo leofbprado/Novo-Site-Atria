@@ -69,6 +69,7 @@ export interface Vehicle {
   portas?: number;
   ano: number;
   preco: number;
+  preco_promocao?: number | null;
   km: number;
   cor: string;
   cambio: "Manual" | "Automática" | "CVT";
@@ -151,6 +152,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     portas: v.portas || 0,
     ano: v.ano_fabricacao || 0,
     preco: v.preco || 0,
+    preco_promocao: v.preco_promocao ?? null,
     km: v.km || 0,
     cor: v.cor || "",
     cambio: normalizeCambio(v.cambio),

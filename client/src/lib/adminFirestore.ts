@@ -27,6 +27,7 @@ export interface VeiculoAdmin {
   ano_modelo: number;
   km: number;
   preco: number;
+  preco_promocao?: number | null;
   cor: string;
   cambio: string;
   combustivel: string;
@@ -243,6 +244,17 @@ export async function upsertVeiculoFromAutoConf(
       data.preco ||
       0
     )) || 0,
+    // valorpromocao do AutoConf: > 0 sinaliza que o carro está em promoção.
+    // Hoje a operação Átria preenche valorvenda == valorpromocao (mesmo número),
+    // então o helper getPrecoExibicao só mostra a tag "OFERTA". Quando o
+    // operacional separar os dois valores, automaticamente vira "de/por" sem deploy.
+    preco_promocao: (() => {
+      const raw = (data as Record<string, unknown>).valorpromocao
+        ?? (data as Record<string, unknown>).valor_promocao;
+      if (raw == null || raw === "") return null;
+      const n = parseFloat(String(raw));
+      return Number.isFinite(n) && n > 0 ? n : null;
+    })(),
     cor: (data.cor_nome as string) || (data.cor as string) || "",
     cambio: (data.cambio_nome as string) || (data.cambio as string) || "",
     combustivel: (data.combustivel_nome as string) || (data.combustivel as string) || "",
