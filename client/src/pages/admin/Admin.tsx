@@ -62,7 +62,7 @@ import {
   getAllVehicleAnalytics, getAllVehicleDailyHistory, calcDiagnostic, calcMediana,
   type VehicleAnalytics, type DailyRecord, type VehicleDiagnostic,
 } from "@/lib/vehicleAnalytics";
-import { TagBadge, invalidateTagConfigs, tagStyle } from "@/components/TagBadge";
+import { TagBadge, invalidateTagConfigs, tagStyle, useTagConfigs } from "@/components/TagBadge";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
@@ -361,6 +361,7 @@ function VehicleDetailPage({
   );
   const [savingSpecs, setSavingSpecs] = useState(false);
   const [fotosProvisórias, setFotosProvisórias] = useState(vehicle.fotos_provisorias ?? false);
+  const tagConfigs = useTagConfigs();
 
   const handleAddTag = (tag: string) => {
     const t = tag.trim().toLowerCase();
@@ -669,29 +670,68 @@ function VehicleDetailPage({
 
           {/* Tags */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <label className="text-slate-900 text-sm font-semibold block mb-3">Tags</label>
-            <div className="flex flex-wrap gap-1.5 mb-3 min-h-[24px]">
-              {tags.map((tag) => <TagChip key={tag} tag={tag} onRemove={() => handleRemoveTag(tag)} />)}
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-slate-900 text-sm font-semibold">Tags</label>
+              <span className="text-slate-400 text-xs">
+                Configurar em <span className="text-slate-600 font-medium">Configurações → Tags</span>
+              </span>
+            </div>
+
+            {/* Tags atuais com preview real do badge */}
+            <div className="flex flex-wrap gap-1.5 mb-3 min-h-[28px]">
+              {tags.map((tag) => {
+                const cfg = tagConfigs.find((c) => c.nome === tag);
+                return (
+                  <span key={tag} className="inline-flex items-center gap-1">
+                    {cfg ? (
+                      <TagBadge tag={tag} size="xs" />
+                    ) : (
+                      <span className="bg-slate-100 text-slate-500 text-[10px] font-medium px-2 py-0.5 rounded border border-dashed border-slate-300" title="Tag sem visual configurado — não aparece como badge no site">
+                        {tag} (sem visual)
+                      </span>
+                    )}
+                    <button onClick={() => handleRemoveTag(tag)} className="text-slate-400 hover:text-red-500 transition" title="Remover">
+                      <X size={12} />
+                    </button>
+                  </span>
+                );
+              })}
               {tags.length === 0 && <span className="text-slate-400 text-xs italic">Nenhuma tag adicionada</span>}
             </div>
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {PRESET_TAGS.filter((t) => !tags.includes(t)).map((tag) => (
-                <button key={tag} onClick={() => handleAddTag(tag)}
-                  className="px-2.5 py-1 rounded-full text-xs border border-slate-200 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition">
-                  + {tag}
-                </button>
-              ))}
-            </div>
+
+            {/* Presets vindos da config — mostram badge real clicável */}
+            {tagConfigs.filter((c) => !tags.includes(c.nome)).length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mb-3 pt-3 border-t border-slate-100">
+                <span className="text-slate-400 text-[11px]">Disponíveis:</span>
+                {tagConfigs.filter((c) => !tags.includes(c.nome)).map((c) => (
+                  <button
+                    key={c.nome}
+                    onClick={() => handleAddTag(c.nome)}
+                    className="hover:scale-105 transition opacity-70 hover:opacity-100"
+                    title={`Adicionar tag "${c.nome}"`}
+                  >
+                    <TagBadge tag={c.nome} size="xs" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Input customizado — alerta que sem config não vira badge */}
             <div className="flex gap-2">
               <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag(newTag))}
-                placeholder="Tag customizada..."
+                placeholder="Tag customizada (sem visual)..."
                 className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
               <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim()}
                 className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 px-3 py-2 rounded-lg text-sm text-slate-700 transition font-medium flex items-center gap-1.5">
                 <Tag size={12} /> Adicionar
               </button>
             </div>
+            {newTag.trim() && !tagConfigs.some((c) => c.nome === newTag.trim().toLowerCase()) && (
+              <p className="text-amber-600 text-[11px] mt-1.5">
+                Essa tag ainda não tem visual em Configurações → Tags. Adicionar lá pra ela aparecer como badge no site.
+              </p>
+            )}
           </div>
 
           {/* Acessórios */}
