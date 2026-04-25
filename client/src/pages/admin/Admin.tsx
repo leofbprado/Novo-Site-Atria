@@ -1906,18 +1906,41 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     <td className="px-4 py-3 text-slate-600 text-right hidden md:table-cell">{fmtKm(v.km)}</td>
                     <td className="px-4 py-3 font-semibold text-slate-900 text-right">{fmt(v.preco)}</td>
                     <td className="px-4 py-3 text-center">
-                      {v.preco_promocao && v.preco_promocao > 0 ? (
-                        v.preco_promocao < v.preco ? (
-                          <span className="inline-flex flex-col items-center gap-0.5">
-                            <span className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded">Oferta</span>
-                            <span className="text-[11px] text-slate-700 font-semibold">{fmt(v.preco_promocao)}</span>
-                          </span>
-                        ) : (
-                          <span className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded" title={`valorpromocao=${fmt(v.preco_promocao)} (igual ao preço — operação preencheu errado no AutoConf)`}>Oferta</span>
-                        )
-                      ) : (
-                        <span className="text-slate-300 text-xs">—</span>
-                      )}
+                      {(() => {
+                        const promo = v.preco_promocao ?? 0;
+                        const precosValidos = v.preco > 0 && promo > 0 && promo < v.preco;
+                        const ligado = v.em_oferta === true && precosValidos;
+                        if (promo <= 0) {
+                          return <span className="text-slate-300 text-xs">—</span>;
+                        }
+                        return (
+                          <div className="inline-flex flex-col items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!precosValidos) return;
+                                const next = !ligado;
+                                v.em_oferta = next; // optimistic
+                                await updateVeiculoEmOferta(v.autoconf_id, next);
+                                await loadVehicles();
+                              }}
+                              disabled={!precosValidos}
+                              role="switch"
+                              aria-checked={ligado}
+                              title={precosValidos ? (ligado ? "Em oferta — clique pra desativar" : "Clique pra ativar oferta") : `valorpromocao=${fmt(promo)} (>= preço — corrigir no AutoConf)`}
+                              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition disabled:opacity-40 disabled:cursor-not-allowed ${
+                                ligado ? "bg-red-600" : "bg-slate-300"
+                              }`}
+                            >
+                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${ligado ? "translate-x-4" : "translate-x-0.5"}`} />
+                            </button>
+                            <span className={`text-[11px] font-semibold ${ligado ? "text-red-600" : "text-slate-500"}`}>
+                              {fmt(promo)}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-right hidden md:table-cell">
                       <SancesCell v={v} />
