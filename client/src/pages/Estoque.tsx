@@ -1402,16 +1402,15 @@ export default function Estoque() {
 
   return (
     <>
-      {/* Hero */}
-      <header className="bg-atria-navy pt-24 pb-8">
+      {/* Hero — compactado pra liberar viewport mobile. "Em Campinas" no
+          h1 + label "Campinas, SP" continuam servindo SEO local (Google/LLM
+          indexam esses termos pra buscas tipo "seminovos em Campinas"). */}
+      <header className="bg-atria-navy pt-20 pb-5 md:pt-24 md:pb-8">
         <div className="container mx-auto px-4">
-          <p className="section-label mb-2">Campinas, SP</p>
-          <h1 className="font-barlow-condensed font-black text-5xl md:text-6xl uppercase text-white leading-none">
+          <p className="section-label mb-1.5">Campinas, SP</p>
+          <h1 className="font-barlow-condensed font-black text-3xl md:text-6xl uppercase text-white leading-tight md:leading-none">
             Estoque de Seminovos em Campinas
           </h1>
-          <p className="font-inter text-white/60 mt-2">
-            {loading ? "Carregando…" : `${all.length} veículos disponíveis`}
-          </p>
         </div>
       </header>
 
