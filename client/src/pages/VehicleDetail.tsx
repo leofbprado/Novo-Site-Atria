@@ -1195,30 +1195,20 @@ export default function VehicleDetail() {
               </div>
             </div>
 
-            {/* Description */}
+            {/* Description + condições globais como continuação */}
             <section>
               <h2 className="font-barlow-condensed font-bold text-xl text-atria-text-dark mb-3 uppercase tracking-wide">
                 Sobre o veículo
               </h2>
               <p className="font-inter text-base text-atria-text-dark leading-relaxed">{vehicle.descricao}</p>
-            </section>
-
-            {/* Highlights globais — logo após descrição, antes da ficha técnica (reforço comercial) */}
-            {siteConfig.highlights_padrao.length > 0 && (
-              <section className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-                <h2 className="font-barlow-condensed font-bold text-xl text-emerald-900 mb-3 uppercase tracking-wide">
-                  Condições do negócio
-                </h2>
-                <ul className="space-y-2.5">
+              {siteConfig.highlights_padrao.length > 0 && (
+                <ul className="mt-3 list-disc list-inside font-inter text-base text-atria-text-dark leading-relaxed space-y-1">
                   {siteConfig.highlights_padrao.map((h, i) => (
-                    <li key={i} className="flex items-start gap-2.5 font-inter text-base text-atria-text-dark">
-                      <CheckCircle size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <span>{h}</span>
-                    </li>
+                    <li key={i}>{h}</li>
                   ))}
                 </ul>
-              </section>
-            )}
+              )}
+            </section>
 
             {/* Ficha Tecnica */}
             <FichaTecnica v={vehicle} />
