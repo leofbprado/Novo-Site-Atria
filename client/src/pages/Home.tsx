@@ -429,7 +429,7 @@ function CardSkeleton() {
 }
 
 // ─── Estoque em Destaque ──────────────────────────────────────────────────────
-const TIPO_TABS = ["Todos", "SUV", "Sedan", "Hatch", "Pickup"] as const;
+const TIPO_TABS = ["Todos", "SUV", "Sedan", "Hatch"] as const;
 type TipoTab = typeof TIPO_TABS[number];
 
 function EstoqueDestaque() {
