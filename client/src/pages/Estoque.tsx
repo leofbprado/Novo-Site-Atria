@@ -130,6 +130,66 @@ function usePageSEO(vehicles: Vehicle[]) {
   }, [vehicles]);
 }
 
+// ─── MinMaxInputs ─ pares de input numérico abaixo dos sliders pra digitar ──
+// valores exatos. Estado compartilhado com o slider via `value`/`onChange`.
+// Placeholder mostra o bound (min/max) quando o usuário não definiu nada.
+function MinMaxInputs({
+  value, min, max, step = 1, onChange, prefix, suffix,
+}: {
+  value: [number, number];
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (v: [number, number]) => void;
+  prefix?: string;
+  suffix?: string;
+}) {
+  const Field = ({ which }: { which: "min" | "max" }) => {
+    const idx = which === "min" ? 0 : 1;
+    const val = value[idx];
+    const showValue = which === "min" ? (val > min ? val : "") : (val < max ? val : "");
+    const placeholder = String(which === "min" ? min : max);
+    return (
+      <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
+        {prefix && <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">{prefix}</span>}
+        <input
+          type="number"
+          inputMode="numeric"
+          min={min}
+          max={max}
+          step={step}
+          value={showValue}
+          placeholder={placeholder}
+          onChange={(e) => {
+            const raw = Number(e.target.value);
+            if (which === "min") {
+              const v = raw > 0 ? Math.min(raw, value[1]) : min;
+              onChange([Math.max(min, v), value[1]]);
+            } else {
+              const v = raw > 0 ? Math.min(raw, max) : max;
+              onChange([value[0], Math.max(value[0], v)]);
+            }
+          }}
+          className={`w-full py-2 ${prefix ? "" : "pl-2.5"} ${suffix ? "" : "pr-2"} font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+        />
+        {suffix && <span className="pl-1 pr-2.5 font-inter text-sm text-atria-text-gray">{suffix}</span>}
+      </div>
+    );
+  };
+  return (
+    <div className="mt-3 grid grid-cols-2 gap-2">
+      <label className="block">
+        <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Mínimo</span>
+        <Field which="min" />
+      </label>
+      <label className="block">
+        <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Máximo</span>
+        <Field which="max" />
+      </label>
+    </div>
+  );
+}
+
 // ─── RangeSlider ──────────────────────────────────────────────────────────────
 function RangeSlider({
   min, max, value, onChange, step = 1,
@@ -536,50 +596,14 @@ function Sidebar({
           step={10000}
           formatValue={fmt}
         />
-        {/* Inputs numéricos pra digitar mínimo/máximo direto */}
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <label className="block">
-            <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Mínimo</span>
-            <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
-              <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">R$</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={precoMaxStock}
-                step={1000}
-                value={filters.preco[0] || ""}
-                placeholder="0"
-                onChange={(e) => {
-                  const v = Number(e.target.value) || 0;
-                  set({ preco: [Math.max(0, Math.min(v, filters.preco[1])), filters.preco[1]] });
-                }}
-                className="w-full py-2 pr-2 font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-          </label>
-          <label className="block">
-            <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Máximo</span>
-            <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
-              <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">R$</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={precoMaxStock}
-                step={1000}
-                value={filters.preco[1] < precoMaxStock ? filters.preco[1] : ""}
-                placeholder={String(precoMaxStock)}
-                onChange={(e) => {
-                  const raw = Number(e.target.value);
-                  const v = raw > 0 ? Math.min(raw, precoMaxStock) : precoMaxStock;
-                  set({ preco: [filters.preco[0], Math.max(filters.preco[0], v)] });
-                }}
-                className="w-full py-2 pr-2 font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-          </label>
-        </div>
+        <MinMaxInputs
+          value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
+          min={0}
+          max={precoMaxStock}
+          step={1000}
+          onChange={(v) => set({ preco: v })}
+          prefix="R$"
+        />
       </FilterAccordion>
 
       {/* ── Marca ── */}
@@ -651,6 +675,13 @@ function Sidebar({
           step={1}
           formatValue={(v) => String(v)}
         />
+        <MinMaxInputs
+          value={filters.ano}
+          min={DEFAULT_RANGES.ano[0]}
+          max={DEFAULT_RANGES.ano[1]}
+          step={1}
+          onChange={(v) => set({ ano: v })}
+        />
       </FilterAccordion>
 
       {/* ── Quilometragem ── */}
@@ -665,6 +696,14 @@ function Sidebar({
           onChange={(v) => set({ km: v })}
           step={5000}
           formatValue={fmtKm}
+        />
+        <MinMaxInputs
+          value={filters.km}
+          min={DEFAULT_RANGES.km[0]}
+          max={DEFAULT_RANGES.km[1]}
+          step={1000}
+          onChange={(v) => set({ km: v })}
+          suffix="km"
         />
       </FilterAccordion>
 
