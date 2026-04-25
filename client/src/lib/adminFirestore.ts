@@ -41,6 +41,8 @@ export interface VeiculoAdmin {
   // Admin fields
   status: "rascunho" | "publicado" | "despublicado";
   tags: string[];
+  em_oferta?: boolean;
+
   descricao_ia: string;
   slug: string;
   old_slug: string;
@@ -152,6 +154,7 @@ function normalizeVeiculoAdmin(raw: Record<string, unknown>): VeiculoAdmin {
     portas: Number(raw.portas) || 0,
     status: ((raw.status as string) === "vendido" ? "despublicado" : (raw.status as string)) || "rascunho",
     tags: Array.isArray(raw.tags) ? raw.tags : [],
+    em_oferta: typeof raw.em_oferta === "boolean" ? raw.em_oferta : undefined,
     descricao_ia: (raw.descricao_ia as string) || "",
     slug: (raw.slug as string) || "",
     old_slug: (raw.old_slug as string) || "",
@@ -417,6 +420,11 @@ export async function updateVeiculoFotosProvisórias(autoconfId: number, fotos_p
 export async function updateVeiculoTags(autoconfId: number, tags: string[]): Promise<void> {
   const firestore = requireDb();
   await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { tags });
+}
+
+export async function updateVeiculoEmOferta(autoconfId: number, em_oferta: boolean): Promise<void> {
+  const firestore = requireDb();
+  await updateDoc(doc(firestore, COLLECTION, String(autoconfId)), { em_oferta });
 }
 
 export async function updateVeiculoDescricao(autoconfId: number, descricao_ia: string): Promise<void> {

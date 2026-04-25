@@ -79,6 +79,7 @@ export interface Vehicle {
   opcionais?: string[];
   destaque: boolean;
   tags: string[];
+  em_oferta?: boolean;
   slug: string;
   createdAt: Date;
   technical_specs?: Record<string, number>;
@@ -163,6 +164,7 @@ function adminToVehicle(v: VeiculoAdmin): Vehicle {
     opcionais: normalizeAcessorios(v.acessorios),
     destaque: (v.tags || []).includes("destaque"),
     tags: Array.isArray(v.tags) ? v.tags : [],
+    em_oferta: v.em_oferta,
     slug: v.slug || "",
     createdAt: v.data_importacao?.toDate?.() || new Date(),
     ...(v.technical_specs ? { technical_specs: v.technical_specs } : {}),

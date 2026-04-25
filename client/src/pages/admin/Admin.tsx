@@ -29,6 +29,7 @@ import {
   reativarVeiculo,
   type DespublicacaoLog,
   updateVeiculoTags,
+  updateVeiculoEmOferta,
   updateVeiculoFotosProvisórias,
   updateVeiculoDescricao,
   updateVeiculoTechnicalSpecs,
@@ -367,6 +368,24 @@ function VehicleDetailPage({
   const [savingTags, setSavingTags] = useState(false);
   const [savedTags, setSavedTags] = useState(false);
 
+  // Toggle "Em oferta" — undefined no doc é tratado como true (retrocompat).
+  const [emOferta, setEmOferta] = useState<boolean>(vehicle.em_oferta !== false);
+  const [savingOferta, setSavingOferta] = useState(false);
+  const ofertaPrecosValidos = vehicle.preco > 0 && (vehicle.preco_promocao ?? 0) > 0 && (vehicle.preco_promocao ?? 0) < vehicle.preco;
+
+  const handleToggleOferta = async (next: boolean) => {
+    setEmOferta(next);
+    setSavingOferta(true);
+    try {
+      await updateVeiculoEmOferta(vehicle.autoconf_id, next);
+    } catch (err) {
+      console.error("[OFERTA] Erro ao salvar:", err);
+      setEmOferta(!next);
+      window.alert("Erro ao salvar. Veja o console.");
+    }
+    setSavingOferta(false);
+  };
+
   const handleAddTag = (tag: string) => {
     const t = tag.trim().toLowerCase();
     if (!t || tags.includes(t)) { setNewTag(""); return; }
@@ -685,6 +704,39 @@ function VehicleDetailPage({
 
           {/* Tags */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            {/* Toggle "Em oferta" — controla badge OFERTA + de/por no site */}
+            <div className="mb-4 pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <label className="text-slate-900 text-sm font-semibold flex items-center gap-2">
+                    Em oferta
+                    {emOferta && ofertaPrecosValidos && <TagBadge tag="oferta" size="xs" />}
+                  </label>
+                  <p className="text-slate-400 text-[11px] mt-0.5">
+                    {ofertaPrecosValidos
+                      ? "Quando marcado, mostra badge OFERTA + preço de/por no site"
+                      : "Preencha preço cheio e promocional (promo < cheio) pra habilitar"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleOferta(!emOferta)}
+                  disabled={savingOferta || !ofertaPrecosValidos}
+                  role="switch"
+                  aria-checked={emOferta && ofertaPrecosValidos}
+                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition disabled:opacity-40 disabled:cursor-not-allowed ${
+                    emOferta && ofertaPrecosValidos ? "bg-red-600" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                      emOferta && ofertaPrecosValidos ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between mb-3">
               <div>
                 <label className="text-slate-900 text-sm font-semibold">Tags</label>
