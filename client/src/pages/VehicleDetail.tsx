@@ -12,6 +12,7 @@ import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, ty
 import { ROUTES } from "@/lib/constants";
 import { track, trackLead, trackIntent } from "@/lib/track";
 import { getPrecoExibicao, precoEfetivo } from "@/lib/preco";
+import { TagBadge } from "@/components/TagBadge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ---- Helpers ----------------------------------------------------------------
@@ -461,7 +462,7 @@ function PricePanel({ v }: { v: Vehicle }) {
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
               {getPrecoExibicao(v).emPromocao && (
-                <span className="bg-red-600 text-white text-[10px] font-inter font-bold uppercase tracking-wide px-2 py-0.5 rounded">Oferta</span>
+                <TagBadge tag="oferta" size="xs" />
               )}
             </div>
             {getPrecoExibicao(v).precoCheio && (
@@ -582,7 +583,7 @@ function ActionBlock({ v }: { v: Vehicle }) {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
             {getPrecoExibicao(v).emPromocao && (
-              <span className="bg-red-600 text-white text-[10px] font-inter font-bold uppercase tracking-wide px-2 py-0.5 rounded">Oferta</span>
+              <TagBadge tag="oferta" size="xs" />
             )}
           </div>
           {getPrecoExibicao(v).precoCheio && (
@@ -986,7 +987,7 @@ function SimilarCard({ v }: { v: Vehicle }) {
           )}
           <p className="font-barlow-condensed font-black text-xl text-atria-navy">{fmt(getPrecoExibicao(v).precoFinal)}</p>
           {getPrecoExibicao(v).emPromocao && (
-            <span className="bg-red-600 text-white text-[10px] font-inter font-bold uppercase tracking-wide px-1.5 py-0.5 rounded">Oferta</span>
+            <TagBadge tag="oferta" size="xs" />
           )}
         </div>
       </div>

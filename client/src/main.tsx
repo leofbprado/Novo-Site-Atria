@@ -1,6 +1,11 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { loadTagConfigs } from "./components/TagBadge";
+
+// Pré-carrega config das tags em paralelo com o boot — quando Estoque/Home
+// renderizar, os badges já têm cor sem flash.
+loadTagConfigs();
 
 /**
  * Auto-desregistra Service Workers legados (do site Motorleads antigo ou versões

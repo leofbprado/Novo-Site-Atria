@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLef
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { getPrecoExibicao } from "@/lib/preco";
+import { TagBadge } from "@/components/TagBadge";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WA_NUMBER = "5519996525211";
@@ -1023,14 +1024,16 @@ function VehicleCard({ v }: { v: Vehicle }) {
               <Car size={48} className="text-atria-gray-medium" />
             </div>
           )}
-          <div className="absolute top-3 left-3 flex gap-1.5">
-            {emPromocao && (
-              <span className="bg-red-600 text-white text-xs font-inter font-bold uppercase tracking-wide px-2.5 py-1 rounded">Oferta</span>
-            )}
-            {v.destaque && !emPromocao && (
-              <span className="bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
-            )}
-          </div>
+          {(() => {
+            const extraTags = (v.tags || []).filter((t) => t !== "oferta");
+            if (!emPromocao && extraTags.length === 0) return null;
+            return (
+              <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap max-w-[calc(100%-4.5rem)]">
+                {emPromocao && <TagBadge tag="oferta" />}
+                {extraTags.map((t) => <TagBadge key={t} tag={t} />)}
+              </div>
+            );
+          })()}
           <span className="absolute top-3 right-3 bg-black/50 text-white text-xs font-inter font-bold px-2.5 py-1 rounded">
             {v.ano}
           </span>

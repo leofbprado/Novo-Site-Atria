@@ -43,6 +43,9 @@ import {
   getAllWhatsAppClicks,
   getMilestoneConfig,
   saveMilestoneConfig,
+  getAllTagConfigs,
+  saveTagConfigs,
+  type TagConfig,
   getAllBlogPosts,
   createBlogPost,
   updateBlogPost,
@@ -59,6 +62,7 @@ import {
   getAllVehicleAnalytics, getAllVehicleDailyHistory, calcDiagnostic, calcMediana,
   type VehicleAnalytics, type DailyRecord, type VehicleDiagnostic,
 } from "@/lib/vehicleAnalytics";
+import { TagBadge, invalidateTagConfigs, tagStyle } from "@/components/TagBadge";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const LOGO_BRANCO = "https://i.postimg.cc/25m34dvJ/Logo_%C3%81tria_Branco.png";
@@ -2493,6 +2497,226 @@ function BlogPage({ claudeKey, vehicles }: { claudeKey: string; vehicles: Veicul
 }
 
 // ── Config Page ──────────────────────────────────────────────────────────────
+// ── Tags Config Card ────────────────────────────────────────────────────────
+// Editor visual das tags do estoque (Destaque, Oferta, etc). Cada tag tem
+// label, cor de fundo (sólida ou gradiente vertical) e cor do texto. Preview
+// ao vivo mostra exatamente como o badge vai aparecer no card do veículo.
+
+const TAG_PRESETS: Array<{ label: string; bgFrom: string; bgTo: string; textColor: string }> = [
+  { label: "Amarelo brilho",  bgFrom: "#FCD34D", bgTo: "#F59E0B", textColor: "#0B1B3F" },
+  { label: "Vermelho fogo",    bgFrom: "#EF4444", bgTo: "#B91C1C", textColor: "#FFFFFF" },
+  { label: "Verde sucesso",    bgFrom: "#34D399", bgTo: "#059669", textColor: "#FFFFFF" },
+  { label: "Azul Átria",       bgFrom: "#3B82F6", bgTo: "#1E3A8A", textColor: "#FFFFFF" },
+  { label: "Roxo premium",     bgFrom: "#A78BFA", bgTo: "#6D28D9", textColor: "#FFFFFF" },
+  { label: "Rosa novidade",    bgFrom: "#F472B6", bgTo: "#BE185D", textColor: "#FFFFFF" },
+  { label: "Cinza neutro",     bgFrom: "#E5E7EB", bgTo: "",         textColor: "#1F2937" },
+  { label: "Preto sólido",     bgFrom: "#0F172A", bgTo: "",         textColor: "#FFFFFF" },
+];
+
+function TagsConfigCard() {
+  const [list, setList] = useState<TagConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    getAllTagConfigs()
+      .then((l) => { setList(l); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const update = (idx: number, patch: Partial<TagConfig>) => {
+    setList((prev) => prev.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
+    setDirty(true);
+  };
+
+  const remove = (idx: number) => {
+    if (!window.confirm(`Remover a tag "${list[idx].nome}"? Veículos com essa tag deixarão de exibir o badge.`)) return;
+    setList((prev) => prev.filter((_, i) => i !== idx));
+    setDirty(true);
+  };
+
+  const add = () => {
+    const nome = window.prompt('Nome da tag (lowercase, sem espaços. Ex: "novo", "imperdivel"):')?.trim().toLowerCase() || "";
+    if (!nome) return;
+    if (list.some((t) => t.nome === nome)) {
+      window.alert("Já existe uma tag com esse nome.");
+      return;
+    }
+    setList((prev) => [...prev, {
+      nome,
+      label: nome.charAt(0).toUpperCase() + nome.slice(1),
+      bgFrom: "#3B82F6",
+      bgTo: "#1E3A8A",
+      textColor: "#FFFFFF",
+      uppercase: true,
+    }]);
+    setDirty(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const clean = list
+        .map((t) => ({ ...t, nome: t.nome.trim().toLowerCase(), label: t.label.trim() || t.nome }))
+        .filter((t) => t.nome);
+      await saveTagConfigs(clean);
+      invalidateTagConfigs(clean);
+      setList(clean);
+      setSaved(true);
+      setDirty(false);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error("[Tags] erro ao salvar:", err);
+      window.alert("Erro ao salvar tags. Veja o console.");
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-pink-50 rounded-lg flex items-center justify-center">
+          <Tag size={18} className="text-pink-600" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-slate-900">Tags do estoque</h3>
+          <p className="text-slate-500 text-xs">Badges exibidos no card do veículo (Home, Estoque e Ficha)</p>
+        </div>
+        <button onClick={add} className="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <Plus size={14} /> Nova tag
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-slate-400 text-sm">Carregando tags...</div>
+      ) : list.length === 0 ? (
+        <div className="text-slate-400 text-sm italic">Nenhuma tag cadastrada. Clique em "Nova tag" pra começar.</div>
+      ) : (
+        <div className="space-y-4">
+          {list.map((t, idx) => (
+            <div key={t.nome + idx} className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
+              {/* Header: nome (read-only) + preview + delete */}
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <code className="text-xs font-mono text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded">
+                  {t.nome}
+                </code>
+                <div className="flex-1 flex justify-center">
+                  <span
+                    className={`inline-block font-inter font-bold ${t.uppercase ? "uppercase tracking-wide" : ""} rounded text-xs px-2.5 py-1`}
+                    style={tagStyle(t)}
+                  >
+                    {t.label || t.nome}
+                  </span>
+                </div>
+                <button onClick={() => remove(idx)} className="text-red-500 hover:bg-red-50 p-1.5 rounded transition" title="Remover tag">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+
+              {/* Editores */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="text-slate-600 text-xs font-medium block mb-1">Texto</label>
+                  <input
+                    type="text"
+                    value={t.label}
+                    onChange={(e) => update(idx, { label: e.target.value })}
+                    className="w-full border border-slate-200 rounded-md px-2.5 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-600 text-xs font-medium block mb-1">Cor topo</label>
+                  <ColorPicker value={t.bgFrom} onChange={(v) => update(idx, { bgFrom: v })} />
+                </div>
+                <div>
+                  <label className="text-slate-600 text-xs font-medium block mb-1">
+                    Cor base <span className="text-slate-400">(vazio = sólido)</span>
+                  </label>
+                  <ColorPicker value={t.bgTo} onChange={(v) => update(idx, { bgTo: v })} allowEmpty />
+                </div>
+                <div>
+                  <label className="text-slate-600 text-xs font-medium block mb-1">Texto</label>
+                  <ColorPicker value={t.textColor} onChange={(v) => update(idx, { textColor: v })} />
+                </div>
+              </div>
+
+              {/* Toggle uppercase + presets */}
+              <div className="flex items-center gap-3 mt-3 flex-wrap">
+                <label className="flex items-center gap-1.5 text-xs text-slate-600 select-none cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={t.uppercase}
+                    onChange={(e) => update(idx, { uppercase: e.target.checked })}
+                    className="rounded border-slate-300"
+                  />
+                  UPPERCASE
+                </label>
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-xs text-slate-400 mr-1">Presets:</span>
+                  {TAG_PRESETS.map((p) => (
+                    <button
+                      key={p.label}
+                      onClick={() => update(idx, { bgFrom: p.bgFrom, bgTo: p.bgTo, textColor: p.textColor })}
+                      title={p.label}
+                      className="w-6 h-6 rounded border border-slate-300 hover:scale-110 transition shadow-sm"
+                      style={{
+                        backgroundImage: p.bgTo
+                          ? `linear-gradient(to bottom, ${p.bgFrom}, ${p.bgTo})`
+                          : "none",
+                        backgroundColor: p.bgTo ? undefined : p.bgFrom,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-5 flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving || !dirty}
+          className="bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2"
+        >
+          {saving ? <Spinner size={14} /> : saved ? <CheckCircle2 size={14} /> : <Save size={14} />}
+          {saving ? "Salvando..." : saved ? "Salvo!" : "Salvar tags"}
+        </button>
+        {dirty && !saved && <span className="text-xs text-amber-600">Alterações não salvas</span>}
+      </div>
+    </div>
+  );
+}
+
+function ColorPicker({ value, onChange, allowEmpty = false }: { value: string; onChange: (v: string) => void; allowEmpty?: boolean }) {
+  const safe = value && /^#[0-9A-Fa-f]{6}$/.test(value) ? value : (allowEmpty ? "" : "#000000");
+  return (
+    <div className="flex gap-1.5">
+      <input
+        type="color"
+        value={safe || "#000000"}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-9 h-9 rounded border border-slate-200 cursor-pointer p-0.5 bg-white shrink-0"
+      />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={allowEmpty ? "(vazio)" : "#RRGGBB"}
+        className="flex-1 min-w-0 border border-slate-200 rounded-md px-2 py-1.5 text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10"
+      />
+      {allowEmpty && value && (
+        <button onClick={() => onChange("")} className="text-slate-400 hover:text-slate-600 px-1 text-xs" title="Limpar (cor sólida)">
+          ×
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, milestoneConfig, setMilestoneConfig }: {
   openaiKey: string; setOpenaiKey: (k: string) => void;
   claudeKey: string; setClaudeKey: (k: string) => void;
@@ -2740,6 +2964,9 @@ function ConfigPage({ openaiKey, setOpenaiKey, claudeKey, setClaudeKey, mileston
             </button>
           </div>
         </div>
+
+        {/* Tags do estoque */}
+        <TagsConfigCard />
 
         {/* Sync settings */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">

@@ -10,6 +10,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { trackLead } from "@/lib/track";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { HeroSection } from "@/components/home/HeroSection";
+import { TagBadge } from "@/components/TagBadge";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -524,14 +525,12 @@ function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) =
           )}
           {(() => {
             const { emPromocao } = getPrecoExibicao(v);
+            const extraTags = (v.tags || []).filter((t) => t !== "oferta");
+            if (!emPromocao && extraTags.length === 0) return null;
             return (
-              <div className="absolute top-3 left-3 flex gap-1.5">
-                {emPromocao && (
-                  <span className="bg-red-600 text-white text-xs font-inter font-bold uppercase tracking-wide px-2.5 py-1 rounded">Oferta</span>
-                )}
-                {v.destaque && !emPromocao && (
-                  <span className="bg-gradient-to-b from-atria-yellow-light to-atria-yellow text-atria-navy text-xs font-inter font-bold uppercase px-2.5 py-1 rounded">Destaque</span>
-                )}
+              <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap max-w-[calc(100%-1.5rem)]">
+                {emPromocao && <TagBadge tag="oferta" />}
+                {extraTags.map((t) => <TagBadge key={t} tag={t} />)}
               </div>
             );
           })()}

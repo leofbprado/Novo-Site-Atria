@@ -527,6 +527,49 @@ export async function getMilestoneConfig(): Promise<MilestoneConfig> {
   return { dias: [7, 20, 40, 60] };
 }
 
+// ── Tag Config ──────────────────────────────────────────────────────────────
+// Tags exibidas como badge no card (Home/Estoque/Ficha). Cada tag tem cor de
+// fundo (sólida ou gradiente vertical) e cor de texto. O usuário cria/edita
+// tudo na página Configurações → Tags do admin.
+
+export interface TagConfig {
+  nome: string;          // chave única, lowercase (ex.: "destaque", "oferta")
+  label: string;         // texto exibido no badge (ex.: "Destaque", "OFERTA")
+  bgFrom: string;        // hex (#RRGGBB) — cor de cima do gradient (ou cor sólida se bgTo vazio)
+  bgTo: string;          // hex (#RRGGBB) — cor de baixo do gradient. Vazio = sólido
+  textColor: string;     // hex do texto
+  uppercase: boolean;    // se true, força uppercase
+}
+
+const TAGS_DEFAULTS: TagConfig[] = [
+  { nome: "destaque", label: "Destaque", bgFrom: "#FCD34D", bgTo: "#F59E0B", textColor: "#0B1B3F", uppercase: true },
+  { nome: "oferta",   label: "Oferta",   bgFrom: "#EF4444", bgTo: "#B91C1C", textColor: "#FFFFFF", uppercase: true },
+];
+
+export async function getAllTagConfigs(): Promise<TagConfig[]> {
+  const firestore = requireDb();
+  const snap = await getDoc(doc(firestore, CONFIG_COLLECTION, "tags"));
+  if (!snap.exists()) return TAGS_DEFAULTS;
+  const data = snap.data();
+  if (!Array.isArray(data.list) || data.list.length === 0) return TAGS_DEFAULTS;
+  return (data.list as any[]).map((t) => ({
+    nome: String(t.nome || "").toLowerCase(),
+    label: String(t.label || t.nome || ""),
+    bgFrom: String(t.bgFrom || "#0B1B3F"),
+    bgTo: String(t.bgTo || ""),
+    textColor: String(t.textColor || "#FFFFFF"),
+    uppercase: Boolean(t.uppercase),
+  })).filter((t) => t.nome);
+}
+
+export async function saveTagConfigs(list: TagConfig[]): Promise<void> {
+  const firestore = requireDb();
+  await setDoc(doc(firestore, CONFIG_COLLECTION, "tags"), {
+    list,
+    updated_at: serverTimestamp(),
+  });
+}
+
 export async function saveMilestoneConfig(config: MilestoneConfig): Promise<void> {
   const firestore = requireDb();
   await setDoc(doc(firestore, CONFIG_COLLECTION, "milestones"), config, { merge: true });
