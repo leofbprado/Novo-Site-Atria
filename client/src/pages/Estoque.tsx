@@ -1286,6 +1286,10 @@ export default function Estoque() {
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [showPill, setShowPill] = useState(false);
   const topBarRef = useRef<HTMLDivElement>(null);
+  // Header sticky (top-16=64px) + altura do topBar definem onde a sidebar
+  // pode começar pra não ficar atrás da topBar. Medimos no DOM pra ficar
+  // correto independente de mudanças futuras de altura do search/filtros.
+  const [stickyOffset, setStickyOffset] = useState<number>(112);
 
   // Show floating pill when top bar scrolls out of view
   useEffect(() => {
@@ -1297,6 +1301,19 @@ export default function Estoque() {
     );
     obs.observe(el);
     return () => obs.disconnect();
+  }, []);
+
+  // Mede topBar + 64 (header) e atualiza no resize pra alinhar a sidebar
+  // sticky exatamente abaixo da topBar.
+  useEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
+    const update = () => setStickyOffset(64 + el.getBoundingClientRect().height);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => { ro.disconnect(); window.removeEventListener("resize", update); };
   }, []);
 
   useEffect(() => {
@@ -1478,7 +1495,13 @@ export default function Estoque() {
 
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-[280px] shrink-0" aria-label="Filtros de busca">
-            <div className="sticky top-[112px] max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
+            <div
+              className="sticky overflow-y-auto pr-2"
+              style={{
+                top: `${stickyOffset + 8}px`,
+                maxHeight: `calc(100vh - ${stickyOffset + 16}px)`,
+              }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <span className="font-barlow-condensed font-bold text-base text-atria-text-dark uppercase tracking-wider">
                   Filtros
