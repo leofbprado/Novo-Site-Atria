@@ -1025,12 +1025,13 @@ function VehicleCard({ v }: { v: Vehicle }) {
             </div>
           )}
           {(() => {
-            const extraTags = (v.tags || []).filter((t) => t !== "oferta");
-            if (!emPromocao && extraTags.length === 0) return null;
+            // Regra: máx 1 tag manual por veículo — sempre a primeira vale.
+            const primeiraTag = (v.tags || []).find((t) => t !== "oferta");
+            if (!emPromocao && !primeiraTag) return null;
             return (
               <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap max-w-[calc(100%-4.5rem)]">
                 {emPromocao && <TagBadge tag="oferta" />}
-                {extraTags.map((t) => <TagBadge key={t} tag={t} />)}
+                {primeiraTag && <TagBadge tag={primeiraTag} />}
               </div>
             );
           })()}

@@ -369,10 +369,14 @@ function VehicleDetailPage({
 
   const handleAddTag = (tag: string) => {
     const t = tag.trim().toLowerCase();
-    if (t && !tags.includes(t)) {
-      setTags([...tags, t]);
-      setTagsDirty(true);
+    if (!t || tags.includes(t)) { setNewTag(""); return; }
+    if (tags.length >= 1) {
+      window.alert("Só é permitida 1 tag por veículo. Remova a tag atual antes de adicionar outra.");
+      setNewTag("");
+      return;
     }
+    setTags([t]);
+    setTagsDirty(true);
     setNewTag("");
   };
 
@@ -682,7 +686,10 @@ function VehicleDetailPage({
           {/* Tags */}
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-slate-900 text-sm font-semibold">Tags</label>
+              <div>
+                <label className="text-slate-900 text-sm font-semibold">Tags</label>
+                <p className="text-slate-400 text-[11px] mt-0.5">Máx. 1 tag por veículo — remova a atual pra trocar</p>
+              </div>
               <span className="text-slate-400 text-xs">
                 Configurar em <span className="text-slate-600 font-medium">Configurações → Tags</span>
               </span>
@@ -710,11 +717,11 @@ function VehicleDetailPage({
               {tags.length === 0 && <span className="text-slate-400 text-xs italic">Nenhuma tag adicionada</span>}
             </div>
 
-            {/* Presets vindos da config — mostram badge real clicável */}
-            {tagConfigs.filter((c) => !tags.includes(c.nome)).length > 0 && (
+            {/* Presets vindos da config — só aparecem se ainda não tem tag */}
+            {tags.length === 0 && tagConfigs.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 mb-3 pt-3 border-t border-slate-100">
                 <span className="text-slate-400 text-[11px]">Disponíveis:</span>
-                {tagConfigs.filter((c) => !tags.includes(c.nome)).map((c) => (
+                {tagConfigs.map((c) => (
                   <button
                     key={c.nome}
                     onClick={() => handleAddTag(c.nome)}
@@ -727,18 +734,19 @@ function VehicleDetailPage({
               </div>
             )}
 
-            {/* Input customizado — alerta que sem config não vira badge */}
+            {/* Input customizado — só habilitado se ainda não tem tag */}
             <div className="flex gap-2">
               <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag(newTag))}
-                placeholder="Tag customizada (sem visual)..."
-                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10" />
-              <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim()}
-                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 px-3 py-2 rounded-lg text-sm text-slate-700 transition font-medium flex items-center gap-1.5">
+                placeholder={tags.length >= 1 ? "Remova a tag atual pra adicionar outra" : "Tag customizada (sem visual)..."}
+                disabled={tags.length >= 1}
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10 disabled:bg-slate-50 disabled:cursor-not-allowed" />
+              <button onClick={() => handleAddTag(newTag)} disabled={!newTag.trim() || tags.length >= 1}
+                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed px-3 py-2 rounded-lg text-sm text-slate-700 transition font-medium flex items-center gap-1.5">
                 <Tag size={12} /> Adicionar
               </button>
             </div>
-            {newTag.trim() && !tagConfigs.some((c) => c.nome === newTag.trim().toLowerCase()) && (
+            {newTag.trim() && tags.length === 0 && !tagConfigs.some((c) => c.nome === newTag.trim().toLowerCase()) && (
               <p className="text-amber-600 text-[11px] mt-1.5">
                 Essa tag ainda não tem visual em Configurações → Tags. Adicionar lá pra ela aparecer como badge no site.
               </p>
