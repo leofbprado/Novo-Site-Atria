@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, CheckCircle } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 
@@ -282,58 +282,6 @@ function fmtBins(v: number): string {
   return `R$ ${v}`;
 }
 
-// ─── FilterAccordion ──────────────────────────────────────────────────────────
-function FilterAccordion({
-  title, defaultOpen = false, hasActive = false, children,
-}: {
-  title: string; defaultOpen?: boolean; hasActive?: boolean; children: React.ReactNode;
-}) {
-  // Abre inicialmente se defaultOpen OU se já chega com filtro ativo
-  const [open, setOpen] = useState(defaultOpen || hasActive);
-  // Quando hasActive vira true depois (ex: usuário aplica filtro via URL/hero),
-  // abre automaticamente pra mostrar o filtro — mas respeita se usuário fechou manual
-  const prevHasActive = useRef(hasActive);
-  useEffect(() => {
-    if (!prevHasActive.current && hasActive) setOpen(true);
-    prevHasActive.current = hasActive;
-  }, [hasActive]);
-  return (
-    <div className="border-b border-atria-gray-medium last:border-b-0">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between py-3.5 font-inter font-semibold text-sm text-atria-text-dark"
-        aria-expanded={open}
-      >
-        <span className="flex items-center gap-2">
-          {title}
-          {hasActive && (
-            <span className="w-2 h-2 rounded-full bg-atria-navy flex-shrink-0" aria-label="Filtro ativo" />
-          )}
-        </span>
-        <ChevronDown
-          size={16}
-          className={`text-atria-text-gray transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="pb-4">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 // ─── CheckList ────────────────────────────────────────────────────────────────
 function CheckList({
   options, selected, onChange,
@@ -561,72 +509,192 @@ function ModeloFilter({
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({
-  filters, onChange, vehicles,
-}: { filters: FilterState; onChange: (f: FilterState) => void; vehicles: Vehicle[] }) {
+// ─── Filter drill-down navigation ─────────────────────────────────────────────
+type FilterKey = 'preco' | 'marca' | 'modelo' | 'tipos' | 'ano' | 'km' | 'combustivel' | 'cambio';
+
+const FILTER_LIST: { key: FilterKey; title: string }[] = [
+  { key: 'preco', title: 'Preço' },
+  { key: 'marca', title: 'Marca' },
+  { key: 'modelo', title: 'Modelo' },
+  { key: 'tipos', title: 'Tipo de carroceria' },
+  { key: 'ano', title: 'Ano' },
+  { key: 'km', title: 'Quilometragem' },
+  { key: 'combustivel', title: 'Combustível' },
+  { key: 'cambio', title: 'Câmbio' },
+];
+
+function isActiveFor(key: FilterKey, f: FilterState, precoMaxStock: number): boolean {
+  switch (key) {
+    case 'preco': return f.preco[0] > 0 || f.preco[1] < precoMaxStock;
+    case 'marca': return f.marcas.length > 0;
+    case 'modelo': return (f.modelos ?? []).length > 0;
+    case 'tipos': return f.tipos.length > 0;
+    case 'ano': return f.ano[0] > DEFAULT_RANGES.ano[0] || f.ano[1] < DEFAULT_RANGES.ano[1];
+    case 'km': return f.km[0] > DEFAULT_RANGES.km[0] || f.km[1] < DEFAULT_RANGES.km[1];
+    case 'combustivel': return f.combustivel.length > 0;
+    case 'cambio': return f.cambio.length > 0;
+  }
+}
+
+function summaryFor(key: FilterKey, f: FilterState, precoMaxStock: number): string {
+  const summarizeMulti = (arr: string[]): string => {
+    if (arr.length === 0) return '';
+    if (arr.length === 1) return arr[0];
+    return `${arr[0]} +${arr.length - 1}`;
+  };
+  switch (key) {
+    case 'preco': {
+      if (f.preco[0] === 0 && f.preco[1] >= precoMaxStock) return '';
+      return `${fmt(f.preco[0])} – ${fmt(Math.min(f.preco[1], precoMaxStock))}`;
+    }
+    case 'marca': {
+      if (f.marcas.length === 0) return '';
+      if (f.marcas.length === 1) return brandDisplayName(f.marcas[0]);
+      return `${brandDisplayName(f.marcas[0])} +${f.marcas.length - 1}`;
+    }
+    case 'modelo': return summarizeMulti(f.modelos ?? []);
+    case 'tipos': return summarizeMulti(f.tipos);
+    case 'ano': {
+      if (f.ano[0] === DEFAULT_RANGES.ano[0] && f.ano[1] === DEFAULT_RANGES.ano[1]) return '';
+      return `${f.ano[0]} – ${f.ano[1]}`;
+    }
+    case 'km': {
+      if (f.km[0] === DEFAULT_RANGES.km[0] && f.km[1] === DEFAULT_RANGES.km[1]) return '';
+      return `${fmtKm(f.km[0])} – ${fmtKm(f.km[1])}`;
+    }
+    case 'combustivel': return summarizeMulti(f.combustivel);
+    case 'cambio': return summarizeMulti(f.cambio);
+  }
+}
+
+// ─── FilterIndex ──────────────────────────────────────────────────────────────
+// Lista de filtros (índice). Cada linha mostra título + dot se ativo + summary +
+// chevron pra direita. Click "drilla" pra dentro do filtro escolhido.
+function FilterIndex({
+  filters, precoMaxStock, onSelectKey, focusKey,
+}: {
+  filters: FilterState;
+  precoMaxStock: number;
+  onSelectKey: (key: FilterKey) => void;
+  focusKey: FilterKey | null;
+}) {
+  const refs = useRef<Partial<Record<FilterKey, HTMLButtonElement | null>>>({});
+  useEffect(() => {
+    if (focusKey) refs.current[focusKey]?.focus();
+  }, [focusKey]);
+
+  return (
+    <div className="flex flex-col">
+      {FILTER_LIST.map(({ key, title }) => {
+        const active = isActiveFor(key, filters, precoMaxStock);
+        const summary = summaryFor(key, filters, precoMaxStock);
+        const ariaLabel = active && summary
+          ? `${title}, atualmente ${summary}`
+          : `${title}, sem filtro aplicado`;
+        return (
+          <button
+            key={key}
+            ref={(el) => { refs.current[key] = el; }}
+            type="button"
+            onClick={() => onSelectKey(key)}
+            aria-label={ariaLabel}
+            className="w-full min-h-[48px] flex items-center justify-between py-3 px-1 -mx-1 border-b border-atria-gray-medium last:border-b-0 hover:bg-atria-gray-light/40 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <span className="font-inter font-semibold text-sm text-atria-text-dark">
+                {title}
+              </span>
+              {active && (
+                <span className="w-1.5 h-1.5 rounded-full bg-atria-navy flex-shrink-0" aria-hidden="true" />
+              )}
+            </span>
+            <span className="flex items-center gap-1.5 ml-2 min-w-0">
+              {summary && (
+                <span className="font-inter text-xs text-atria-text-gray truncate max-w-[160px]">
+                  {summary}
+                </span>
+              )}
+              <ChevronRight size={16} className="text-atria-text-gray flex-shrink-0" aria-hidden="true" />
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── FilterDrillPanel ─────────────────────────────────────────────────────────
+// Painel de um filtro só. Header "Voltar para todos os filtros" + título +
+// conteúdo (reusa MarcaFilter, RangeSlider, etc.).
+function FilterDrillPanel({
+  activeKey, filters, onChange, vehicles, precoMaxStock, onBack,
+}: {
+  activeKey: FilterKey;
+  filters: FilterState;
+  onChange: (f: FilterState) => void;
+  vehicles: Vehicle[];
+  precoMaxStock: number;
+  onBack: () => void;
+}) {
   const set = useCallback(
     (patch: Partial<FilterState>) => onChange({ ...filters, ...patch }),
     [filters, onChange]
   );
-
   const toggleArr = <T,>(arr: T[], val: T): T[] =>
     arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 
-  // Preço máximo dinâmico: arredonda o carro mais caro do estoque pra próxima dezena de milhar
-  const precoMaxStock = useMemo(() => {
-    const maxPreco = vehicles.reduce((m, v) => v.preco > m ? v.preco : m, 0);
-    return Math.max(10000, Math.ceil(maxPreco / 10000) * 10000);
-  }, [vehicles]);
+  const def = FILTER_LIST.find((f) => f.key === activeKey)!;
+  const backRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    backRef.current?.focus();
+  }, [activeKey]);
 
-  return (
-    <div className="space-y-0">
-      {/* ── Preço ── */}
-      <FilterAccordion
-        title="Preço"
-        defaultOpen
-        hasActive={filters.preco[0] > 0 || filters.preco[1] < precoMaxStock}
-      >
-        <PriceHistogram vehicles={vehicles} range={filters.preco} max={precoMaxStock} />
-        <RangeSlider
-          min={0}
-          max={precoMaxStock}
-          value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
-          onChange={(v) => set({ preco: v })}
-          step={10000}
-          formatValue={fmt}
-        />
-        <MinMaxInputs
-          value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
-          min={0}
-          max={precoMaxStock}
-          step={1000}
-          onChange={(v) => set({ preco: v })}
-          prefix="R$"
-        />
-      </FilterAccordion>
-
-      {/* ── Marca ── */}
-      <FilterAccordion title="Marca" defaultOpen hasActive={filters.marcas.length > 0}>
+  let content: React.ReactNode = null;
+  switch (activeKey) {
+    case 'preco':
+      content = (
+        <>
+          <PriceHistogram vehicles={vehicles} range={filters.preco} max={precoMaxStock} />
+          <RangeSlider
+            min={0}
+            max={precoMaxStock}
+            value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
+            onChange={(v) => set({ preco: v })}
+            step={10000}
+            formatValue={fmt}
+          />
+          <MinMaxInputs
+            value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
+            min={0}
+            max={precoMaxStock}
+            step={1000}
+            onChange={(v) => set({ preco: v })}
+            prefix="R$"
+          />
+        </>
+      );
+      break;
+    case 'marca':
+      content = (
         <MarcaFilter
           vehicles={vehicles}
           selected={filters.marcas}
           onChange={(v) => set({ marcas: v, modelos: [] })}
         />
-      </FilterAccordion>
-
-      {/* ── Modelo ── */}
-      <FilterAccordion title="Modelo" defaultOpen={false} hasActive={(filters.modelos ?? []).length > 0}>
+      );
+      break;
+    case 'modelo':
+      content = (
         <ModeloFilter
           vehicles={vehicles}
           selectedMarcas={filters.marcas}
           selectedModelos={filters.modelos ?? []}
           onChange={(v) => set({ modelos: v })}
         />
-      </FilterAccordion>
-
-      {/* ── Tipo de Carroceria ── */}
-      <FilterAccordion title="Tipo de carroceria" defaultOpen hasActive={filters.tipos.length > 0}>
+      );
+      break;
+    case 'tipos':
+      content = (
         <div className="grid grid-cols-2 gap-2">
           {TIPOS.map((tipo) => {
             const selected = filters.tipos.includes(tipo);
@@ -660,70 +728,164 @@ function Sidebar({
             );
           })}
         </div>
-      </FilterAccordion>
-
-      {/* ── Ano ── */}
-      <FilterAccordion
-        title="Ano"
-        hasActive={filters.ano[0] > DEFAULT_RANGES.ano[0] || filters.ano[1] < DEFAULT_RANGES.ano[1]}
-      >
-        <RangeSlider
-          min={DEFAULT_RANGES.ano[0]}
-          max={DEFAULT_RANGES.ano[1]}
-          value={filters.ano}
-          onChange={(v) => set({ ano: v })}
-          step={1}
-          formatValue={(v) => String(v)}
-        />
-        <MinMaxInputs
-          value={filters.ano}
-          min={DEFAULT_RANGES.ano[0]}
-          max={DEFAULT_RANGES.ano[1]}
-          step={1}
-          onChange={(v) => set({ ano: v })}
-        />
-      </FilterAccordion>
-
-      {/* ── Quilometragem ── */}
-      <FilterAccordion
-        title="Quilometragem"
-        hasActive={filters.km[0] > DEFAULT_RANGES.km[0] || filters.km[1] < DEFAULT_RANGES.km[1]}
-      >
-        <RangeSlider
-          min={DEFAULT_RANGES.km[0]}
-          max={DEFAULT_RANGES.km[1]}
-          value={filters.km}
-          onChange={(v) => set({ km: v })}
-          step={5000}
-          formatValue={fmtKm}
-        />
-        <MinMaxInputs
-          value={filters.km}
-          min={DEFAULT_RANGES.km[0]}
-          max={DEFAULT_RANGES.km[1]}
-          step={1000}
-          onChange={(v) => set({ km: v })}
-          suffix="km"
-        />
-      </FilterAccordion>
-
-      {/* ── Combustível ── */}
-      <FilterAccordion title="Combustível" hasActive={filters.combustivel.length > 0}>
+      );
+      break;
+    case 'ano':
+      content = (
+        <>
+          <RangeSlider
+            min={DEFAULT_RANGES.ano[0]}
+            max={DEFAULT_RANGES.ano[1]}
+            value={filters.ano}
+            onChange={(v) => set({ ano: v })}
+            step={1}
+            formatValue={(v) => String(v)}
+          />
+          <MinMaxInputs
+            value={filters.ano}
+            min={DEFAULT_RANGES.ano[0]}
+            max={DEFAULT_RANGES.ano[1]}
+            step={1}
+            onChange={(v) => set({ ano: v })}
+          />
+        </>
+      );
+      break;
+    case 'km':
+      content = (
+        <>
+          <RangeSlider
+            min={DEFAULT_RANGES.km[0]}
+            max={DEFAULT_RANGES.km[1]}
+            value={filters.km}
+            onChange={(v) => set({ km: v })}
+            step={5000}
+            formatValue={fmtKm}
+          />
+          <MinMaxInputs
+            value={filters.km}
+            min={DEFAULT_RANGES.km[0]}
+            max={DEFAULT_RANGES.km[1]}
+            step={1000}
+            onChange={(v) => set({ km: v })}
+            suffix="km"
+          />
+        </>
+      );
+      break;
+    case 'combustivel':
+      content = (
         <CheckList
           options={COMBUSTIVEIS}
           selected={filters.combustivel}
           onChange={(v) => set({ combustivel: v })}
         />
-      </FilterAccordion>
-
-      {/* ── Câmbio ── */}
-      <FilterAccordion title="Câmbio" hasActive={filters.cambio.length > 0}>
+      );
+      break;
+    case 'cambio':
+      content = (
         <CheckList
           options={CAMBIOS}
           selected={filters.cambio}
           onChange={(v) => set({ cambio: v })}
         />
-      </FilterAccordion>
+      );
+      break;
+  }
+
+  return (
+    <div className="flex flex-col">
+      <button
+        ref={backRef}
+        type="button"
+        onClick={onBack}
+        className="self-start min-h-[40px] flex items-center gap-1 -ml-1 px-1 mb-2 font-inter text-xs font-semibold text-atria-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
+        aria-label="Voltar para a lista de filtros"
+      >
+        <ChevronLeft size={14} />
+        Voltar para todos os filtros
+      </button>
+      <h3 className="font-inter font-semibold text-base text-atria-text-dark mb-3">
+        {def.title}
+      </h3>
+      <div>{content}</div>
+    </div>
+  );
+}
+
+// ─── Sidebar (drill-down router) ──────────────────────────────────────────────
+function Sidebar({
+  filters, onChange, vehicles,
+}: { filters: FilterState; onChange: (f: FilterState) => void; vehicles: Vehicle[] }) {
+  const [activeFilterKey, setActiveFilterKey] = useState<FilterKey | null>(null);
+  const [focusKey, setFocusKey] = useState<FilterKey | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  const precoMaxStock = useMemo(() => {
+    const maxPreco = vehicles.reduce((m, v) => v.preco > m ? v.preco : m, 0);
+    return Math.max(10000, Math.ceil(maxPreco / 10000) * 10000);
+  }, [vehicles]);
+
+  // Esc dentro do drill volta pra índice (intercepta antes de outros handlers)
+  useEffect(() => {
+    if (!activeFilterKey) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setFocusKey(activeFilterKey);
+        setActiveFilterKey(null);
+      }
+    };
+    window.addEventListener('keydown', handler, true);
+    return () => window.removeEventListener('keydown', handler, true);
+  }, [activeFilterKey]);
+
+  const slide = reduceMotion ? 0 : 12;
+  const dur = reduceMotion ? 0 : 0.18;
+
+  return (
+    <div className="relative">
+      <AnimatePresence mode="wait" initial={false}>
+        {activeFilterKey === null ? (
+          <motion.div
+            key="index"
+            initial={{ x: -slide, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -slide, opacity: 0 }}
+            transition={{ duration: dur, ease: "easeOut" }}
+          >
+            <FilterIndex
+              filters={filters}
+              precoMaxStock={precoMaxStock}
+              onSelectKey={(key) => {
+                setFocusKey(null);
+                setActiveFilterKey(key);
+              }}
+              focusKey={focusKey}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key={`drill-${activeFilterKey}`}
+            initial={{ x: slide, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: slide, opacity: 0 }}
+            transition={{ duration: dur, ease: "easeOut" }}
+          >
+            <FilterDrillPanel
+              activeKey={activeFilterKey}
+              filters={filters}
+              onChange={onChange}
+              vehicles={vehicles}
+              precoMaxStock={precoMaxStock}
+              onBack={() => {
+                setFocusKey(activeFilterKey);
+                setActiveFilterKey(null);
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
