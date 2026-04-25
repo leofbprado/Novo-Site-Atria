@@ -1248,15 +1248,7 @@ export default function Estoque() {
       case "km_desc": res = [...res].sort((a, b) => b.km - a.km); break;
       case "ano_desc": res = [...res].sort((a, b) => b.ano - a.ano); break;
       case "ano_asc": res = [...res].sort((a, b) => a.ano - b.ano); break;
-      default: res = [...res].sort((a, b) => {
-        const aHas = a.fotos.length > 0 ? 1 : 0;
-        const bHas = b.fotos.length > 0 ? 1 : 0;
-        if (bHas !== aHas) return bHas - aHas;
-        const aTagged = (a.tags?.length ?? 0) > 0 || getPrecoExibicao(a).emPromocao ? 1 : 0;
-        const bTagged = (b.tags?.length ?? 0) > 0 || getPrecoExibicao(b).emPromocao ? 1 : 0;
-        if (bTagged !== aTagged) return bTagged - aTagged;
-        return +a.createdAt - +b.createdAt;
-      }); break;
+      default: res = [...res].sort((a, b) => +a.createdAt - +b.createdAt); break;
     }
     return res;
   }, [all, filters]);
