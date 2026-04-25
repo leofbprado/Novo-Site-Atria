@@ -7,6 +7,7 @@ import {
 import { saveLead } from "@/lib/firestore";
 import { calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { PageHero } from "@/components/ui/PageHero";
 
 const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
@@ -26,19 +27,11 @@ function usePageSEO() {
 // ---- Hero ------------------------------------------------------------------
 function Hero() {
   return (
-    <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-      <div className="relative z-10 container mx-auto px-4 text-center">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="font-inter text-atria-yellow-bright text-xs uppercase tracking-widest font-bold mb-4">Financiamento</p>
-          <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
-            Financiamento <span className="text-atria-yellow-bright">Facilitado</span>
-          </h1>
-          <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            As melhores taxas do mercado com aprovação em até 24h
-          </p>
-        </motion.div>
-      </div>
-    </section>
+    <PageHero
+      eyebrow="Financiamento"
+      title={<>Financiamento <span className="text-atria-yellow-bright">Facilitado</span></>}
+      subtitle="As melhores taxas do mercado com aprovação em até 24h"
+    />
   );
 }
 

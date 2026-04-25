@@ -3,6 +3,7 @@ import { BookOpen, Calendar } from "lucide-react";
 import { getPublishedBlogPosts, type BlogPost } from "@/lib/adminFirestore";
 import { useSEO } from "@/hooks/useSEO";
 import { ROUTES, SITE_URL } from "@/lib/constants";
+import { PageHero } from "@/components/ui/PageHero";
 
 const CATEGORIA_LABELS: Record<string, string> = {
   comparativo: "Comparativo",
@@ -61,18 +62,11 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero — padrão canônico navy (Sobre/Financiamento) */}
-      <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-        <div className="relative z-10 container mx-auto px-4 text-center">
-          <p className="font-inter text-atria-yellow-bright text-xs uppercase tracking-widest font-bold mb-4">Conteúdo</p>
-          <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
-            Blog <span className="text-atria-yellow-bright">Átria</span>
-          </h1>
-          <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            Dicas, comparativos e guias pra escolher o seminovo ideal em Campinas
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Conteúdo"
+        title={<>Blog <span className="text-atria-yellow-bright">Átria</span></>}
+        subtitle="Dicas, comparativos e guias pra escolher o seminovo ideal em Campinas"
+      />
 
       {/* Posts */}
       <section className="max-w-5xl mx-auto px-4 py-12">

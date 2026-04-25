@@ -5,6 +5,7 @@ import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestor
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { getPrecoExibicao, calcularFaixaParcela, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
+import { PageHero } from "@/components/ui/PageHero";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WA_NUMBER = "5519996525211";
@@ -1419,17 +1420,14 @@ export default function Estoque() {
 
   return (
     <>
-      {/* Hero — compactado pra liberar viewport mobile. "Em Campinas" no
-          h1 + label "Campinas, SP" continuam servindo SEO local (Google/LLM
-          indexam esses termos pra buscas tipo "seminovos em Campinas"). */}
-      <header className="bg-atria-navy pt-20 pb-5 md:pt-24 md:pb-8">
-        <div className="container mx-auto px-4">
-          <p className="section-label mb-1.5">Campinas, SP</p>
-          <h1 className="font-barlow-condensed font-black text-3xl md:text-6xl uppercase text-white leading-tight md:leading-none">
-            Estoque de Seminovos em Campinas
-          </h1>
-        </div>
-      </header>
+      {/* Hero — padrão canônico (Sobre/Financiamento/Blog). Eyebrow amarelo
+          "Campinas, SP" + título com span amarelo "em Campinas" servem SEO
+          local (Google/LLM indexam pra buscas tipo "seminovos em Campinas"). */}
+      <PageHero
+        eyebrow="Campinas, SP"
+        title={<>Estoque de Seminovos <span className="text-atria-yellow-bright">em Campinas</span></>}
+        subtitle="Multimarcas revisados, fotografados e prontos pra entrega"
+      />
 
       {/* Top bar */}
       <div ref={topBarRef} className="sticky top-16 z-30 bg-white border-b border-atria-gray-medium shadow-sm">

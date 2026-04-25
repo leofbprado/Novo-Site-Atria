@@ -13,6 +13,7 @@ const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComp
 import { useSEO } from "@/hooks/useSEO";
 import { ROUTES } from "@/lib/constants";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { PageHero } from "@/components/ui/PageHero";
 
 function usePageSEO() {
   useSEO({
@@ -25,19 +26,11 @@ function usePageSEO() {
 // ---- Hero ------------------------------------------------------------------
 function Hero() {
   return (
-    <section className="relative bg-atria-navy py-20 md:py-28 overflow-hidden">
-      <div className="relative z-10 container mx-auto px-4 text-center">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <p className="font-inter text-atria-yellow-bright text-xs uppercase tracking-widest font-bold mb-4">Sobre Nós</p>
-          <h1 className="font-barlow-condensed font-black text-4xl md:text-6xl text-white uppercase leading-none mb-4">
-            Sobre a <span className="text-atria-yellow-bright">Átria Veículos</span>
-          </h1>
-          <p className="font-inter text-white/70 text-lg max-w-xl mx-auto">
-            +10.000 carros vendidos · 12 anos guiando você na melhor escolha
-          </p>
-        </motion.div>
-      </div>
-    </section>
+    <PageHero
+      eyebrow="Sobre Nós"
+      title={<>Sobre a <span className="text-atria-yellow-bright">Átria Veículos</span></>}
+      subtitle="+10.000 carros vendidos · 12 anos guiando você na melhor escolha"
+    />
   );
 }
 
