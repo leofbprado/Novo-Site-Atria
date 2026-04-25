@@ -1722,6 +1722,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                       Preco <SortArrow col="preco" />
                     </button>
                   </th>
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider" title="Carros em promoção (valorpromocao > 0 no AutoConf)">Promo</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell" title="Preço na Sances (cross-check)">Sances</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Fotos</th>
@@ -1774,6 +1775,20 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                     <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{v.ano_fabricacao}/{v.ano_modelo}</td>
                     <td className="px-4 py-3 text-slate-600 text-right hidden md:table-cell">{fmtKm(v.km)}</td>
                     <td className="px-4 py-3 font-semibold text-slate-900 text-right">{fmt(v.preco)}</td>
+                    <td className="px-4 py-3 text-center">
+                      {v.preco_promocao && v.preco_promocao > 0 ? (
+                        v.preco_promocao < v.preco ? (
+                          <span className="inline-flex flex-col items-center gap-0.5">
+                            <span className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded">Oferta</span>
+                            <span className="text-[11px] text-slate-700 font-semibold">{fmt(v.preco_promocao)}</span>
+                          </span>
+                        ) : (
+                          <span className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded" title={`valorpromocao=${fmt(v.preco_promocao)} (igual ao preço — operação preencheu errado no AutoConf)`}>Oferta</span>
+                        )
+                      ) : (
+                        <span className="text-slate-300 text-xs">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right hidden md:table-cell">
                       <SancesCell v={v} />
                     </td>
@@ -1837,7 +1852,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
                   </tr>
                   ,v.milestone ? (
                     <tr key={`${v.autoconf_id}-ms`} className="bg-orange-50/50">
-                      <td colSpan={12} className="px-4 py-1.5">
+                      <td colSpan={13} className="px-4 py-1.5">
                         <div className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border ${
                           (DIAG_STYLE[v.diag.diagnostico] ?? DIAG_STYLE["Sem dados"]).cls
                         }`}>
