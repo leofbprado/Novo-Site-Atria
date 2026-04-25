@@ -5,6 +5,7 @@ import {
   FileText, CheckCircle, Car, Send, Shield, X,
 } from "lucide-react";
 import { saveLead } from "@/lib/firestore";
+import { calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
 
 const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
@@ -41,19 +42,8 @@ function Hero() {
 }
 
 // ---- Simulador (inline) ----------------------------------------------------
-const PRAZO_FIXO = 48;
-const COEF_PARCELA = 0.035;
-const FAIXA_DELTA = 7500;
-
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-function calcularFaixa(entrada: number, parcela: number) {
-  const valorBase = Math.round((entrada + parcela / COEF_PARCELA) / 1000) * 1000;
-  const precoMin = Math.max(0, valorBase - FAIXA_DELTA);
-  const precoMax = valorBase + FAIXA_DELTA;
-  return { valorBase, precoMin, precoMax };
-}
 
 const LOADING_MESSAGES = [
   "Calculando sua faixa de preço...",
@@ -70,7 +60,7 @@ function SimuladorResultModal({
   const [whatsapp, setWhatsapp] = useState("");
   const [sending, setSending] = useState(false);
 
-  const { precoMin, precoMax } = calcularFaixa(entrada, parcela);
+  const { precoMin, precoMax } = calcularFaixaParcela(entrada, parcela);
 
   useEffect(() => {
     if (step !== "loading") return;
@@ -88,7 +78,7 @@ function SimuladorResultModal({
         whatsapp,
         source,
         query: `Simulação: entrada ${fmtBRL(entrada)}, parcela ${fmtBRL(parcela)}/mês, faixa ${fmtBRL(precoMin)}–${fmtBRL(precoMax)}`,
-        dados: { entrada, parcela, prazo: PRAZO_FIXO, precoMin, precoMax },
+        dados: { entrada, parcela, prazo: SIM_PRAZO, precoMin, precoMax },
       });
     } catch (err) {
       console.error("[Simulador] erro ao salvar lead:", err);

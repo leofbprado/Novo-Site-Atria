@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
-import { getPrecoExibicao } from "@/lib/preco";
+import { getPrecoExibicao, calcularFaixaParcela, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -290,6 +290,186 @@ function fmtBins(v: number): string {
   return `R$ ${v}`;
 }
 
+// ─── PriceFilterContent ───────────────────────────────────────────────────────
+// Drill panel do filtro de Preço. Duas abas:
+// - "Faixa": min/max via slider/histograma/inputs (controle direto da faixa)
+// - "Parcela": entrada + parcela mensal → calcula faixa de preço via fórmula
+//   compartilhada com Home/Financiamento (calcularFaixaParcela).
+// Toggle "Só ofertas" mora aqui dentro também — convive conceitualmente com
+// preço já que mexe na mesma dimensão (o que o cliente paga).
+function PriceFilterContent({
+  filters, onChange, vehicles, precoMaxStock,
+}: {
+  filters: FilterState;
+  onChange: (f: FilterState) => void;
+  vehicles: Vehicle[];
+  precoMaxStock: number;
+}) {
+  const set = useCallback(
+    (patch: Partial<FilterState>) => onChange({ ...filters, ...patch }),
+    [filters, onChange]
+  );
+  const [tab, setTab] = useState<"faixa" | "parcela">("faixa");
+
+  // Estado da aba Parcela. Inicializa a partir da faixa atual: usa o ponto
+  // médio da faixa pra deduzir uma parcela razoável com entrada padrão.
+  const [entrada, setEntrada] = useState<number>(10000);
+  const [parcela, setParcela] = useState<number>(() => {
+    const meio = (filters.preco[0] + Math.min(filters.preco[1], precoMaxStock)) / 2;
+    return parcelaParaPreco(meio, 10000);
+  });
+
+  // Quando muda entrada/parcela, calcula a faixa e aplica direto no filtro.
+  useEffect(() => {
+    if (tab !== "parcela") return;
+    const { precoMin, precoMax } = calcularFaixaParcela(entrada, parcela);
+    const clampedMax = Math.min(precoMax, precoMaxStock);
+    if (filters.preco[0] !== precoMin || filters.preco[1] !== clampedMax) {
+      set({ preco: [precoMin, clampedMax] });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entrada, parcela, tab, precoMaxStock]);
+
+  const faixaPreview = calcularFaixaParcela(entrada, parcela);
+  const faixaDefault = filters.preco[0] === 0 && filters.preco[1] >= precoMaxStock;
+
+  return (
+    <div className="space-y-4">
+      {/* Tabs */}
+      <div className="flex p-1 bg-atria-gray-light rounded-full">
+        <button
+          type="button"
+          onClick={() => setTab("faixa")}
+          className={`flex-1 py-2 px-4 rounded-full text-sm font-inter font-semibold transition-colors ${
+            tab === "faixa" ? "bg-white text-atria-navy shadow-sm" : "text-atria-text-gray hover:text-atria-text-dark"
+          }`}
+        >
+          Faixa
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("parcela")}
+          className={`flex-1 py-2 px-4 rounded-full text-sm font-inter font-semibold transition-colors ${
+            tab === "parcela" ? "bg-white text-atria-navy shadow-sm" : "text-atria-text-gray hover:text-atria-text-dark"
+          }`}
+        >
+          Parcela
+        </button>
+      </div>
+
+      {tab === "faixa" ? (
+        <>
+          <PriceHistogram vehicles={vehicles} range={filters.preco} max={precoMaxStock} />
+          <RangeSlider
+            min={0}
+            max={precoMaxStock}
+            value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
+            onChange={(v) => set({ preco: v })}
+            step={10000}
+            formatValue={fmt}
+          />
+          <MinMaxInputs
+            value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
+            min={0}
+            max={precoMaxStock}
+            step={1000}
+            onChange={(v) => set({ preco: v })}
+            prefix="R$"
+          />
+          {!faixaDefault && (
+            <button
+              type="button"
+              onClick={() => set({ preco: [0, precoMaxStock] })}
+              className="w-full py-2.5 rounded-full border border-atria-gray-medium text-sm font-inter font-semibold text-atria-text-gray hover:border-atria-navy hover:text-atria-navy transition-colors"
+            >
+              Limpar faixa
+            </button>
+          )}
+        </>
+      ) : (
+        <div className="space-y-5">
+          <p className="text-xs font-inter text-atria-text-gray leading-relaxed">
+            Estimativa baseada em {SIM_PRAZO}× sem entrada extra. Filtra carros que cabem no orçamento mensal.
+          </p>
+
+          {/* Entrada */}
+          <div>
+            <div className="flex justify-between items-end mb-1">
+              <label className="text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold">Entrada</label>
+              <span className="font-barlow-condensed font-bold text-base text-atria-navy">{fmt(entrada)}</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={50000}
+              step={1000}
+              value={entrada}
+              onChange={(e) => setEntrada(Number(e.target.value))}
+              className="w-full accent-atria-navy"
+            />
+            <div className="flex justify-between text-[10px] font-inter text-atria-text-gray mt-0.5">
+              <span>{fmt(0)}</span><span>{fmt(50000)}</span>
+            </div>
+          </div>
+
+          {/* Parcela */}
+          <div>
+            <div className="flex justify-between items-end mb-1">
+              <label className="text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold">Parcela mensal</label>
+              <span className="font-barlow-condensed font-bold text-base text-atria-navy">{fmt(parcela)}</span>
+            </div>
+            <input
+              type="range"
+              min={500}
+              max={5000}
+              step={100}
+              value={parcela}
+              onChange={(e) => setParcela(Number(e.target.value))}
+              className="w-full accent-atria-navy"
+            />
+            <div className="flex justify-between text-[10px] font-inter text-atria-text-gray mt-0.5">
+              <span>{fmt(500)}</span><span>{fmt(5000)}</span>
+            </div>
+          </div>
+
+          {/* Preview da faixa calculada */}
+          <div className="bg-atria-gray-light rounded-lg p-4 text-center">
+            <p className="text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Faixa de preço estimada</p>
+            <p className="font-barlow-condensed font-bold text-lg text-atria-navy">
+              {fmt(faixaPreview.precoMin)} <span className="text-atria-text-gray font-normal text-sm">a</span> {fmt(Math.min(faixaPreview.precoMax, precoMaxStock))}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Toggle "Só ofertas" — mora dentro de Preço pois é dimensão do mesmo eixo */}
+      <button
+        type="button"
+        onClick={() => set({ soPromocao: !filters.soPromocao })}
+        aria-pressed={filters.soPromocao}
+        className="w-full flex items-center justify-between py-3 px-4 border border-atria-gray-medium rounded-lg hover:border-atria-navy transition-colors text-left"
+      >
+        <span className="flex items-center gap-2">
+          <span className="font-inter font-semibold text-sm text-atria-text-dark">Só ofertas</span>
+          {filters.soPromocao && <span className="w-1.5 h-1.5 rounded-full bg-red-600" aria-hidden="true" />}
+        </span>
+        <span
+          className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
+            filters.soPromocao ? "bg-red-600" : "bg-atria-gray-medium"
+          }`}
+          aria-hidden="true"
+        >
+          <span
+            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+              filters.soPromocao ? "translate-x-[18px]" : "translate-x-0.5"
+            }`}
+          />
+        </span>
+      </button>
+    </div>
+  );
+}
+
 // ─── CheckList ────────────────────────────────────────────────────────────────
 function CheckList({
   options, selected, onChange,
@@ -533,7 +713,7 @@ const FILTER_LIST: { key: FilterKey; title: string }[] = [
 
 function isActiveFor(key: FilterKey, f: FilterState, precoMaxStock: number): boolean {
   switch (key) {
-    case 'preco': return f.preco[0] > 0 || f.preco[1] < precoMaxStock;
+    case 'preco': return f.preco[0] > 0 || f.preco[1] < precoMaxStock || f.soPromocao;
     case 'marca': return f.marcas.length > 0;
     case 'modelo': return (f.modelos ?? []).length > 0;
     case 'tipos': return f.tipos.length > 0;
@@ -552,8 +732,11 @@ function summaryFor(key: FilterKey, f: FilterState, precoMaxStock: number): stri
   };
   switch (key) {
     case 'preco': {
-      if (f.preco[0] === 0 && f.preco[1] >= precoMaxStock) return '';
-      return `${fmt(f.preco[0])} – ${fmt(Math.min(f.preco[1], precoMaxStock))}`;
+      const faixaDefault = f.preco[0] === 0 && f.preco[1] >= precoMaxStock;
+      const faixa = faixaDefault ? '' : `${fmt(f.preco[0])} – ${fmt(Math.min(f.preco[1], precoMaxStock))}`;
+      if (f.soPromocao && faixa) return `${faixa} · só ofertas`;
+      if (f.soPromocao) return 'Só ofertas';
+      return faixa;
     }
     case 'marca': {
       if (f.marcas.length === 0) return '';
@@ -661,25 +844,12 @@ function FilterDrillPanel({
   switch (activeKey) {
     case 'preco':
       content = (
-        <>
-          <PriceHistogram vehicles={vehicles} range={filters.preco} max={precoMaxStock} />
-          <RangeSlider
-            min={0}
-            max={precoMaxStock}
-            value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
-            onChange={(v) => set({ preco: v })}
-            step={10000}
-            formatValue={fmt}
-          />
-          <MinMaxInputs
-            value={[filters.preco[0], Math.min(filters.preco[1], precoMaxStock)]}
-            min={0}
-            max={precoMaxStock}
-            step={1000}
-            onChange={(v) => set({ preco: v })}
-            prefix="R$"
-          />
-        </>
+        <PriceFilterContent
+          filters={filters}
+          onChange={onChange}
+          vehicles={vehicles}
+          precoMaxStock={precoMaxStock}
+        />
       );
       break;
     case 'marca':
@@ -865,33 +1035,6 @@ function Sidebar({
             exit={{ x: -slide, opacity: 0 }}
             transition={{ duration: dur, ease: "easeOut" }}
           >
-            <button
-              type="button"
-              onClick={() => onChange({ ...filters, soPromocao: !filters.soPromocao })}
-              aria-pressed={filters.soPromocao}
-              className="w-full min-h-[48px] flex items-center justify-between py-3 px-1 -mx-1 border-b border-atria-gray-medium hover:bg-atria-gray-light/40 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
-            >
-              <span className="flex items-center gap-2">
-                <span className="font-inter font-semibold text-sm text-atria-text-dark">
-                  Só promoções
-                </span>
-                {filters.soPromocao && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 flex-shrink-0" aria-hidden="true" />
-                )}
-              </span>
-              <span
-                className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${
-                  filters.soPromocao ? "bg-red-600" : "bg-atria-gray-medium"
-                }`}
-                aria-hidden="true"
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                    filters.soPromocao ? "translate-x-[18px]" : "translate-x-0.5"
-                  }`}
-                />
-              </span>
-            </button>
             <FilterIndex
               filters={filters}
               precoMaxStock={precoMaxStock}
@@ -935,7 +1078,7 @@ function ActiveFilters({ filters, onChange }: { filters: FilterState; onChange: 
     const result: ActiveChip[] = [];
 
     if (filters.busca) result.push({ label: `"${filters.busca}"`, onRemove: () => set({ busca: "" }) });
-    if (filters.soPromocao) result.push({ label: "Só promoções", onRemove: () => set({ soPromocao: false }) });
+    if (filters.soPromocao) result.push({ label: "Só ofertas", onRemove: () => set({ soPromocao: false }) });
     if (filters.preco[0] > DEFAULT_RANGES.preco[0] || filters.preco[1] < DEFAULT_RANGES.preco[1])
       result.push({ label: `${fmt(filters.preco[0])} – ${fmt(filters.preco[1])}`, onRemove: () => set({ preco: [...DEFAULT_RANGES.preco] }) });
     filters.marcas.forEach((m) => result.push({ label: m, onRemove: () => set({ marcas: filters.marcas.filter((x) => x !== m) }) }));

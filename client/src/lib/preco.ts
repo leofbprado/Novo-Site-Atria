@@ -27,3 +27,28 @@ export function getPrecoExibicao(v: { preco: number; preco_promocao?: number | n
 export function precoEfetivo(v: { preco: number; preco_promocao?: number | null }): number {
   return getPrecoExibicao(v).precoFinal;
 }
+
+// ── Simulação de parcela → faixa de preço ──────────────────────────────────
+// Mesma fórmula usada nos simuladores da Home e do Financiamento. PV (preço)
+// = entrada + parcela / coef, onde coef ≈ 0.035 é uma média de prestação
+// fixa pra 48 meses no perfil que a Átria opera. Faixa ±FAIXA_DELTA dá
+// folga pra mostrar carros próximos ao alvo.
+export const SIM_PRAZO = 48;
+export const SIM_COEF_PARCELA = 0.035;
+export const SIM_FAIXA_DELTA = 7500;
+
+export function calcularFaixaParcela(entrada: number, parcela: number): {
+  valorBase: number; precoMin: number; precoMax: number;
+} {
+  const valorBase = Math.round((entrada + parcela / SIM_COEF_PARCELA) / 1000) * 1000;
+  const precoMin = Math.max(0, valorBase - SIM_FAIXA_DELTA);
+  const precoMax = valorBase + SIM_FAIXA_DELTA;
+  return { valorBase, precoMin, precoMax };
+}
+
+// Inverso da fórmula acima — pra inicializar a aba Parcela do filtro de
+// preço a partir do precoFinal já selecionado, mantendo entrada padrão.
+export function parcelaParaPreco(preco: number, entrada: number): number {
+  const aFinanciar = Math.max(0, preco - entrada);
+  return Math.max(500, Math.round((aFinanciar * SIM_COEF_PARCELA) / 50) * 50);
+}

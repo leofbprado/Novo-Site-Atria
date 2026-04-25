@@ -3,7 +3,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
-import { getPrecoExibicao } from "@/lib/preco";
+import { getPrecoExibicao, calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
 import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
@@ -117,19 +117,8 @@ function LeadModal({ title, subtitle, source, extraData, prefillMsg, onClose }: 
 }
 
 // ─── Simulador ────────────────────────────────────────────────────────────────
-const PRAZO_FIXO = 48;
-const COEF_PARCELA = 0.035;
-const FAIXA_DELTA = 7500;
-
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-function calcularFaixa(entrada: number, parcela: number) {
-  const valorBase = Math.round((entrada + parcela / COEF_PARCELA) / 1000) * 1000;
-  const precoMin = Math.max(0, valorBase - FAIXA_DELTA);
-  const precoMax = valorBase + FAIXA_DELTA;
-  return { valorBase, precoMin, precoMax };
-}
 
 const LOADING_MESSAGES = [
   "Calculando sua faixa de preço...",
@@ -146,7 +135,7 @@ function SimuladorResultModal({
   const [whatsapp, setWhatsapp] = useState("");
   const [sending, setSending] = useState(false);
 
-  const { precoMin, precoMax } = calcularFaixa(entrada, parcela);
+  const { precoMin, precoMax } = calcularFaixaParcela(entrada, parcela);
 
   useEffect(() => {
     if (step !== "loading") return;
@@ -164,7 +153,7 @@ function SimuladorResultModal({
         whatsapp,
         source,
         query: `Simulação: entrada ${fmtBRL(entrada)}, parcela ${fmtBRL(parcela)}/mês, faixa ${fmtBRL(precoMin)}–${fmtBRL(precoMax)}`,
-        dados: { entrada, parcela, prazo: PRAZO_FIXO, precoMin, precoMax },
+        dados: { entrada, parcela, prazo: SIM_PRAZO, precoMin, precoMax },
       });
       // Dispara só após o 200 do saveLead — lead confirmado, não tentativa
       trackLead({
