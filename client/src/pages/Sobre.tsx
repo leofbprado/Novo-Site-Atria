@@ -12,6 +12,7 @@ const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComp
 // ---- SEO -------------------------------------------------------------------
 import { useSEO } from "@/hooks/useSEO";
 import { ROUTES } from "@/lib/constants";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 function usePageSEO() {
   useSEO({
@@ -51,10 +52,12 @@ function Historia() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Nossa História</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase mb-6">
-            De uma Loja a Referência em Campinas
-          </h2>
+          <SectionHeader
+            eyebrow="Nossa História"
+            title="De uma Loja a Referência em Campinas"
+            centered
+            className="mb-6"
+          />
           <div className="font-inter text-atria-text-gray text-base leading-relaxed space-y-4 max-w-3xl mx-auto text-left md:text-center">
             <p>
               Fundada em Campinas, a Átria Veículos nasceu com o propósito de transformar a experiência de compra de veículos seminovos.
@@ -233,12 +236,11 @@ function NossasLojas() {
   return (
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Localização</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Nossas Lojas
-          </h2>
-        </div>
+        <SectionHeader
+          eyebrow="Localização"
+          title="Nossas Lojas"
+          centered
+        />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {LOJAS.map((loja) => (
             <motion.div
@@ -281,12 +283,13 @@ function CTA() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <Calendar size={40} className="text-atria-yellow-bright mx-auto mb-4" />
-        <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase mb-4">
-          Visite-nos
-        </h2>
-        <p className="font-inter text-white/70 mb-8 max-w-lg mx-auto">
-          Venha conhecer nossas lojas e encontrar o veículo ideal para você.
-        </p>
+        <SectionHeader
+          title="Visite-nos"
+          subtitle="Venha conhecer nossas lojas e encontrar o veículo ideal para você."
+          inverted
+          centered
+          className="mb-8"
+        />
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
             href={waLink("Olá! Gostaria de agendar uma visita presencial na loja Átria.")}

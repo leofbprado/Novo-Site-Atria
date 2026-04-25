@@ -6,6 +6,7 @@ import {
   TrendingUp, Handshake, Send,
 } from "lucide-react";
 import { saveLead } from "@/lib/firestore";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
@@ -57,13 +58,13 @@ function Hero() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
-          <span className="inline-block bg-atria-yellow/20 text-atria-yellow-bright font-inter font-semibold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
+          <p className="font-inter text-xs font-semibold uppercase tracking-[0.3em] text-atria-yellow-bright mb-2">
             Compra ou Consignação
-          </span>
-          <h1 className="font-barlow-condensed font-black text-4xl md:text-5xl lg:text-6xl text-white leading-tight">
+          </p>
+          <h1 className="font-barlow-condensed font-black text-4xl md:text-5xl lg:text-6xl text-white uppercase leading-tight">
             Venda seu carro do jeito que fizer mais sentido
           </h1>
-          <p className="font-inter text-lg text-white/70 mt-4 max-w-2xl mx-auto">
+          <p className="font-inter text-base md:text-lg text-white/70 mt-4 max-w-2xl mx-auto">
             Receba proposta de compra imediata ou venda por consignação com apoio da Átria.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
@@ -107,10 +108,12 @@ function ComparisonTable() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Compare as duas opções
-          </h2>
-          <p className="font-inter text-atria-text-gray mt-2">Escolha o que faz mais sentido pra você.</p>
+          <SectionHeader
+            title="Compare as duas opções"
+            subtitle="Escolha o que faz mais sentido pra você."
+            centered
+            className=""
+          />
         </motion.div>
 
         {/* Desktop table */}
@@ -232,12 +235,12 @@ function ConsignmentBlock() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="inline-block bg-atria-navy/10 text-atria-navy font-inter font-semibold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
-            Recomendado
-          </span>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Consignação: venda pelo melhor valor com apoio da Átria
-          </h2>
+          <SectionHeader
+            eyebrow="Recomendado"
+            title="Consignação: venda pelo melhor valor com apoio da Átria"
+            centered
+            className=""
+          />
         </motion.div>
 
         {/* Benefits grid */}
@@ -369,12 +372,12 @@ function PurchaseForm() {
           className="max-w-2xl mx-auto"
         >
           <div className="text-center mb-8">
-            <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-              Quer vender rápido?
-            </h2>
-            <p className="font-inter text-atria-text-gray mt-2">
-              A Átria faz uma proposta de compra em até 24h. Leva 30 segundos.
-            </p>
+            <SectionHeader
+              title="Quer vender rápido?"
+              subtitle="A Átria faz uma proposta de compra em até 24h. Leva 30 segundos."
+              centered
+              className="mb-0"
+            />
           </div>
 
           {sent ? (
@@ -602,12 +605,12 @@ function BottomCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase">
-            Pronto pra vender?
-          </h2>
-          <p className="font-inter text-atria-text-gray mt-2 mb-6">
-            Escolha a opção que faz mais sentido e fale com a gente.
-          </p>
+          <SectionHeader
+            title="Pronto pra vender?"
+            subtitle="Escolha a opção que faz mais sentido e fale com a gente."
+            centered
+            className="mb-6"
+          />
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#formulario-compra"

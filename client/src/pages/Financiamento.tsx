@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { saveLead } from "@/lib/firestore";
 import { calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 const WA_NUMBER = "5519996525211";
 const waLink = (msg: string) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
@@ -194,15 +195,12 @@ function Simulador() {
   return (
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Simulador</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Encontre o Carro Ideal Pro Seu Plano
-          </h2>
-          <p className="font-inter text-atria-text-gray mt-3 max-w-lg mx-auto">
-            Diga quanto deseja dar de entrada e o valor da parcela ideal. Em segundos mostramos os carros que combinam com você.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="Simulador"
+          title="Encontre o Carro Ideal Pro Seu Plano"
+          subtitle="Diga quanto deseja dar de entrada e o valor da parcela ideal. Em segundos mostramos os carros que combinam com você."
+          centered
+        />
 
         <div className="bg-white rounded-2xl p-8 md:p-10 shadow-sm space-y-7 max-w-2xl mx-auto">
           <div>
@@ -270,12 +268,11 @@ function Vantagens() {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Vantagens</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Por que Financiar com a Átria?
-          </h2>
-        </div>
+        <SectionHeader
+          eyebrow="Vantagens"
+          title="Por que Financiar com a Átria?"
+          centered
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {cards.map((c) => (
             <motion.div
@@ -313,12 +310,11 @@ function ComoFunciona() {
   return (
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Passo a Passo</p>
-          <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-atria-text-dark uppercase">
-            Como Funciona
-          </h2>
-        </div>
+        <SectionHeader
+          eyebrow="Passo a Passo"
+          title="Como Funciona"
+          centered
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {steps.map((s, i) => (
             <motion.div
@@ -358,12 +354,12 @@ function BancosParceiros() {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Parceiros</p>
-          <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase">
-            Bancos Parceiros
-          </h2>
-        </div>
+        <SectionHeader
+          eyebrow="Parceiros"
+          title="Bancos Parceiros"
+          centered
+          className="mb-10"
+        />
         <div className="grid grid-cols-3 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {BANCOS.map((b) => (
             <div key={b.nome} className="flex items-center justify-center aspect-square bg-white rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-shadow">
@@ -410,12 +406,11 @@ function FAQSection() {
   return (
     <section className="py-20 bg-atria-gray-light">
       <div className="container mx-auto px-4 max-w-3xl">
-        <div className="text-center mb-12">
-          <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">FAQ</p>
-          <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase">
-            Dúvidas Frequentes
-          </h2>
-        </div>
+        <SectionHeader
+          eyebrow="FAQ"
+          title="Dúvidas Frequentes"
+          centered
+        />
         <div className="space-y-3">
           {FAQS.map((faq, i) => (
             <div key={i} className="bg-white rounded-xl overflow-hidden border border-atria-gray-medium">
@@ -457,13 +452,13 @@ function SimulacaoCPF() {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4 max-w-3xl text-center">
-        <p className="font-inter text-atria-navy text-xs uppercase tracking-widest font-bold mb-2">Simulação com CPF</p>
-        <h2 className="font-barlow-condensed font-black text-3xl text-atria-text-dark uppercase mb-3">
-          Pré-aprovação Online
-        </h2>
-        <p className="font-inter text-sm text-atria-text-gray mb-6">
-          Para simulação com CPF, escolha um veículo do nosso estoque e use o simulador Credere na página do veículo.
-        </p>
+        <SectionHeader
+          eyebrow="Simulação com CPF"
+          title="Pré-aprovação Online"
+          subtitle="Para simulação com CPF, escolha um veículo do nosso estoque e use o simulador Credere na página do veículo."
+          centered
+          className="mb-6"
+        />
         <a
           href={ROUTES.estoque}
           className="inline-flex items-center justify-center gap-2 bg-gradient-to-b from-atria-navy-light to-atria-navy hover:brightness-110 text-white font-inter font-bold uppercase tracking-wider text-sm px-8 py-4 rounded-full transition-colors"
@@ -483,12 +478,13 @@ function CTAFinal() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#002BB5_0%,_#001066_60%)]" />
       <div className="relative z-10 container mx-auto px-4 text-center">
         <Shield size={40} className="text-atria-yellow-bright mx-auto mb-4" />
-        <h2 className="font-barlow-condensed font-black text-3xl md:text-4xl text-white uppercase mb-4">
-          Fale com Nosso Especialista <span className="text-atria-yellow-bright">em Financiamento</span>
-        </h2>
-        <p className="font-inter text-white/70 mb-8 max-w-lg mx-auto">
-          Tire suas dúvidas e encontre a melhor condição para o seu perfil.
-        </p>
+        <SectionHeader
+          title={<>Fale com Nosso Especialista <span className="text-atria-yellow-bright">em Financiamento</span></>}
+          subtitle="Tire suas dúvidas e encontre a melhor condição para o seu perfil."
+          inverted
+          centered
+          className="mb-8"
+        />
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
             href={waLink("Olá! Tenho interesse em financiamento de veículos. Podem me ajudar?")}
