@@ -139,7 +139,9 @@ function usePageSEO(vehicles: Vehicle[]) {
 
 // ─── MinMaxInputs ─ pares de input numérico abaixo dos sliders pra digitar ──
 // valores exatos. Estado compartilhado com o slider via `value`/`onChange`.
-// Placeholder mostra o bound (min/max) quando o usuário não definiu nada.
+// Estratégia: enquanto o usuário digita, mantemos um rascunho local em string
+// (sem clamp). Só commita pro pai (com clamp) no blur/Enter — assim digitar
+// "5" antes de "50000" não é truncado por ser menor que o min atual.
 function MinMaxInputs({
   value, min, max, step = 1, onChange, prefix, suffix,
 }: {
@@ -152,8 +154,36 @@ function MinMaxInputs({
   suffix?: string;
 }) {
   const [lo, hi] = value;
-  const showLo = lo > min ? lo : "";
-  const showHi = hi < max ? hi : "";
+  const externalLo = lo > min ? String(lo) : "";
+  const externalHi = hi < max ? String(hi) : "";
+  const [draftLo, setDraftLo] = useState(externalLo);
+  const [draftHi, setDraftHi] = useState(externalHi);
+
+  // Sincroniza rascunho quando o pai muda value externamente (slider, reset)
+  // mas só se o input não estiver focado — pra não atropelar o que o usuário
+  // tá digitando.
+  const loFocused = useRef(false);
+  const hiFocused = useRef(false);
+  useEffect(() => { if (!loFocused.current) setDraftLo(externalLo); }, [externalLo]);
+  useEffect(() => { if (!hiFocused.current) setDraftHi(externalHi); }, [externalHi]);
+
+  const commitLo = (raw: string) => {
+    if (raw === "") { onChange([min, hi]); return; }
+    const n = Number(raw);
+    if (!Number.isFinite(n)) { setDraftLo(externalLo); return; }
+    const clamped = Math.max(min, Math.min(n, hi));
+    setDraftLo(clamped > min ? String(clamped) : "");
+    onChange([clamped, hi]);
+  };
+  const commitHi = (raw: string) => {
+    if (raw === "") { onChange([lo, max]); return; }
+    const n = Number(raw);
+    if (!Number.isFinite(n)) { setDraftHi(externalHi); return; }
+    const clamped = Math.min(max, Math.max(n, lo));
+    setDraftHi(clamped < max ? String(clamped) : "");
+    onChange([lo, clamped]);
+  };
+
   const inputCls = `w-full py-2 ${prefix ? "" : "pl-2.5"} ${suffix ? "" : "pr-2"} font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`;
 
   return (
@@ -168,13 +198,12 @@ function MinMaxInputs({
             min={min}
             max={max}
             step={step}
-            value={showLo}
+            value={draftLo}
             placeholder={String(min)}
-            onChange={(e) => {
-              const raw = Number(e.target.value);
-              const v = raw > 0 ? Math.min(raw, hi) : min;
-              onChange([Math.max(min, v), hi]);
-            }}
+            onFocus={() => { loFocused.current = true; }}
+            onChange={(e) => setDraftLo(e.target.value)}
+            onBlur={(e) => { loFocused.current = false; commitLo(e.target.value); }}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
             className={inputCls}
           />
           {suffix && <span className="pl-1 pr-2.5 font-inter text-sm text-atria-text-gray">{suffix}</span>}
@@ -190,13 +219,12 @@ function MinMaxInputs({
             min={min}
             max={max}
             step={step}
-            value={showHi}
+            value={draftHi}
             placeholder={String(max)}
-            onChange={(e) => {
-              const raw = Number(e.target.value);
-              const v = raw > 0 ? Math.min(raw, max) : max;
-              onChange([lo, Math.max(lo, v)]);
-            }}
+            onFocus={() => { hiFocused.current = true; }}
+            onChange={(e) => setDraftHi(e.target.value)}
+            onBlur={(e) => { hiFocused.current = false; commitHi(e.target.value); }}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
             className={inputCls}
           />
           {suffix && <span className="pl-1 pr-2.5 font-inter text-sm text-atria-text-gray">{suffix}</span>}
