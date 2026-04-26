@@ -10,6 +10,8 @@ import { useSEO } from "@/hooks/useSEO";
 import { trackLead } from "@/lib/track";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { HeroSection } from "@/components/home/HeroSection";
+import { VehicleCard as RecentVehicleCard } from "@/components/VehicleCard";
+import { useRecentlyViewed } from "@/lib/recentlyViewed";
 import { TagBadge } from "@/components/TagBadge";
 
 const WA_NUMBER = "5519996525211";
@@ -1260,6 +1262,34 @@ function CTAFinal() {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Recently Viewed (CarMax-style) ──────────────────────────────────────────
+// Aparece SÓ se o usuário já visitou alguma ficha de carro nesse device.
+// Mobile: scroll horizontal com snap; Desktop: grid 4 colunas.
+function RecentlyViewed() {
+  const recentes = useRecentlyViewed(6);
+  if (recentes.length === 0) return null;
+  return (
+    <section className="py-12 md:py-16 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="mb-6 md:mb-8">
+          <p className="section-label mb-2">Continue de onde parou</p>
+          <h2 className="section-title">Você viu recentemente</h2>
+        </div>
+        {/* Mobile: scroll-snap horizontal · Desktop: grid */}
+        <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-none">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5" style={{ width: "max-content" }}>
+            {recentes.map((v) => (
+              <div key={v.id} className="w-[280px] md:w-auto flex-shrink-0 snap-start">
+                <RecentVehicleCard v={v} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   useSEO({
     title: "Átria Veículos | Carros Seminovos e Usados em Campinas SP",
@@ -1270,6 +1300,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <RecentlyViewed />
       <Simulador />
       <BrandCarousel />
       <EstoqueDestaque />

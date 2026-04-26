@@ -11,6 +11,7 @@ import {
 import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, type Vehicle, type SiteConfig } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
 import { track, trackLead, trackIntent } from "@/lib/track";
+import { pushRecentSlug } from "@/lib/recentlyViewed";
 import { getPrecoExibicao, precoEfetivo } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -1072,10 +1073,11 @@ export default function VehicleDetail() {
 
   useVehicleSEO(vehicle);
 
-  // Track pageview
+  // Track pageview + adiciona à lista "recently viewed" (CarMax-style)
   useEffect(() => {
     if (!vehicle) return;
     trackVehicleEvent(vehicle.slug, "pageview").catch(() => {});
+    pushRecentSlug(vehicle.slug);
   }, [vehicle?.slug]);
 
   // Load Credere widget script after vehicle data is in the DOM
@@ -1256,15 +1258,12 @@ export default function VehicleDetail() {
               </section>
             )}
 
-            {/* Disclaimer */}
-            {(vehicle.bloco_final || siteConfig.disclaimer_padrao) && (
-              <section className="bg-atria-gray-light border border-atria-gray-medium rounded-xl p-5 space-y-2">
-                {vehicle.bloco_final && (
-                  <p className="font-inter text-sm font-bold text-atria-text-dark">{vehicle.bloco_final}</p>
-                )}
-                {siteConfig.disclaimer_padrao && (
-                  <p className="font-inter text-xs text-atria-text-gray leading-relaxed">{siteConfig.disclaimer_padrao}</p>
-                )}
+            {/* Disclaimer — só bloco_final (per-vehicle). disclaimer_padrao
+                deixou de ser renderizado aqui pra evitar duplicação com os
+                highlights_padrao que já aparecem logo abaixo da descrição. */}
+            {vehicle.bloco_final && (
+              <section className="bg-atria-gray-light border border-atria-gray-medium rounded-xl p-5">
+                <p className="font-inter text-sm font-bold text-atria-text-dark">{vehicle.bloco_final}</p>
               </section>
             )}
 
