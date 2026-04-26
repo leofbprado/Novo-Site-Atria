@@ -201,117 +201,22 @@ function GalleryDots({
   );
 }
 
-// Slide deslizante do lightbox com pinch-to-zoom + double-tap nativo (estilo Instagram)
-function ZoomableSlide({
-  src, alt, isActive, fillScreen,
-}: {
-  src: string;
-  alt: string;
-  isActive: boolean;
-  fillScreen?: boolean;
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const lastTapRef = useRef<number>(0);
-  const pinchStateRef = useRef<{ initialDist: number; initialScale: number } | null>(null);
-  const panStartRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
-  const [scale, setScale] = useState(1);
-  const [tx, setTx] = useState(0);
-  const [ty, setTy] = useState(0);
-
-  const reset = () => { setScale(1); setTx(0); setTy(0); };
-
-  // Reset zoom quando o slide deixa de ser ativo
-  useEffect(() => { if (!isActive) reset(); }, [isActive]);
-
-  const dist = (a: Touch, b: Touch) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      pinchStateRef.current = {
-        initialDist: dist(e.touches[0], e.touches[1]),
-        initialScale: scale,
-      };
-    } else if (e.touches.length === 1 && scale > 1) {
-      panStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, tx, ty };
-    }
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && pinchStateRef.current) {
-      e.preventDefault();
-      const newDist = dist(e.touches[0], e.touches[1]);
-      const ratio = newDist / pinchStateRef.current.initialDist;
-      const newScale = Math.max(1, Math.min(4, pinchStateRef.current.initialScale * ratio));
-      setScale(newScale);
-      if (newScale === 1) { setTx(0); setTy(0); }
-    } else if (e.touches.length === 1 && panStartRef.current && scale > 1) {
-      e.preventDefault();
-      const dx = e.touches[0].clientX - panStartRef.current.x;
-      const dy = e.touches[0].clientY - panStartRef.current.y;
-      const maxOffset = (scale - 1) * 200;
-      setTx(Math.max(-maxOffset, Math.min(maxOffset, panStartRef.current.tx + dx)));
-      setTy(Math.max(-maxOffset, Math.min(maxOffset, panStartRef.current.ty + dy)));
-    }
-  };
-
-  const onTouchEnd = (e: React.TouchEvent) => {
-    pinchStateRef.current = null;
-    panStartRef.current = null;
-    // Double-tap pra zoom (estilo Instagram)
-    if (e.changedTouches.length === 1 && e.touches.length === 0) {
-      const now = Date.now();
-      if (now - lastTapRef.current < 300) {
-        if (scale > 1) reset();
-        else setScale(2);
-        lastTapRef.current = 0;
-      } else {
-        lastTapRef.current = now;
-      }
-    }
-  };
-
-  return (
-    <div
-      ref={containerRef}
-      className="flex-shrink-0 w-full h-full flex items-center justify-center overflow-hidden touch-none"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      <motion.img
-        src={src}
-        alt={alt}
-        className={`select-none pointer-events-none ${
-          fillScreen
-            ? "w-full h-full object-cover"
-            : "max-w-full max-h-full object-contain"
-        }`}
-        draggable={false}
-        animate={{ scale, x: tx, y: ty }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      />
-    </div>
-  );
-}
-
 function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string; slug: string }) {
   const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
   const orientation = useOrientation();
   const isLandscapeLightbox = lightboxOpen && orientation === "landscape";
-  const trackRef = useRef<HTMLDivElement>(null);
+
+  const navigate = (delta: number) => {
+    setDirection(delta);
+    setCurrent((c) => (c + delta + fotos.length) % fotos.length);
+  };
 
   const goTo = (i: number) => {
-    const next = Math.max(0, Math.min(fotos.length - 1, i));
-    setCurrent(next);
-  };
-  const navigate = (delta: number) => {
-    const next = Math.max(0, Math.min(fotos.length - 1, current + delta));
-    if (next !== current) {
-      setCurrent(next);
-      trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
-    }
+    setDirection(i > current ? 1 : -1);
+    setCurrent(i);
   };
 
   const handleLightboxOpen = () => {
@@ -319,7 +224,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
     trackVehicleEvent(slug, "gallery_lightbox_open").catch(() => {});
   };
 
-  // Hint "Deslize" some após 3s
+  // Hint "Deslize ou toque" some após 3s pra não poluir depois que usuário entendeu
   useEffect(() => {
     const t = setTimeout(() => setHintVisible(false), 3000);
     return () => clearTimeout(t);
@@ -339,46 +244,42 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, fotos.length]);
+
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? "60%" : "-60%", opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? "-60%" : "60%", opacity: 0 }),
+  };
 
   return (
     <div className="space-y-3">
-      {/* ===== Galeria principal — track deslizante estilo Instagram ===== */}
-      <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-atria-gray-light group select-none">
-        <motion.div
-          ref={trackRef}
-          className="flex h-full"
-          style={{ width: `${fotos.length * 100}%` }}
-          animate={{ x: `-${current * (100 / fotos.length)}%` }}
-          transition={{ type: "spring", stiffness: 300, damping: 32 }}
-          drag={fotos.length > 1 ? "x" : false}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={1}
-          dragMomentum={false}
-          onDragEnd={(_, info) => {
-            const threshold = 50;
-            if (info.offset.x < -threshold || info.velocity.x < -300) navigate(1);
-            else if (info.offset.x > threshold || info.velocity.x > 300) navigate(-1);
-          }}
-        >
-          {fotos.map((src, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 h-full"
-              style={{ width: `${100 / fotos.length}%` }}
-            >
-              <img
-                src={src}
-                alt={`${titulo} - foto ${i + 1}`}
-                onClick={handleLightboxOpen}
-                className="w-full h-full object-cover cursor-zoom-in pointer-events-auto"
-                draggable={false}
-                loading={i === 0 ? "eager" : "lazy"}
-              />
-            </div>
-          ))}
-        </motion.div>
+      <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-atria-gray-light group">
+        <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+          <motion.img
+            key={current}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            src={fotos[current]}
+            alt={`${titulo} - foto ${current + 1}`}
+            className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+            draggable={false}
+            drag={fotos.length > 1 ? "x" : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (Math.abs(info.offset.x) > 80) {
+                navigate(info.offset.x < 0 ? 1 : -1);
+                trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
+              }
+            }}
+            onClick={handleLightboxOpen}
+          />
+        </AnimatePresence>
 
         <AnimatePresence>
           {hintVisible && fotos.length > 1 && (
@@ -394,21 +295,18 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
           )}
         </AnimatePresence>
 
-        {/* Setas só desktop on-hover (mobile usa swipe puro, igual Instagram) */}
         {fotos.length > 1 && (
           <>
             <button
               onClick={() => navigate(-1)}
-              disabled={current === 0}
-              className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 disabled:opacity-30"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Foto anterior"
             >
               <ChevronLeft size={22} />
             </button>
             <button
               onClick={() => navigate(1)}
-              disabled={current === fotos.length - 1}
-              className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 disabled:opacity-30"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Próxima foto"
             >
               <ChevronRight size={22} />
@@ -416,21 +314,20 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
           </>
         )}
 
-        <span className="absolute bottom-3 right-3 bg-black/70 text-white text-sm font-inter font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 pointer-events-none">
+        <span className="absolute bottom-3 right-3 bg-black/70 text-white text-sm font-inter font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
           <Camera size={14} /> {current + 1} / {fotos.length}
         </span>
       </div>
 
-      {/* Dots indicadores — Instagram-style */}
+      {/* Dots indicadores — Instagram-style. Mostrados também no mobile pra incentivar swipe. */}
       {fotos.length > 1 && (
         <div className="flex justify-center pt-1">
           <GalleryDots total={fotos.length} current={current} onSelect={goTo} />
         </div>
       )}
 
-      {/* Strip de thumbnails (desktop e tablet) */}
       {fotos.length > 1 && (
-        <div className="hidden md:flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {fotos.map((src, i) => (
             <button
               key={i}
@@ -446,7 +343,6 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
         </div>
       )}
 
-      {/* ===== Lightbox — track deslizante + pinch-to-zoom ===== */}
       <AnimatePresence>
         {lightboxOpen && (
           <motion.div
@@ -454,16 +350,15 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            // dvh + dvw em vez de vh/vw — em iOS Safari evita gap por causa da URL bar/safe area
-            className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden"
-            style={{ width: "100dvw", height: "100dvh" }}
+            onClick={() => setLightboxOpen(false)}
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
             role="dialog"
             aria-modal="true"
             aria-label={`${titulo} - foto ampliada`}
           >
             <button
-              onClick={() => setLightboxOpen(false)}
-              className={`absolute z-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+              onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+              className={`absolute rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
                 isLandscapeLightbox ? "top-2 right-2 w-9 h-9" : "top-4 right-4 w-11 h-11"
               }`}
               aria-label="Fechar"
@@ -471,45 +366,33 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
               <X size={isLandscapeLightbox ? 20 : 24} />
             </button>
 
-            {/* Track de slides do lightbox */}
-            <motion.div
-              className="flex w-full h-full"
-              style={{ width: `${fotos.length * 100}%` }}
-              animate={{ x: `-${current * (100 / fotos.length)}%` }}
-              transition={{ type: "spring", stiffness: 300, damping: 32 }}
+            <motion.img
+              key={current}
+              src={fotos[current]}
+              alt={`${titulo} - foto ${current + 1}`}
+              onClick={(e) => e.stopPropagation()}
+              className={`object-contain select-none ${
+                isLandscapeLightbox
+                  ? "w-screen h-screen max-w-none max-h-none"
+                  : "max-w-[95vw] max-h-[90vh]"
+              }`}
+              draggable={false}
               drag={fotos.length > 1 ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              dragMomentum={false}
+              dragElastic={0.2}
               onDragEnd={(_, info) => {
-                const threshold = 50;
-                if (info.offset.x < -threshold || info.velocity.x < -300) navigate(1);
-                else if (info.offset.x > threshold || info.velocity.x > 300) navigate(-1);
+                if (Math.abs(info.offset.x) > 80) {
+                  navigate(info.offset.x < 0 ? 1 : -1);
+                  trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
+                }
               }}
-            >
-              {fotos.map((src, i) => (
-                <div
-                  key={i}
-                  className="flex-shrink-0 h-full"
-                  style={{ width: `${100 / fotos.length}%` }}
-                >
-                  <ZoomableSlide
-                    src={src}
-                    alt={`${titulo} - foto ${i + 1}`}
-                    isActive={i === current}
-                    fillScreen={isLandscapeLightbox}
-                  />
-                </div>
-              ))}
-            </motion.div>
+            />
 
             {fotos.length > 1 && (
               <>
-                {/* Setas só desktop — mobile = swipe puro */}
                 <button
-                  onClick={() => navigate(-1)}
-                  disabled={current === 0}
-                  className={`hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 ${
+                  onClick={(e) => { e.stopPropagation(); navigate(-1); }}
+                  className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
                     isLandscapeLightbox ? "left-2 w-10 h-10" : "left-4 w-12 h-12"
                   }`}
                   aria-label="Foto anterior"
@@ -517,25 +400,26 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
                   <ChevronLeft size={isLandscapeLightbox ? 22 : 28} />
                 </button>
                 <button
-                  onClick={() => navigate(1)}
-                  disabled={current === fotos.length - 1}
-                  className={`hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 ${
+                  onClick={(e) => { e.stopPropagation(); navigate(1); }}
+                  className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
                     isLandscapeLightbox ? "right-2 w-10 h-10" : "right-4 w-12 h-12"
                   }`}
                   aria-label="Próxima foto"
                 >
                   <ChevronRight size={isLandscapeLightbox ? 22 : 28} />
                 </button>
+                {/* Dots e contador escondidos em landscape — foco total na imagem */}
                 {!isLandscapeLightbox && (
-                  <div className="absolute z-10 bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none">
-                    <div className="pointer-events-auto">
-                      <GalleryDots
-                        total={fotos.length}
-                        current={current}
-                        onSelect={goTo}
-                        variant="overlay"
-                      />
-                    </div>
+                  <div
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <GalleryDots
+                      total={fotos.length}
+                      current={current}
+                      onSelect={goTo}
+                      variant="overlay"
+                    />
                     <span className="bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
                       {current + 1} / {fotos.length}
                     </span>
