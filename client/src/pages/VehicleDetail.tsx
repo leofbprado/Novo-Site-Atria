@@ -210,8 +210,12 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
   const isLandscapeLightbox = lightboxOpen && orientation === "landscape";
 
   const navigate = (delta: number) => {
-    setDirection(delta);
-    setCurrent((c) => (c + delta + fotos.length) % fotos.length);
+    // Track deslizante é linear — clampa em vez de loopar pra animação não pular
+    const next = Math.max(0, Math.min(fotos.length - 1, current + delta));
+    if (next !== current) {
+      setDirection(delta);
+      setCurrent(next);
+    }
   };
 
   const goTo = (i: number) => {
@@ -246,40 +250,51 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
     };
   }, [lightboxOpen, fotos.length]);
 
-  const variants = {
-    enter: (d: number) => ({ x: d > 0 ? "60%" : "-60%", opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d > 0 ? "-60%" : "60%", opacity: 0 }),
-  };
-
   return (
     <div className="space-y-3">
       <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-atria-gray-light group">
-        <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-          <motion.img
-            key={current}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            src={fotos[current]}
-            alt={`${titulo} - foto ${current + 1}`}
-            className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
-            draggable={false}
-            drag={fotos.length > 1 ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(_, info) => {
-              if (Math.abs(info.offset.x) > 80) {
-                navigate(info.offset.x < 0 ? 1 : -1);
+        {/* Track deslizante estilo Instagram — foto segue o dedo no swipe */}
+        <motion.div
+          className="absolute inset-0 flex"
+          style={{ width: `${fotos.length * 100}%` }}
+          animate={{ x: `-${(current * 100) / fotos.length}%` }}
+          transition={{ type: "spring", stiffness: 300, damping: 32 }}
+          drag={fotos.length > 1 ? "x" : false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={1}
+          dragMomentum={false}
+          onDragEnd={(_, info) => {
+            const threshold = 50;
+            if (info.offset.x < -threshold || info.velocity.x < -300) {
+              if (current < fotos.length - 1) {
+                navigate(1);
                 trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
               }
-            }}
-            onClick={handleLightboxOpen}
-          />
-        </AnimatePresence>
+            } else if (info.offset.x > threshold || info.velocity.x > 300) {
+              if (current > 0) {
+                navigate(-1);
+                trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
+              }
+            }
+          }}
+        >
+          {fotos.map((src, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 h-full"
+              style={{ width: `${100 / fotos.length}%` }}
+            >
+              <img
+                src={src}
+                alt={`${titulo} - foto ${i + 1}`}
+                onClick={handleLightboxOpen}
+                className="w-full h-full object-cover cursor-zoom-in"
+                draggable={false}
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            </div>
+          ))}
+        </motion.div>
 
         <AnimatePresence>
           {hintVisible && fotos.length > 1 && (
@@ -297,16 +312,19 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
 
         {fotos.length > 1 && (
           <>
+            {/* Setas só desktop (mobile usa swipe puro, igual Instagram) */}
             <button
               onClick={() => navigate(-1)}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              disabled={current === 0}
+              className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Foto anterior"
             >
               <ChevronLeft size={22} />
             </button>
             <button
               onClick={() => navigate(1)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              disabled={current === fotos.length - 1}
+              className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/70 text-white items-center justify-center transition-all opacity-0 group-hover:opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Próxima foto"
             >
               <ChevronRight size={22} />
