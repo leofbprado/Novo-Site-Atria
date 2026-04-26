@@ -30,8 +30,13 @@ function WhatsAppFloat() {
   const [pulse, setPulse] = useState(false);
   const [location] = useLocation();
   // Na ficha do veículo, a sticky bottom bar substitui o float (evita
-  // competição visual entre dois CTAs e o pulse).
-  const hidden = location.startsWith("/veiculo/");
+  // competição visual entre dois CTAs e o pulse). Cobre as 3 rotas que
+  // renderizam VehicleDetail — atual /campinas-sp/, legacy /campinas/ e
+  // legacy /veiculo/.
+  const hidden =
+    location.startsWith("/campinas-sp/") ||
+    location.startsWith("/campinas/") ||
+    location.startsWith("/veiculo/");
   // Pulsar após 15 segundos na página
   useEffect(() => {
     if (hidden) return;
