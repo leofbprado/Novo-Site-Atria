@@ -1186,8 +1186,12 @@ export default function VehicleDetail() {
   useEffect(() => {
     if (!vehicle) return;
     const CREDERE_SRC = "https://app.meucredere.com.br/simulador/loja/21.411.055/0001-64/veiculo/detectar.js";
-    const old = document.querySelector(`script[src="${CREDERE_SRC}"]`);
-    if (old) old.remove();
+    // Mata qualquer iframe órfão antes de injetar — sem isso, o widget antigo
+    // dispara alert("erro ao carregar configurações") quando o veículo muda
+    // ou a ficha desmonta.
+    const container = document.getElementById("credere-pnp");
+    if (container) container.replaceChildren();
+    document.querySelector(`script[src="${CREDERE_SRC}"]`)?.remove();
     const timer = setTimeout(() => {
       const s = document.createElement("script");
       s.src = CREDERE_SRC;
@@ -1197,6 +1201,8 @@ export default function VehicleDetail() {
     return () => {
       clearTimeout(timer);
       document.querySelector(`script[src="${CREDERE_SRC}"]`)?.remove();
+      const c = document.getElementById("credere-pnp");
+      if (c) c.replaceChildren();
     };
   }, [vehicle]);
 
@@ -1372,7 +1378,7 @@ export default function VehicleDetail() {
             )}
 
             {/* Financing / Credere */}
-            <FinancingSection v={vehicle} />
+            <FinancingSection key={vehicle.slug} v={vehicle} />
           </div>
 
           {/* RIGHT COLUMN (30%) - Sticky */}
