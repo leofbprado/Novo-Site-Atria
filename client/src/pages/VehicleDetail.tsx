@@ -369,14 +369,17 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setLightboxOpen(false)}
-            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+            // Sem flex justify-center — track absolute fills viewport.
+            // 100dvw/dvh evita gap por causa da URL bar do iOS Safari.
+            className="fixed inset-0 z-[100] bg-black overflow-hidden"
+            style={{ width: "100dvw", height: "100dvh" }}
             role="dialog"
             aria-modal="true"
             aria-label={`${titulo} - foto ampliada`}
           >
             <button
               onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
-              className={`absolute rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+              className={`absolute z-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
                 isLandscapeLightbox ? "top-2 right-2 w-9 h-9" : "top-4 right-4 w-11 h-11"
               }`}
               aria-label="Fechar"
@@ -384,33 +387,57 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
               <X size={isLandscapeLightbox ? 20 : 24} />
             </button>
 
-            <motion.img
-              key={current}
-              src={fotos[current]}
-              alt={`${titulo} - foto ${current + 1}`}
-              onClick={(e) => e.stopPropagation()}
-              className={`object-contain select-none ${
-                isLandscapeLightbox
-                  ? "w-screen h-screen max-w-none max-h-none"
-                  : "max-w-[95vw] max-h-[90vh]"
-              }`}
-              draggable={false}
+            {/* Track deslizante — mesmo padrão da galeria principal */}
+            <motion.div
+              className="absolute inset-0 flex"
+              style={{ width: `${fotos.length * 100}%` }}
+              animate={{ x: `-${(current * 100) / fotos.length}%` }}
+              transition={{ type: "spring", stiffness: 300, damping: 32 }}
               drag={fotos.length > 1 ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
+              dragElastic={1}
+              dragMomentum={false}
               onDragEnd={(_, info) => {
-                if (Math.abs(info.offset.x) > 80) {
-                  navigate(info.offset.x < 0 ? 1 : -1);
-                  trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
+                const threshold = 50;
+                if (info.offset.x < -threshold || info.velocity.x < -300) {
+                  if (current < fotos.length - 1) {
+                    navigate(1);
+                    trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
+                  }
+                } else if (info.offset.x > threshold || info.velocity.x > 300) {
+                  if (current > 0) {
+                    navigate(-1);
+                    trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
+                  }
                 }
               }}
-            />
+            >
+              {fotos.map((src, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 h-full"
+                  style={{ width: `${100 / fotos.length}%` }}
+                >
+                  <img
+                    src={src}
+                    alt={`${titulo} - foto ${i + 1}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`w-full h-full select-none ${
+                      isLandscapeLightbox ? "object-cover" : "object-contain"
+                    }`}
+                    draggable={false}
+                  />
+                </div>
+              ))}
+            </motion.div>
 
             {fotos.length > 1 && (
               <>
+                {/* Setas só desktop */}
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-                  className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+                  disabled={current === 0}
+                  className={`hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                     isLandscapeLightbox ? "left-2 w-10 h-10" : "left-4 w-12 h-12"
                   }`}
                   aria-label="Foto anterior"
@@ -419,25 +446,29 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(1); }}
-                  className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+                  disabled={current === fotos.length - 1}
+                  className={`hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                     isLandscapeLightbox ? "right-2 w-10 h-10" : "right-4 w-12 h-12"
                   }`}
                   aria-label="Próxima foto"
                 >
                   <ChevronRight size={isLandscapeLightbox ? 22 : 28} />
                 </button>
-                {/* Dots e contador escondidos em landscape — foco total na imagem */}
                 {!isLandscapeLightbox && (
                   <div
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-                    onClick={(e) => e.stopPropagation()}
+                    className="absolute z-10 bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
                   >
-                    <GalleryDots
-                      total={fotos.length}
-                      current={current}
-                      onSelect={goTo}
-                      variant="overlay"
-                    />
+                    <div
+                      className="pointer-events-auto"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <GalleryDots
+                        total={fotos.length}
+                        current={current}
+                        onSelect={goTo}
+                        variant="overlay"
+                      />
+                    </div>
                     <span className="bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
                       {current + 1} / {fotos.length}
                     </span>
