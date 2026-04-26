@@ -201,34 +201,84 @@ function GalleryDots({
   );
 }
 
+// Hook que sincroniza um track com scroll-snap ao state `current` via IntersectionObserver
+function useSnapTrack(rootRef: React.RefObject<HTMLDivElement>, total: number, onChange: (i: number) => void) {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || total <= 1) return;
+    const slides = root.querySelectorAll<HTMLElement>("[data-slide-index]");
+    const io = new IntersectionObserver(
+      (entries) => {
+        // Pega o slide com maior intersection ratio entre os ativos
+        let best: { idx: number; ratio: number } | null = null;
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = Number(entry.target.getAttribute("data-slide-index"));
+            if (!best || entry.intersectionRatio > best.ratio) {
+              best = { idx, ratio: entry.intersectionRatio };
+            }
+          }
+        });
+        if (best && best.ratio > 0.5) onChange(best.idx);
+      },
+      { root, threshold: [0.5, 0.75, 1] },
+    );
+    slides.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, [total, rootRef, onChange]);
+}
+
 function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string; slug: string }) {
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
   const orientation = useOrientation();
   const isLandscapeLightbox = lightboxOpen && orientation === "landscape";
+  const mainTrackRef = useRef<HTMLDivElement>(null);
+  const lightboxTrackRef = useRef<HTMLDivElement>(null);
 
-  const navigate = (delta: number) => {
-    // Track deslizante é linear — clampa em vez de loopar pra animação não pular
-    const next = Math.max(0, Math.min(fotos.length - 1, current + delta));
-    if (next !== current) {
-      setDirection(delta);
-      setCurrent(next);
+  // Scroll-snap programático — funciona em ambos os tracks
+  const scrollTrackTo = (ref: React.RefObject<HTMLDivElement>, i: number, smooth = true) => {
+    const root = ref.current;
+    if (!root) return;
+    const target = root.querySelector<HTMLElement>(`[data-slide-index="${i}"]`);
+    if (target) {
+      root.scrollTo({ left: target.offsetLeft, behavior: smooth ? "smooth" : "auto" });
     }
   };
 
   const goTo = (i: number) => {
-    setDirection(i > current ? 1 : -1);
-    setCurrent(i);
+    const next = Math.max(0, Math.min(fotos.length - 1, i));
+    setCurrent(next);
+    scrollTrackTo(lightboxOpen ? lightboxTrackRef : mainTrackRef, next);
   };
+  const navigate = (delta: number) => {
+    const next = Math.max(0, Math.min(fotos.length - 1, current + delta));
+    if (next !== current) {
+      setCurrent(next);
+      scrollTrackTo(lightboxOpen ? lightboxTrackRef : mainTrackRef, next);
+      trackVehicleEvent(slug, lightboxOpen ? "gallery_swipe_lightbox" : "gallery_swipe").catch(() => {});
+    }
+  };
+
+  // Sincroniza state quando user scrolla manualmente (swipe nativo)
+  useSnapTrack(mainTrackRef, fotos.length, setCurrent);
+  useSnapTrack(lightboxTrackRef, fotos.length, setCurrent);
+
+  // Quando abre lightbox, posiciona no slide atual sem animação
+  useEffect(() => {
+    if (lightboxOpen) {
+      // Espera DOM montar
+      const t = setTimeout(() => scrollTrackTo(lightboxTrackRef, current, false), 0);
+      return () => clearTimeout(t);
+    }
+  }, [lightboxOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLightboxOpen = () => {
     setLightboxOpen(true);
     trackVehicleEvent(slug, "gallery_lightbox_open").catch(() => {});
   };
 
-  // Hint "Deslize ou toque" some após 3s pra não poluir depois que usuário entendeu
   useEffect(() => {
     const t = setTimeout(() => setHintVisible(false), 3000);
     return () => clearTimeout(t);
@@ -248,41 +298,23 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, fotos.length]);
 
   return (
     <div className="space-y-3">
       <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-atria-gray-light group">
-        {/* Track deslizante estilo Instagram — foto segue o dedo no swipe */}
-        <motion.div
-          className="absolute inset-0 flex"
-          style={{ width: `${fotos.length * 100}%` }}
-          animate={{ x: `-${(current * 100) / fotos.length}%` }}
-          transition={{ type: "spring", stiffness: 300, damping: 32 }}
-          drag={fotos.length > 1 ? "x" : false}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={1}
-          dragMomentum={false}
-          onDragEnd={(_, info) => {
-            const threshold = 50;
-            if (info.offset.x < -threshold || info.velocity.x < -300) {
-              if (current < fotos.length - 1) {
-                navigate(1);
-                trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
-              }
-            } else if (info.offset.x > threshold || info.velocity.x > 300) {
-              if (current > 0) {
-                navigate(-1);
-                trackVehicleEvent(slug, "gallery_swipe").catch(() => {});
-              }
-            }
-          }}
+        {/* Scroll-snap nativo — comportamento idêntico ao Instagram, sem JS no swipe */}
+        <div
+          ref={mainTrackRef}
+          className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: "none" }}
         >
           {fotos.map((src, i) => (
             <div
               key={i}
-              className="flex-shrink-0 h-full"
-              style={{ width: `${100 / fotos.length}%` }}
+              data-slide-index={i}
+              className="flex-shrink-0 w-full h-full snap-start snap-always"
             >
               <img
                 src={src}
@@ -294,7 +326,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
               />
             </div>
           ))}
-        </motion.div>
+        </div>
 
         <AnimatePresence>
           {hintVisible && fotos.length > 1 && (
@@ -387,49 +419,32 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
               <X size={isLandscapeLightbox ? 20 : 24} />
             </button>
 
-            {/* Track deslizante — mesmo padrão da galeria principal */}
-            <motion.div
-              className="absolute inset-0 flex"
-              style={{ width: `${fotos.length * 100}%` }}
-              animate={{ x: `-${(current * 100) / fotos.length}%` }}
-              transition={{ type: "spring", stiffness: 300, damping: 32 }}
-              drag={fotos.length > 1 ? "x" : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              dragMomentum={false}
-              onDragEnd={(_, info) => {
-                const threshold = 50;
-                if (info.offset.x < -threshold || info.velocity.x < -300) {
-                  if (current < fotos.length - 1) {
-                    navigate(1);
-                    trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
-                  }
-                } else if (info.offset.x > threshold || info.velocity.x > 300) {
-                  if (current > 0) {
-                    navigate(-1);
-                    trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
-                  }
-                }
-              }}
+            {/* Scroll-snap nativo — mesmo padrão da galeria principal */}
+            <div
+              ref={lightboxTrackRef}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: "none" }}
             >
               {fotos.map((src, i) => (
                 <div
                   key={i}
-                  className="flex-shrink-0 h-full"
-                  style={{ width: `${100 / fotos.length}%` }}
+                  data-slide-index={i}
+                  className="flex-shrink-0 w-full h-full snap-start snap-always flex items-center justify-center"
                 >
                   <img
                     src={src}
                     alt={`${titulo} - foto ${i + 1}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`w-full h-full select-none ${
-                      isLandscapeLightbox ? "object-cover" : "object-contain"
+                    className={`select-none ${
+                      isLandscapeLightbox
+                        ? "w-full h-full object-cover"
+                        : "max-w-full max-h-full object-contain"
                     }`}
                     draggable={false}
                   />
                 </div>
               ))}
-            </motion.div>
+            </div>
 
             {fotos.length > 1 && (
               <>
