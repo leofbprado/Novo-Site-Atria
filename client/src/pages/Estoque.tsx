@@ -1191,30 +1191,20 @@ function VehicleCard({ v }: { v: Vehicle }) {
             );
           })()}
 
-          {/* Badge ano + Heart top-right (lado a lado) */}
-          <div className="absolute top-3 right-3 flex items-center gap-2">
-            <span className="bg-atria-navy/70 backdrop-blur-sm text-white text-xs font-inter font-semibold px-2.5 py-1 rounded-md">
-              {v.ano}
-            </span>
-            <button
-              type="button"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFavorited((s) => !s); }}
-              aria-label={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
-              aria-pressed={favorited}
-              className="w-9 h-9 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-            >
-              <Heart
-                size={16}
-                strokeWidth={2}
-                className={favorited ? "fill-atria-navy text-atria-navy" : "text-atria-text-gray"}
-              />
-            </button>
-          </div>
-
-          {/* Wordmark "ÁTRIA" bottom-right — assinatura discreta */}
-          <span aria-hidden className="absolute bottom-2.5 right-3 font-barlow-condensed font-black italic text-sm tracking-[0.2em] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
-            ÁTRIA
-          </span>
+          {/* Heart top-right — favoritar (UI local) */}
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFavorited((s) => !s); }}
+            aria-label={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
+            aria-pressed={favorited}
+            className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+          >
+            <Heart
+              size={16}
+              strokeWidth={2}
+              className={favorited ? "fill-atria-navy text-atria-navy" : "text-atria-text-gray"}
+            />
+          </button>
         </div>
 
         {/* Body */}
