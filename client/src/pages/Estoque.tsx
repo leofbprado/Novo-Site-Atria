@@ -1269,6 +1269,9 @@ function VehicleCard({ v }: { v: Vehicle }) {
             </div>
             <span className="font-inter text-[10px] text-atria-text-gray font-medium">{Math.round(ENTRADA_PCT * 100)}% entrada · {SIM_PRAZO}x</span>
           </div>
+          <p className="font-inter text-[10px] text-atria-text-gray/80 mt-1.5 text-right italic">
+            * Sujeito a aprovação de crédito
+          </p>
         </div>
       </a>
     </motion.article>
