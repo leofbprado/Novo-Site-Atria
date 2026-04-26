@@ -307,7 +307,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
         {/* Scroll-snap nativo — comportamento idêntico ao Instagram, sem JS no swipe */}
         <div
           ref={mainTrackRef}
-          className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+          className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none" }}
         >
           {fotos.map((src, i) => (
@@ -423,7 +423,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
             <div
               ref={lightboxTrackRef}
               onClick={(e) => e.stopPropagation()}
-              className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+              className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain [&::-webkit-scrollbar]:hidden"
               style={{ scrollbarWidth: "none" }}
             >
               {fotos.map((src, i) => (
