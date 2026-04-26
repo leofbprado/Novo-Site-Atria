@@ -151,47 +151,56 @@ function MinMaxInputs({
   prefix?: string;
   suffix?: string;
 }) {
-  const Field = ({ which }: { which: "min" | "max" }) => {
-    const idx = which === "min" ? 0 : 1;
-    const val = value[idx];
-    const showValue = which === "min" ? (val > min ? val : "") : (val < max ? val : "");
-    const placeholder = String(which === "min" ? min : max);
-    return (
-      <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
-        {prefix && <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">{prefix}</span>}
-        <input
-          type="number"
-          inputMode="numeric"
-          min={min}
-          max={max}
-          step={step}
-          value={showValue}
-          placeholder={placeholder}
-          onChange={(e) => {
-            const raw = Number(e.target.value);
-            if (which === "min") {
-              const v = raw > 0 ? Math.min(raw, value[1]) : min;
-              onChange([Math.max(min, v), value[1]]);
-            } else {
-              const v = raw > 0 ? Math.min(raw, max) : max;
-              onChange([value[0], Math.max(value[0], v)]);
-            }
-          }}
-          className={`w-full py-2 ${prefix ? "" : "pl-2.5"} ${suffix ? "" : "pr-2"} font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-        />
-        {suffix && <span className="pl-1 pr-2.5 font-inter text-sm text-atria-text-gray">{suffix}</span>}
-      </div>
-    );
-  };
+  const [lo, hi] = value;
+  const showLo = lo > min ? lo : "";
+  const showHi = hi < max ? hi : "";
+  const inputCls = `w-full py-2 ${prefix ? "" : "pl-2.5"} ${suffix ? "" : "pr-2"} font-inter text-sm text-atria-text-dark outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`;
+
   return (
     <div className="mt-3 grid grid-cols-2 gap-2">
       <label className="block">
         <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Mínimo</span>
-        <Field which="min" />
+        <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
+          {prefix && <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">{prefix}</span>}
+          <input
+            type="number"
+            inputMode="numeric"
+            min={min}
+            max={max}
+            step={step}
+            value={showLo}
+            placeholder={String(min)}
+            onChange={(e) => {
+              const raw = Number(e.target.value);
+              const v = raw > 0 ? Math.min(raw, hi) : min;
+              onChange([Math.max(min, v), hi]);
+            }}
+            className={inputCls}
+          />
+          {suffix && <span className="pl-1 pr-2.5 font-inter text-sm text-atria-text-gray">{suffix}</span>}
+        </div>
       </label>
       <label className="block">
         <span className="block text-[11px] uppercase tracking-wider text-atria-text-gray font-semibold mb-1">Máximo</span>
-        <Field which="max" />
+        <div className="flex items-center rounded-lg border border-atria-gray-medium focus-within:border-atria-navy transition-colors overflow-hidden">
+          {prefix && <span className="pl-2.5 pr-1 font-inter text-sm text-atria-text-gray">{prefix}</span>}
+          <input
+            type="number"
+            inputMode="numeric"
+            min={min}
+            max={max}
+            step={step}
+            value={showHi}
+            placeholder={String(max)}
+            onChange={(e) => {
+              const raw = Number(e.target.value);
+              const v = raw > 0 ? Math.min(raw, max) : max;
+              onChange([lo, Math.max(lo, v)]);
+            }}
+            className={inputCls}
+          />
+          {suffix && <span className="pl-1 pr-2.5 font-inter text-sm text-atria-text-gray">{suffix}</span>}
+        </div>
       </label>
     </div>
   );
