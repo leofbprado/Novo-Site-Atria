@@ -3,16 +3,15 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Carousel, type CarouselCard } from "@/components/ui/ThreeDCarousel";
 import { ChevronDown, Star, CheckCircle, Car, Shield, Award, Phone, MapPin, X, Clock } from "lucide-react";
 import { getFeaturedVehicles, getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
-import { getPrecoExibicao, calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
+import { calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
 import { ROUTES } from "@/lib/constants";
 import { useGoogleReviews } from "@/hooks/useGoogleReviews";
 import { useSEO } from "@/hooks/useSEO";
 import { trackLead } from "@/lib/track";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { HeroSection } from "@/components/home/HeroSection";
-import { VehicleCard as RecentVehicleCard } from "@/components/VehicleCard";
+import { VehicleCard } from "@/components/VehicleCard";
 import { useRecentlyViewed } from "@/lib/recentlyViewed";
-import { TagBadge } from "@/components/TagBadge";
 
 const WA_NUMBER = "5519996525211";
 const WA_BASE = `https://wa.me/${WA_NUMBER}`;
@@ -447,9 +446,6 @@ function EstoqueDestaque() {
   const filtered = tab === "Todos" ? vehicles : vehicles.filter((v) => v.tipo?.toLowerCase() === tab.toLowerCase());
   const displayed = (filtered.length > 0 ? filtered : vehicles).slice(0, 6);
 
-  const fmt = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -476,7 +472,7 @@ function EstoqueDestaque() {
           {loading
             ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
             : displayed.map((v) => (
-                <VehicleCard key={v.id} vehicle={v} fmt={fmt} />
+                <VehicleCard key={v.id} v={v} />
               ))}
         </div>
 
@@ -488,72 +484,6 @@ function EstoqueDestaque() {
         )}
       </div>
     </section>
-  );
-}
-
-function VehicleCard({ vehicle: v, fmt }: { vehicle: Vehicle; fmt: (n: number) => string }) {
-  const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-
-  return (
-    <motion.div
-      className="group bg-white rounded-xl overflow-hidden border border-atria-gray-medium hover:shadow-lg transition-shadow"
-      whileHover={{ y: -4 }}
-      transition={{ type: "spring", stiffness: 300 }}
-    >
-      <a href={vehiclePath(v)} className="block">
-        <div className="relative aspect-[4/3] overflow-hidden bg-atria-gray-light">
-          {v.fotos?.[0] ? (
-            <img
-              src={v.fotos[0]}
-              alt={titulo}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Car size={48} className="text-atria-gray-medium" />
-            </div>
-          )}
-          {(() => {
-            // Regra: máx 1 badge. Oferta (auto pelo preço) ganha; senão, tag manual.
-            const { emPromocao } = getPrecoExibicao(v);
-            const primeiraTag = (v.tags || []).find((t) => t !== "oferta");
-            const tagFinal = emPromocao ? "oferta" : primeiraTag ?? null;
-            if (!tagFinal) return null;
-            return (
-              <div className="absolute top-3 left-3">
-                <TagBadge tag={tagFinal} />
-              </div>
-            );
-          })()}
-        </div>
-        <div className="p-5 pb-3">
-          <p className="font-barlow-condensed font-bold text-lg text-atria-text-dark leading-tight mb-1">{titulo}</p>
-          <p className="font-inter text-sm text-atria-text-gray mb-2">
-            {v.ano} · {v.km?.toLocaleString("pt-BR")} km · {v.combustivel}
-          </p>
-          {(() => {
-            const { precoFinal, precoCheio } = getPrecoExibicao(v);
-            return (
-              <div className="flex items-baseline gap-2 flex-wrap">
-                {precoCheio && (
-                  <span className="font-inter text-sm text-atria-text-gray line-through">{fmt(precoCheio)}</span>
-                )}
-                <span className="font-barlow-condensed font-black text-2xl text-atria-navy">{fmt(precoFinal)}</span>
-              </div>
-            );
-          })()}
-        </div>
-      </a>
-      <div className="px-5 pb-4 mt-2">
-        <a
-          href={vehiclePath(v)}
-          className="block w-full text-center py-2.5 bg-atria-navy hover:bg-atria-navy/90 text-white font-inter font-bold text-sm uppercase tracking-wider rounded transition-colors"
-        >
-          Ver detalhes
-        </a>
-      </div>
-    </motion.div>
   );
 }
 
@@ -1280,7 +1210,7 @@ function RecentlyViewed() {
           <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5" style={{ width: "max-content" }}>
             {recentes.map((v) => (
               <div key={v.id} className="w-[280px] md:w-auto flex-shrink-0 snap-start">
-                <RecentVehicleCard v={v} />
+                <VehicleCard v={v} />
               </div>
             ))}
           </div>
