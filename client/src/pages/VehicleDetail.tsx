@@ -16,6 +16,7 @@ import { getPrecoExibicao, precoEfetivo, parcelaParaPreco, SIM_PRAZO } from "@/l
 import { TagBadge } from "@/components/TagBadge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { PriceCTABox } from "@/components/vehicle/PriceCTABox";
+import { useOrientation } from "@/hooks/useOrientation";
 
 // ---- Helpers ----------------------------------------------------------------
 const WA_NUMBER = "5519996525211";
@@ -143,20 +144,91 @@ function generateBadges(v: Vehicle): AIBadge[] {
 }
 
 // ---- Photo Gallery ----------------------------------------------------------
+const MAX_DOTS = 9;
+
+function GalleryDots({
+  total, current, onSelect, variant = "default",
+}: {
+  total: number;
+  current: number;
+  onSelect: (i: number) => void;
+  variant?: "default" | "overlay";
+}) {
+  if (total <= 1) return null;
+  const visible = Math.min(total, MAX_DOTS);
+  const indices = Array.from({ length: visible }, (_, i) => i);
+  const overflow = total > MAX_DOTS;
+
+  return (
+    <div
+      className={`flex items-center justify-center gap-1.5 ${
+        variant === "overlay"
+          ? "px-3 py-2 rounded-full bg-black/40 backdrop-blur-sm"
+          : ""
+      }`}
+      role="tablist"
+      aria-label="Indicador de fotos"
+    >
+      {indices.map((i) => {
+        const isActive = i === current || (overflow && i === MAX_DOTS - 1 && current >= MAX_DOTS - 1);
+        const isLastWithOverflow = overflow && i === MAX_DOTS - 1;
+        return (
+          <button
+            key={i}
+            onClick={(e) => { e.stopPropagation(); onSelect(isLastWithOverflow ? total - 1 : i); }}
+            // Hit-area invisível de 24px×24px (padding) com bolinha visual centrada
+            // — atende mínimo de touch target sem poluir o design.
+            className="p-2 -m-2 flex items-center justify-center"
+            aria-label={`Foto ${isLastWithOverflow ? total : i + 1} de ${total}`}
+            aria-selected={isActive}
+            role="tab"
+          >
+            <span
+              className={`block transition-all rounded-full ${
+                isActive
+                  ? variant === "overlay"
+                    ? "w-2 h-2 bg-white"
+                    : "w-2 h-2 bg-atria-navy"
+                  : variant === "overlay"
+                    ? "w-1.5 h-1.5 bg-white/50"
+                    : "w-1.5 h-1.5 bg-atria-gray-medium"
+              }`}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string; slug: string }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [hintVisible, setHintVisible] = useState(true);
+  const orientation = useOrientation();
+  const isLandscapeLightbox = lightboxOpen && orientation === "landscape";
 
   const navigate = (delta: number) => {
     setDirection(delta);
     setCurrent((c) => (c + delta + fotos.length) % fotos.length);
   };
 
+  const goTo = (i: number) => {
+    setDirection(i > current ? 1 : -1);
+    setCurrent(i);
+  };
+
   const handleLightboxOpen = () => {
     setLightboxOpen(true);
     trackVehicleEvent(slug, "gallery_lightbox_open").catch(() => {});
   };
+
+  // Hint "Deslize ou toque" some após 3s pra não poluir depois que usuário entendeu
+  useEffect(() => {
+    const t = setTimeout(() => setHintVisible(false), 3000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -209,9 +281,19 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
           />
         </AnimatePresence>
 
-        <span className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-inter font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 pointer-events-none md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-          <ZoomIn size={14} /> Toque para ampliar
-        </span>
+        <AnimatePresence>
+          {hintVisible && fotos.length > 1 && (
+            <motion.span
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-inter font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 pointer-events-none"
+            >
+              <ZoomIn size={14} /> Deslize ou toque para ampliar
+            </motion.span>
+          )}
+        </AnimatePresence>
 
         {fotos.length > 1 && (
           <>
@@ -237,12 +319,19 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
         </span>
       </div>
 
+      {/* Dots indicadores — Instagram-style. Mostrados também no mobile pra incentivar swipe. */}
+      {fotos.length > 1 && (
+        <div className="flex justify-center pt-1">
+          <GalleryDots total={fotos.length} current={current} onSelect={goTo} />
+        </div>
+      )}
+
       {fotos.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {fotos.map((src, i) => (
             <button
               key={i}
-              onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+              onClick={() => goTo(i)}
               className={`flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${
                 i === current ? "border-atria-navy" : "border-transparent opacity-60 hover:opacity-90"
               }`}
@@ -269,40 +358,73 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
           >
             <button
               onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
-              className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              className={`absolute rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+                isLandscapeLightbox ? "top-2 right-2 w-9 h-9" : "top-4 right-4 w-11 h-11"
+              }`}
               aria-label="Fechar"
             >
-              <X size={24} />
+              <X size={isLandscapeLightbox ? 20 : 24} />
             </button>
 
-            <img
+            <motion.img
               key={current}
               src={fotos[current]}
               alt={`${titulo} - foto ${current + 1}`}
               onClick={(e) => e.stopPropagation()}
-              className="max-w-[95vw] max-h-[90vh] object-contain select-none"
+              className={`object-contain select-none ${
+                isLandscapeLightbox
+                  ? "w-screen h-screen max-w-none max-h-none"
+                  : "max-w-[95vw] max-h-[90vh]"
+              }`}
               draggable={false}
+              drag={fotos.length > 1 ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (Math.abs(info.offset.x) > 80) {
+                  navigate(info.offset.x < 0 ? 1 : -1);
+                  trackVehicleEvent(slug, "gallery_swipe_lightbox").catch(() => {});
+                }
+              }}
             />
 
             {fotos.length > 1 && (
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+                    isLandscapeLightbox ? "left-2 w-10 h-10" : "left-4 w-12 h-12"
+                  }`}
                   aria-label="Foto anterior"
                 >
-                  <ChevronLeft size={28} />
+                  <ChevronLeft size={isLandscapeLightbox ? 22 : 28} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(1); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
+                    isLandscapeLightbox ? "right-2 w-10 h-10" : "right-4 w-12 h-12"
+                  }`}
                   aria-label="Próxima foto"
                 >
-                  <ChevronRight size={28} />
+                  <ChevronRight size={isLandscapeLightbox ? 22 : 28} />
                 </button>
-                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
-                  {current + 1} / {fotos.length}
-                </span>
+                {/* Dots e contador escondidos em landscape — foco total na imagem */}
+                {!isLandscapeLightbox && (
+                  <div
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <GalleryDots
+                      total={fotos.length}
+                      current={current}
+                      onSelect={goTo}
+                      variant="overlay"
+                    />
+                    <span className="bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
+                      {current + 1} / {fotos.length}
+                    </span>
+                  </div>
+                )}
               </>
             )}
           </motion.div>
