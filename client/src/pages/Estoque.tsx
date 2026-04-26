@@ -1143,8 +1143,11 @@ function VehicleCard({ v }: { v: Vehicle }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
   const { precoFinal, precoCheio, emPromocao } = getPrecoExibicao(v);
   const desconto = precoCheio ? precoCheio - precoFinal : 0;
-  // Parcela estimada — 30% entrada, 60x, coef ~0.0285 (juros típicos do mercado)
-  const parcelaEst = Math.round(precoFinal * 0.7 * 0.0285);
+  // Parcela estimada — usa MESMA lógica do simulador (48x + COEF 0.035 do
+  // lib/preco). Entrada de 40% (em vez de 30%) pra parcela ficar comercialmente
+  // mais atrativa — "mire o centro pouco menos pra ficar mais barato".
+  const ENTRADA_PCT = 0.4;
+  const parcelaEst = parcelaParaPreco(precoFinal, precoFinal * ENTRADA_PCT);
   const [favorited, setFavorited] = useState(false);
 
   return (
@@ -1258,7 +1261,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
               <span className="font-barlow-condensed font-black text-base text-atria-text-dark tabular-nums">{fmt(parcelaEst)}</span>
               <span className="font-inter text-xs font-bold text-atria-text-gray">/mês*</span>
             </div>
-            <span className="font-inter text-[10px] text-atria-text-gray font-medium">30% entrada · 60x</span>
+            <span className="font-inter text-[10px] text-atria-text-gray font-medium">{Math.round(ENTRADA_PCT * 100)}% entrada · {SIM_PRAZO}x</span>
           </div>
         </div>
       </a>
