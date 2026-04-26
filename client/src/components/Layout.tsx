@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { track, trackLead, trackIntent } from "@/lib/track";
@@ -27,11 +28,18 @@ const WA_OPTIONS = [
 function WhatsAppFloat() {
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const [location] = useLocation();
+  // Na ficha do veículo, a sticky bottom bar substitui o float (evita
+  // competição visual entre dois CTAs e o pulse).
+  const hidden = location.startsWith("/veiculo/");
   // Pulsar após 15 segundos na página
   useEffect(() => {
+    if (hidden) return;
     const t = setTimeout(() => setPulse(true), 15000);
     return () => clearTimeout(t);
-  }, []);
+  }, [hidden]);
+
+  if (hidden) return null;
 
   // Parar de pulsar quando abrir o chat
   const handleToggle = () => {

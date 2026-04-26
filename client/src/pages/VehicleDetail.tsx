@@ -12,7 +12,7 @@ import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, ty
 import { ROUTES } from "@/lib/constants";
 import { track, trackLead, trackIntent } from "@/lib/track";
 import { pushRecentSlug } from "@/lib/recentlyViewed";
-import { getPrecoExibicao, precoEfetivo } from "@/lib/preco";
+import { getPrecoExibicao, precoEfetivo, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
@@ -476,24 +476,25 @@ function PricePanel({ v }: { v: Vehicle }) {
             </p>
           </div>
 
-          {/* Primary CTA: Interesse */}
-          <button
-            onClick={handleInteresseClick}
-            className="w-full bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-base rounded-full py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
-          >
-            <Heart size={18} fill="currentColor" /> Tenho interesse neste {v.modelo}
-          </button>
-
-          {/* Secondary CTA: WhatsApp */}
-          <a
-            href={waLink(waMsg)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleWhatsClick}
-            className="w-full border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold text-sm rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors"
-          >
-            <MessageCircle size={18} /> WhatsApp agora
-          </a>
+          {/* CTAs: Interesse (primary) + WA (icon secondary) */}
+          <div className="flex items-stretch gap-2">
+            <button
+              onClick={handleInteresseClick}
+              className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-base rounded-full py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
+            >
+              <Heart size={18} fill="currentColor" /> Tenho interesse
+            </button>
+            <a
+              href={waLink(waMsg)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleWhatsClick}
+              aria-label="Falar pelo WhatsApp"
+              className="w-14 flex items-center justify-center bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 rounded-full transition-colors flex-shrink-0"
+            >
+              <MessageCircle size={22} strokeWidth={2.2} />
+            </a>
+          </div>
 
           {/* Scroll to financing */}
           <button
@@ -595,22 +596,24 @@ function ActionBlock({ v }: { v: Vehicle }) {
           <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">{fmt(getPrecoExibicao(v).precoFinal)}</p>
         </div>
 
-        <button
-          onClick={handleInteresseClick}
-          className="w-full bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-base rounded-full py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
-        >
-          <Heart size={18} fill="currentColor" /> Tenho interesse neste {v.modelo}
-        </button>
-
-        <a
-          href={waLink(waMsg)}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleWhatsClick}
-          className="w-full border-2 border-atria-navy text-atria-navy hover:bg-atria-navy hover:text-white font-inter font-bold text-sm rounded-xl py-3.5 flex items-center justify-center gap-2 transition-colors"
-        >
-          <MessageCircle size={18} /> WhatsApp agora
-        </a>
+        <div className="flex items-stretch gap-2">
+          <button
+            onClick={handleInteresseClick}
+            className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-base rounded-full py-4 flex items-center justify-center gap-2 transition-colors shadow-sm"
+          >
+            <Heart size={18} fill="currentColor" /> Tenho interesse
+          </button>
+          <a
+            href={waLink(waMsg)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleWhatsClick}
+            aria-label="Falar pelo WhatsApp"
+            className="w-14 flex items-center justify-center bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 rounded-full transition-colors flex-shrink-0"
+          >
+            <MessageCircle size={22} strokeWidth={2.2} />
+          </a>
+        </div>
 
         <button
           onClick={handleSimularCredere}
@@ -1040,6 +1043,100 @@ function StoreLocations() {
   );
 }
 
+// ---- Sticky Bottom CTA Bar (mobile) -----------------------------------------
+// Aparece quando o ActionBlock sai da tela (controlado pelo IntersectionObserver
+// no componente pai). Substitui o WhatsAppFloat global na ficha — uma única
+// CTA primária + ícone WA secundário, mantendo o preço sempre à vista pra
+// reforçar o valor da decisão.
+function StickyCtaBar({ v, visible }: { v: Vehicle; visible: boolean }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
+  const preco = precoEfetivo(v);
+  const parcela = parcelaParaPreco(preco, preco * 0.4);
+  const trackProps = {
+    vehicle_id: v.slug,
+    vehicle_marca: v.marca,
+    vehicle_modelo: v.modelo,
+    vehicle_ano: v.ano,
+    vehicle_preco: preco,
+    value: preco,
+  };
+
+  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(preco)}). Poderia me atender?`;
+
+  const handleInteresseClick = () => {
+    trackVehicleEvent(v.slug, "clique_interesse_sticky").catch(() => {});
+    track("cta_click", { source: "ficha-interesse-sticky", cta: "interesse", ...trackProps });
+    trackIntent("lead_tenho_interesse_aberto", {
+      origem: "ficha-sticky",
+      marca: v.marca, modelo: v.modelo, preco,
+    });
+    setDrawerOpen(true);
+  };
+
+  const handleWhatsClick = () => {
+    trackVehicleEvent(v.slug, "clique_whatsapp_sticky").catch(() => {});
+    trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
+    trackLead({
+      clarityEvent: "lead_whatsapp_ficha",
+      gtmEvent: "whatsapp_click",
+      origem: "ficha-sticky",
+      source: "ficha-whatsapp-sticky",
+      marca: v.marca, modelo: v.modelo, ano: v.ano, preco,
+    });
+  };
+
+  return (
+    <>
+      <AnimatePresence>
+        {visible && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-atria-gray-medium shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:hidden"
+            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+          >
+            <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex-shrink-0 min-w-0">
+                <p className="font-barlow-condensed font-black text-xl text-atria-navy leading-none tabular-nums">
+                  {fmt(preco)}
+                </p>
+                <p className="font-inter text-[10px] text-atria-text-gray leading-tight mt-0.5 whitespace-nowrap">
+                  {SIM_PRAZO}× {fmt(parcela)}
+                </p>
+              </div>
+              <a
+                href={waLink(waMsg)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleWhatsClick}
+                aria-label="Falar pelo WhatsApp"
+                className="w-12 h-12 flex items-center justify-center bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 rounded-full transition-colors flex-shrink-0"
+              >
+                <MessageCircle size={22} strokeWidth={2.2} />
+              </a>
+              <button
+                onClick={handleInteresseClick}
+                className="flex-1 min-w-0 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-sm rounded-full py-3 flex items-center justify-center gap-2 transition-colors shadow-sm"
+              >
+                <Heart size={16} fill="currentColor" />
+                <span className="truncate">Tenho interesse</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {drawerOpen && (
+          <InterestDrawer vehicle={v} onClose={() => setDrawerOpen(false)} />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 // ---- Page -------------------------------------------------------------------
 export default function VehicleDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -1191,7 +1288,7 @@ export default function VehicleDetail() {
       </div>
 
       {/* ============ HERO: 70/30 Layout ============ */}
-      <div className="container mx-auto px-4 py-6 pb-24 lg:pb-8">
+      <div className="container mx-auto px-4 py-6 pb-32 lg:pb-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
 
           {/* LEFT COLUMN (70%) */}
@@ -1302,6 +1399,9 @@ export default function VehicleDetail() {
           <StoreLocations />
         </div>
       </div>
+
+      {/* Sticky bottom CTA — aparece quando o ActionBlock sai da tela (mobile) */}
+      <StickyCtaBar v={vehicle} visible={showStickyCTA} />
     </>
   );
 }
