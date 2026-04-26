@@ -15,6 +15,7 @@ import { pushRecentSlug } from "@/lib/recentlyViewed";
 import { getPrecoExibicao, precoEfetivo, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { PriceCTABox } from "@/components/vehicle/PriceCTABox";
 
 // ---- Helpers ----------------------------------------------------------------
 const WA_NUMBER = "5519996525211";
@@ -443,83 +444,54 @@ function PricePanel({ v }: { v: Vehicle }) {
     document.getElementById("financiamento")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const preco = precoEfetivo(v);
+  const parcela = parcelaParaPreco(preco, preco * 0.4);
+
   return (
     <>
-      <div className="bg-white border border-atria-gray-medium rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-6 space-y-4">
-          {/* Header */}
-          <div>
-            <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider">{v.marca}</p>
-            <h2 className="font-barlow-condensed font-black text-2xl text-atria-text-dark leading-tight">
-              {v.marca} {v.modelo}
-            </h2>
-            {v.versao && (
-              <p className="font-inter text-sm text-atria-text-gray mt-0.5">{v.versao}</p>
-            )}
-          </div>
+      <div className="space-y-4">
+        {/* Header marca/modelo (só desktop sidebar) */}
+        <div className="px-1">
+          <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider">{v.marca}</p>
+          <h2 className="font-barlow-condensed font-black text-2xl text-atria-text-dark leading-tight">
+            {v.marca} {v.modelo}
+          </h2>
+          {v.versao && (
+            <p className="font-inter text-sm text-atria-text-gray mt-0.5">{v.versao}</p>
+          )}
+        </div>
 
-          {/* Price */}
-          <div>
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
-              {getPrecoExibicao(v).emPromocao && (
-                <TagBadge tag="oferta" size="xs" />
-              )}
+        <PriceCTABox
+          priceCash={preco}
+          installmentValue={parcela}
+          installments={SIM_PRAZO}
+          downPaymentPercent={40}
+          whatsappUrl={waLink(waMsg)}
+          onInterestClick={handleInteresseClick}
+          onWhatsappClick={handleWhatsClick}
+          enableSticky={false}
+        />
+
+        <button
+          onClick={handleSimularCredere}
+          className="w-full text-center font-inter text-sm text-atria-text-gray hover:text-atria-navy underline underline-offset-4 decoration-atria-gray-medium hover:decoration-atria-navy transition-colors"
+        >
+          Simular financiamento →
+        </button>
+
+        {/* Trust seals */}
+        <div className="bg-white border border-atria-gray-medium rounded-2xl p-5 space-y-2.5">
+          {[
+            { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veículo inspecionado com laudo" },
+            { icon: <Star size={16} className="text-atria-yellow-bright" />, text: "Garantia de 90 dias" },
+            { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
+            { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
+          ].map((item) => (
+            <div key={item.text} className="flex items-center gap-2.5">
+              {item.icon}
+              <span className="font-inter text-xs text-atria-text-gray">{item.text}</span>
             </div>
-            {getPrecoExibicao(v).precoCheio && (
-              <p className="font-inter text-base text-atria-text-gray line-through leading-tight">
-                {fmt(getPrecoExibicao(v).precoCheio!)}
-              </p>
-            )}
-            <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">
-              {fmt(getPrecoExibicao(v).precoFinal)}
-            </p>
-          </div>
-
-          {/* CTAs: Interesse (primary) + WA (icon secondary) */}
-          <div className="flex items-stretch gap-2">
-            <button
-              onClick={handleInteresseClick}
-              className="flex-1 bg-atria-yellow-bright hover:brightness-105 text-atria-navy font-inter font-bold text-base rounded-full py-4 flex items-center justify-center transition-all shadow-sm"
-            >
-              Tenho interesse
-            </button>
-            <a
-              href={waLink(waMsg)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleWhatsClick}
-              aria-label="Falar pelo WhatsApp"
-              className="w-14 flex items-center justify-center bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 rounded-full transition-all flex-shrink-0 shadow-md"
-            >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" />
-              </svg>
-            </a>
-          </div>
-
-          {/* Scroll to financing */}
-          <button
-            onClick={handleSimularCredere}
-            className="w-full text-center font-inter text-sm text-atria-text-gray hover:text-atria-navy underline underline-offset-4 decoration-atria-gray-medium hover:decoration-atria-navy transition-colors pt-1"
-          >
-            Simular financiamento →
-          </button>
-
-          {/* Trust seals */}
-          <div className="border-t border-atria-gray-medium pt-4 space-y-2.5">
-            {[
-              { icon: <ShieldCheck size={16} className="text-green-500" />, text: "Veículo inspecionado com laudo" },
-              { icon: <Star size={16} className="text-atria-yellow-bright" />, text: "Garantia de 90 dias" },
-              { icon: <CheckCircle size={16} className="text-atria-navy" />, text: "Documentacao em dia" },
-              { icon: <Phone size={16} className="text-atria-navy" />, text: "Suporte pos-venda" },
-            ].map((item) => (
-              <div key={item.text} className="flex items-center gap-2.5">
-                {item.icon}
-                <span className="font-inter text-xs text-atria-text-gray">{item.text}</span>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
@@ -580,52 +552,28 @@ function ActionBlock({ v }: { v: Vehicle }) {
     });
   };
 
+  const preco = precoEfetivo(v);
+  const parcela = parcelaParaPreco(preco, preco * 0.4);
+
   return (
     <>
-      <section className="bg-atria-gray-light border border-atria-gray-medium rounded-2xl p-5 space-y-3 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <p className="font-inter text-[11px] text-atria-text-gray uppercase tracking-wider">À vista</p>
-            {getPrecoExibicao(v).emPromocao && (
-              <TagBadge tag="oferta" size="xs" />
-            )}
-          </div>
-          {getPrecoExibicao(v).precoCheio && (
-            <p className="font-inter text-base text-atria-text-gray line-through leading-tight">
-              {fmt(getPrecoExibicao(v).precoCheio!)}
-            </p>
-          )}
-          <p className="font-barlow-condensed font-black text-4xl text-atria-navy leading-none">{fmt(getPrecoExibicao(v).precoFinal)}</p>
-        </div>
-
-        <div className="flex items-stretch gap-2">
-          <button
-            onClick={handleInteresseClick}
-            className="flex-1 bg-atria-yellow-bright hover:brightness-105 text-atria-navy font-inter font-bold text-base rounded-full py-4 flex items-center justify-center transition-all shadow-sm"
-          >
-            Tenho interesse
-          </button>
-          <a
-            href={waLink(waMsg)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleWhatsClick}
-            aria-label="Falar pelo WhatsApp"
-            className="w-14 flex items-center justify-center bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 rounded-full transition-all flex-shrink-0 shadow-md"
-          >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" />
-            </svg>
-          </a>
-        </div>
-
+      <div className="space-y-3">
+        <PriceCTABox
+          priceCash={preco}
+          installmentValue={parcela}
+          installments={SIM_PRAZO}
+          downPaymentPercent={40}
+          whatsappUrl={waLink(waMsg)}
+          onInterestClick={handleInteresseClick}
+          onWhatsappClick={handleWhatsClick}
+        />
         <button
           onClick={handleSimularCredere}
           className="w-full text-center font-inter text-sm text-atria-text-gray hover:text-atria-navy underline underline-offset-4 decoration-atria-gray-medium hover:decoration-atria-navy transition-colors pt-1"
         >
           Simular financiamento →
         </button>
-      </section>
+      </div>
 
       <AnimatePresence>
         {drawerOpen && (
@@ -1047,101 +995,6 @@ function StoreLocations() {
   );
 }
 
-// ---- Sticky Bottom CTA Bar (mobile) -----------------------------------------
-// Aparece quando o ActionBlock sai da tela (controlado pelo IntersectionObserver
-// no componente pai). Substitui o WhatsAppFloat global na ficha — uma única
-// CTA primária + ícone WA secundário, mantendo o preço sempre à vista pra
-// reforçar o valor da decisão.
-function StickyCtaBar({ v, visible }: { v: Vehicle; visible: boolean }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
-  const preco = precoEfetivo(v);
-  const parcela = parcelaParaPreco(preco, preco * 0.4);
-  const trackProps = {
-    vehicle_id: v.slug,
-    vehicle_marca: v.marca,
-    vehicle_modelo: v.modelo,
-    vehicle_ano: v.ano,
-    vehicle_preco: preco,
-    value: preco,
-  };
-
-  const waMsg = `Olá! Me interessei pelo ${titulo} ${v.ano} (${fmt(preco)}). Poderia me atender?`;
-
-  const handleInteresseClick = () => {
-    trackVehicleEvent(v.slug, "clique_interesse_sticky").catch(() => {});
-    track("cta_click", { source: "ficha-interesse-sticky", cta: "interesse", ...trackProps });
-    trackIntent("lead_tenho_interesse_aberto", {
-      origem: "ficha-sticky",
-      marca: v.marca, modelo: v.modelo, preco,
-    });
-    setDrawerOpen(true);
-  };
-
-  const handleWhatsClick = () => {
-    trackVehicleEvent(v.slug, "clique_whatsapp_sticky").catch(() => {});
-    trackVehicleEvent(v.slug, "clique_whatsapp").catch(() => {});
-    trackLead({
-      clarityEvent: "lead_whatsapp_ficha",
-      gtmEvent: "whatsapp_click",
-      origem: "ficha-sticky",
-      source: "ficha-whatsapp-sticky",
-      marca: v.marca, modelo: v.modelo, ano: v.ano, preco,
-    });
-  };
-
-  return (
-    <>
-      <AnimatePresence>
-        {visible && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-atria-gray-medium shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:hidden"
-            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-          >
-            <div className="flex items-center gap-3 px-4 py-3">
-              <div className="flex-shrink-0 min-w-0">
-                <p className="font-barlow-condensed font-black text-xl text-atria-navy leading-none tabular-nums">
-                  {fmt(preco)}
-                </p>
-                <p className="font-inter text-[10px] text-atria-text-gray leading-tight mt-0.5 whitespace-nowrap">
-                  {SIM_PRAZO}× {fmt(parcela)}
-                </p>
-              </div>
-              <a
-                href={waLink(waMsg)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleWhatsClick}
-                aria-label="Falar pelo WhatsApp"
-                className="w-12 h-12 flex items-center justify-center bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 rounded-full transition-all flex-shrink-0 shadow-md"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" />
-                </svg>
-              </a>
-              <button
-                onClick={handleInteresseClick}
-                className="flex-1 min-w-0 bg-atria-yellow-bright hover:brightness-105 text-atria-navy font-inter font-bold text-sm rounded-full py-3 flex items-center justify-center transition-all shadow-sm"
-              >
-                <span className="truncate">Tenho interesse</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {drawerOpen && (
-          <InterestDrawer vehicle={v} onClose={() => setDrawerOpen(false)} />
-        )}
-      </AnimatePresence>
-    </>
-  );
-}
-
 // ---- Page -------------------------------------------------------------------
 export default function VehicleDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -1150,18 +1003,6 @@ export default function VehicleDetail() {
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({ highlights_padrao: [], disclaimer_padrao: "" });
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const actionBlockRef = useRef<HTMLDivElement>(null);
-  const [showStickyCTA, setShowStickyCTA] = useState(false);
-
-  useEffect(() => {
-    if (!actionBlockRef.current) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setShowStickyCTA(!entry.isIntersecting),
-      { threshold: 0, rootMargin: "0px 0px -10% 0px" },
-    );
-    obs.observe(actionBlockRef.current);
-    return () => obs.disconnect();
-  }, [vehicle?.slug]);
 
   useEffect(() => {
     Promise.all([getVehicleBySlug(slug), getVehicles(), getSiteConfig()]).then(([v, all, cfg]) => {
@@ -1307,8 +1148,10 @@ export default function VehicleDetail() {
             {/* Gallery */}
             <PhotoGallery fotos={vehicle.fotos} titulo={titulo} slug={vehicle.slug} />
 
-            {/* Action Block — CTAs contextualizados (mobile-first) */}
-            <div ref={actionBlockRef} className="lg:hidden">
+            {/* Action Block — CTAs contextualizados (mobile-first).
+                A própria PriceCTABox observa a saída da viewport e
+                renderiza a sticky bar embaixo. */}
+            <div className="lg:hidden">
               <ActionBlock v={vehicle} />
             </div>
 
@@ -1412,9 +1255,6 @@ export default function VehicleDetail() {
           <StoreLocations />
         </div>
       </div>
-
-      {/* Sticky bottom CTA — aparece quando o ActionBlock sai da tela (mobile) */}
-      <StickyCtaBar v={vehicle} visible={showStickyCTA} />
     </>
   );
 }

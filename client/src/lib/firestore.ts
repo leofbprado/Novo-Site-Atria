@@ -24,6 +24,46 @@ export interface Lead {
   dados?: Record<string, unknown>;
 }
 
+/**
+ * Monta o objeto user-data pra Google Ads Enhanced Conversions for Leads.
+ *
+ * Plaintext aqui é seguro: o GTM hasheia (SHA-256) client-side antes de
+ * enviar pro Ads. O Ads então casa o hash com hashes de cliques pagos
+ * pra atribuir conversão mesmo quando o gclid se perde (iOS Safari ITP,
+ * adblock, navegação cross-domain via WhatsApp).
+ *
+ * Phone vai em E.164 (+55DDDNUMERO). Se o whatsapp for inválido (< 10
+ * dígitos) retorna sem phone — Enhanced Conversions degrada graciosamente
+ * pro modo cookie/gclid only.
+ */
+function buildEnhancedConversionData(lead: Lead): Record<string, unknown> | null {
+  const phoneDigits = String(lead.whatsapp || "").replace(/\D/g, "");
+  const phoneE164 =
+    phoneDigits.length >= 10 && phoneDigits.length <= 13
+      ? phoneDigits.startsWith("55")
+        ? `+${phoneDigits}`
+        : `+55${phoneDigits}`
+      : undefined;
+
+  const fullName = (lead.nome || "").trim();
+  const [firstName, ...rest] = fullName.split(/\s+/);
+  const lastName = rest.join(" ");
+
+  const emailRaw = lead.dados?.email;
+  const email = typeof emailRaw === "string" ? emailRaw.trim().toLowerCase() : "";
+
+  const data: Record<string, unknown> = {};
+  if (phoneE164) data.phone_number = phoneE164;
+  if (email) data.email = email;
+  if (firstName) {
+    data.address = {
+      first_name: firstName,
+      ...(lastName ? { last_name: lastName } : {}),
+    };
+  }
+  return Object.keys(data).length > 0 ? data : null;
+}
+
 export async function saveLead(lead: Lead): Promise<void> {
   // Atribuição persistida (gclid/utm_*) entra no lead e no evento de
   // tracking. Sem isso o Google Ads não atribui a conversão à campanha.
@@ -36,9 +76,11 @@ export async function saveLead(lead: Lead): Promise<void> {
   // Sempre dispara o evento de tracking, mesmo se Firestore falhar.
   // Google Ads precisa ouvir o sinal pra otimizar Smart Bidding.
   try {
+    const enhanced = buildEnhancedConversionData(lead);
     track("generate_lead", {
       source: lead.source,
       ...(lead.dados || {}),
+      ...(enhanced ? { enhanced_conversion_data: enhanced } : {}),
     });
   } catch { /* não bloqueia o save */ }
 
