@@ -1235,7 +1235,7 @@ function VehicleCard({ v }: { v: Vehicle }) {
           {/* Preço dominante + km inline (separados por |) */}
           <div className={`flex items-baseline gap-2.5 flex-wrap ${emPromocao ? "" : "mt-3"}`} itemProp="offers" itemScope itemType="https://schema.org/Offer">
             <span
-              className="font-barlow-condensed font-black text-[26px] sm:text-3xl text-atria-text-dark leading-none tabular-nums tracking-tight"
+              className="font-barlow-condensed font-black text-[26px] sm:text-3xl text-atria-navy leading-none tabular-nums tracking-tight"
               itemProp="price"
               content={String(precoFinal)}
             >
