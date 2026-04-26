@@ -13,6 +13,7 @@ import {
 import { db } from "./firebase";
 import type { VeiculoAdmin } from "./adminFirestore";
 import { track } from "./track";
+import { getAttribution } from "./attribution";
 
 // ─── Lead Capture ─────────────────────────────────────────────────────────────
 export interface Lead {
@@ -24,6 +25,14 @@ export interface Lead {
 }
 
 export async function saveLead(lead: Lead): Promise<void> {
+  // Atribuição persistida (gclid/utm_*) entra no lead e no evento de
+  // tracking. Sem isso o Google Ads não atribui a conversão à campanha.
+  const attribution = getAttribution();
+  const leadWithAttribution: Lead = {
+    ...lead,
+    dados: { ...(lead.dados || {}), ...attribution },
+  };
+
   // Sempre dispara o evento de tracking, mesmo se Firestore falhar.
   // Google Ads precisa ouvir o sinal pra otimizar Smart Bidding.
   try {
@@ -34,7 +43,7 @@ export async function saveLead(lead: Lead): Promise<void> {
   } catch { /* não bloqueia o save */ }
 
   if (!db) {
-    console.log("[mock] Lead salvo:", lead);
+    console.log("[mock] Lead salvo:", leadWithAttribution);
     return;
   }
   const digits = String(lead.whatsapp || "").replace(/\D/g, "");
@@ -44,7 +53,7 @@ export async function saveLead(lead: Lead): Promise<void> {
   // com flag hypergestor_skipped — pra tracking GA/Ads funcionar, mas
   // sem tentar despachar pro CRM nem aparecer como pendente lá.
   const ref = await addDoc(collection(db, "leads"), {
-    ...lead,
+    ...leadWithAttribution,
     createdAt: serverTimestamp(),
     ...(validPhone ? {} : { hypergestor_skipped: true }),
   });
@@ -55,7 +64,7 @@ export async function saveLead(lead: Lead): Promise<void> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     keepalive: true,
-    body: JSON.stringify({ leadId: ref.id, lead }),
+    body: JSON.stringify({ leadId: ref.id, lead: leadWithAttribution }),
   }).catch(() => { /* ignora; erro vai no doc via server */ });
 }
 

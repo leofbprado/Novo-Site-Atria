@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { track, trackLead, trackIntent } from "@/lib/track";
+import { withGclid } from "@/lib/attribution";
 
 const WA_NUMBER = "5519996525211";
 
@@ -162,8 +163,12 @@ function useGlobalLinkTracking() {
       const href = anchor.getAttribute("href") || "";
 
       if (href.startsWith("https://wa.me/") || href.startsWith("https://api.whatsapp.com/")) {
+        // Anexa gclid ao href ANTES da navegação acontecer — propaga
+        // atribuição pro WhatsApp Business / parceiros (cross-app).
+        const enriched = withGclid(href);
+        if (enriched !== href) anchor.setAttribute("href", enriched);
         // Extrai o número
-        const match = href.match(/wa\.me\/(\d+)|phone=(\d+)/);
+        const match = enriched.match(/wa\.me\/(\d+)|phone=(\d+)/);
         const number = match?.[1] || match?.[2];
         track("whatsapp_click", {
           source: anchor.getAttribute("data-source") || "link",
@@ -193,10 +198,13 @@ function useGlobalWindowOpenTracking() {
   useEffect(() => {
     const orig = window.open;
     window.open = function (url, ...rest) {
+      let finalUrl = url;
       try {
         if (typeof url === "string") {
           if (url.startsWith("https://wa.me/") || url.startsWith("https://api.whatsapp.com/")) {
-            const match = url.match(/wa\.me\/(\d+)|phone=(\d+)/);
+            // Propaga gclid pra atribuição cross-app
+            finalUrl = withGclid(url);
+            const match = finalUrl.match(/wa\.me\/(\d+)|phone=(\d+)/);
             const number = match?.[1] || match?.[2];
             track("whatsapp_click", {
               source: "window.open",
@@ -206,7 +214,7 @@ function useGlobalWindowOpenTracking() {
           }
         }
       } catch { /* não bloqueia */ }
-      return orig.call(this, url, ...rest);
+      return orig.call(this, finalUrl, ...rest);
     };
     return () => { window.open = orig; };
   }, []);

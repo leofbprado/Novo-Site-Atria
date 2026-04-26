@@ -2,6 +2,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { loadTagConfigs } from "./components/TagBadge";
+import { captureAttribution } from "./lib/attribution";
+
+// Captura gclid/utm da URL ANTES do React montar — qualquer evento
+// disparado depois (incluindo o pageview do GTM) já enxerga atribuição.
+captureAttribution();
 
 // Pré-carrega config das tags em paralelo com o boot — quando Estoque/Home
 // renderizar, os badges já têm cor sem flash.

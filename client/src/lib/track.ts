@@ -1,3 +1,5 @@
+import { getAttribution } from "./attribution";
+
 /**
  * Tracking helper centralizado.
  *
@@ -58,9 +60,13 @@ export function track(event: TrackEvent, props: TrackProps = {}): void {
   // Inicializa dataLayer se ainda não existe (caso GTM tenha falhado)
   window.dataLayer = window.dataLayer || [];
 
+  // Atribuição (gclid/utm_*) sai PRIMEIRO pra props específicas do evento
+  // poderem sobrescrever (ex: source override). Sem isso o Ads não consegue
+  // costurar conversão com clique pago.
   const payload: Record<string, unknown> = {
     event,
     currency: "BRL",
+    ...getAttribution(),
     ...props,
   };
 
