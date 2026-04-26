@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Heart } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { getPrecoExibicao, calcularFaixaParcela, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
@@ -1142,6 +1142,11 @@ function CardSkeleton() {
 function VehicleCard({ v }: { v: Vehicle }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
   const { precoFinal, precoCheio, emPromocao } = getPrecoExibicao(v);
+  const desconto = precoCheio ? precoCheio - precoFinal : 0;
+  // Parcela estimada — 30% entrada, 60x, coef ~0.0285 (juros típicos do mercado)
+  const parcelaEst = Math.round(precoFinal * 0.7 * 0.0285);
+  const [favorited, setFavorited] = useState(false);
+
   return (
     <motion.article
       layout
@@ -1149,10 +1154,11 @@ function VehicleCard({ v }: { v: Vehicle }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.2 }}
-      className="group bg-white rounded-xl overflow-hidden border border-atria-gray-medium hover:shadow-lg transition-shadow"
+      className="group bg-white rounded-2xl overflow-hidden border border-atria-gray-medium hover:shadow-lg transition-shadow"
       itemScope itemType="https://schema.org/Car"
     >
       <a href={vehiclePath(v)} className="block">
+        {/* Foto + overlays */}
         <div className="relative aspect-[4/3] overflow-hidden bg-atria-gray-light">
           {v.fotos?.[0] ? (
             <img
@@ -1168,64 +1174,94 @@ function VehicleCard({ v }: { v: Vehicle }) {
               <Car size={48} className="text-atria-gray-medium" />
             </div>
           )}
-          {(() => {
-            // Regra: máx 1 badge. Oferta (auto pelo preço) ganha; senão, tag manual.
-            const primeiraTag = (v.tags || []).find((t) => t !== "oferta");
-            const tagFinal = emPromocao ? "oferta" : primeiraTag ?? null;
-            if (!tagFinal) return null;
-            return (
-              <div className="absolute top-3 left-3">
-                <TagBadge tag={tagFinal} />
-              </div>
-            );
-          })()}
-          <span className="absolute top-3 right-3 bg-black/50 text-white text-xs font-inter font-bold px-2.5 py-1 rounded">
+
+          {/* Heart top-left — favoritar (UI local, sem persistência ainda) */}
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFavorited((s) => !s); }}
+            aria-label={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
+            aria-pressed={favorited}
+            className="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+          >
+            <Heart
+              size={16}
+              strokeWidth={2}
+              className={favorited ? "fill-atria-navy text-atria-navy" : "text-atria-text-gray"}
+            />
+          </button>
+
+          {/* Badge OFERTA (se aplica) */}
+          {emPromocao && (
+            <div className="absolute top-14 left-3 bg-atria-navy text-white text-[10px] font-inter font-bold px-2 py-1 rounded-md tracking-wider">
+              OFERTA
+            </div>
+          )}
+
+          {/* Badge ano top-right */}
+          <span className="absolute top-3 right-3 bg-atria-navy/70 backdrop-blur-sm text-white text-xs font-inter font-semibold px-2.5 py-1 rounded-md">
             {v.ano}
           </span>
+
+          {/* Wordmark "ÁTRIA" bottom-right — assinatura discreta */}
+          <span aria-hidden className="absolute bottom-2.5 right-3 font-barlow-condensed font-black italic text-sm tracking-[0.2em] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+            ÁTRIA
+          </span>
         </div>
-        <div className="p-5 pb-3">
-          <p className="font-inter text-xs text-atria-text-gray uppercase tracking-wider mb-0.5">{v.marca}</p>
-          <h3 className="font-barlow-condensed font-bold text-xl text-atria-text-dark leading-tight mb-2 group-hover:text-atria-navy transition-colors" itemProp="name">
+
+        {/* Body */}
+        <div className="p-4">
+          <div className="flex items-baseline gap-2 mb-1">
+            <span className="font-inter text-[10px] font-bold text-atria-text-gray uppercase tracking-[0.15em]">{v.marca}</span>
+            <span className="text-atria-gray-medium">·</span>
+            <span className="font-inter text-[10px] font-medium text-atria-text-gray">{v.ano}</span>
+          </div>
+          <h3 className="font-barlow-condensed font-bold text-lg sm:text-xl text-atria-text-dark leading-tight group-hover:text-atria-navy transition-colors" itemProp="name">
             {titulo}
           </h3>
-          {v.versao && <p className="font-inter text-sm text-atria-text-gray mb-1">{v.versao}</p>}
-          <p className="font-inter text-sm text-atria-text-gray line-clamp-1 mb-3">{v.descricao}</p>
-          <ul className="flex gap-3 flex-wrap mb-3" role="list">
-            {[fmtKm(v.km), v.cambio, v.combustivel, v.portas ? `${v.portas} portas` : null]
-              .filter(Boolean)
-              .map((spec) => (
-                <li key={spec} className="flex items-center gap-1 font-inter text-xs text-atria-text-gray">
-                  <span className="w-1 h-1 bg-atria-gray-medium rounded-full" />
-                  {spec}
-                </li>
-              ))}
-          </ul>
-          <div className="flex items-baseline gap-2 flex-wrap" itemProp="offers" itemScope itemType="https://schema.org/Offer">
-            {precoCheio && (
-              <span className="font-inter text-sm text-atria-text-gray line-through">{fmt(precoCheio)}</span>
-            )}
-            <p className="font-barlow-condensed font-black text-2xl text-atria-navy">
-              <span itemProp="price" content={String(precoFinal)}>{fmt(precoFinal)}</span>
-            </p>
+          {v.versao && (
+            <div className="font-inter text-[11px] text-atria-text-gray mt-0.5 line-clamp-1">{v.versao}</div>
+          )}
+
+          {/* Preço cheio riscado + badge desconto (só se em oferta) */}
+          {emPromocao && precoCheio && (
+            <div className="flex items-center gap-2 mt-3 mb-1">
+              <span className="font-inter text-xs text-atria-text-gray line-through font-medium">{fmt(precoCheio)}</span>
+              <span className="font-inter text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                {fmt(-desconto)}
+              </span>
+            </div>
+          )}
+
+          {/* Preço dominante + km inline (separados por |) */}
+          <div className={`flex items-baseline gap-2.5 flex-wrap ${emPromocao ? "" : "mt-3"}`} itemProp="offers" itemScope itemType="https://schema.org/Offer">
+            <span
+              className="font-barlow-condensed font-black text-[26px] sm:text-3xl text-atria-text-dark leading-none tabular-nums tracking-tight"
+              itemProp="price"
+              content={String(precoFinal)}
+            >
+              {fmt(precoFinal)}
+            </span>
+            <span className="text-atria-gray-medium font-light text-lg leading-none">|</span>
+            <span className="font-inter text-sm font-bold text-atria-text-dark leading-none whitespace-nowrap">
+              {fmtKm(v.km)}
+            </span>
             <meta itemProp="priceCurrency" content="BRL" />
             <meta itemProp="availability" content="https://schema.org/InStock" />
           </div>
         </div>
+
+        {/* Rodapé com parcela estimada — separador dashed */}
+        <div className="border-t border-dashed border-atria-gray-medium bg-atria-gray-light/60 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline gap-1">
+              <span className="font-inter text-[11px] text-atria-text-gray font-medium">Est.</span>
+              <span className="font-barlow-condensed font-black text-base text-atria-text-dark tabular-nums">{fmt(parcelaEst)}</span>
+              <span className="font-inter text-xs font-bold text-atria-text-gray">/mês*</span>
+            </div>
+            <span className="font-inter text-[10px] text-atria-text-gray font-medium">30% entrada · 60x</span>
+          </div>
+        </div>
       </a>
-      <div className="px-5 pb-5 flex gap-2 mt-2">
-        <a
-          href={waLink(`Olá! Vi o ${titulo} ${v.ano} por ${fmt(precoFinal)} no estoque da Átria. Tenho interesse!`)}
-          target="_blank" rel="noopener noreferrer"
-          className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:brightness-110 text-white font-inter font-bold text-sm uppercase tracking-wider py-2.5 rounded text-center transition-colors"
-        >
-          QUERO ESSE
-        </a>
-        <a href={vehiclePath(v)}
-          className="px-4 py-2.5 border border-atria-gray-medium text-atria-text-gray hover:border-atria-navy hover:text-atria-navy font-inter text-sm font-semibold rounded transition-all text-center"
-        >
-          Detalhes
-        </a>
-      </div>
     </motion.article>
   );
 }
