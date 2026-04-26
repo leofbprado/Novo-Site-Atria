@@ -1365,7 +1365,7 @@ export default function VehicleDetail() {
                 highlights_padrao que já aparecem logo abaixo da descrição. */}
             {vehicle.bloco_final && (
               <section className="bg-atria-gray-light border border-atria-gray-medium rounded-xl p-5">
-                <p className="font-inter text-sm font-bold text-atria-text-dark">{vehicle.bloco_final}</p>
+                <p className="font-inter text-xs text-atria-text-gray leading-relaxed">{vehicle.bloco_final}</p>
               </section>
             )}
 
