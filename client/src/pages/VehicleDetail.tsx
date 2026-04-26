@@ -1360,12 +1360,14 @@ export default function VehicleDetail() {
               </section>
             )}
 
-            {/* Disclaimer — só bloco_final (per-vehicle). disclaimer_padrao
-                deixou de ser renderizado aqui pra evitar duplicação com os
-                highlights_padrao que já aparecem logo abaixo da descrição. */}
-            {vehicle.bloco_final && (
+            {/* Disclaimer — texto global do admin (Configurações →
+                disclaimer_padrao). bloco_final per-vehicle entra como
+                fallback quando o disclaimer global não estiver definido. */}
+            {(siteConfig.disclaimer_padrao || vehicle.bloco_final) && (
               <section className="bg-atria-gray-light border border-atria-gray-medium rounded-xl p-5">
-                <p className="font-inter text-xs text-atria-text-gray leading-relaxed">{vehicle.bloco_final}</p>
+                <p className="font-inter text-xs text-atria-text-gray leading-relaxed">
+                  {siteConfig.disclaimer_padrao || vehicle.bloco_final}
+                </p>
               </section>
             )}
 
