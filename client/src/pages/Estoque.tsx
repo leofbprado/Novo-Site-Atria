@@ -1178,32 +1178,38 @@ function VehicleCard({ v }: { v: Vehicle }) {
             </div>
           )}
 
-          {/* Heart top-left — favoritar (UI local, sem persistência ainda) */}
-          <button
-            type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFavorited((s) => !s); }}
-            aria-label={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
-            aria-pressed={favorited}
-            className="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-          >
-            <Heart
-              size={16}
-              strokeWidth={2}
-              className={favorited ? "fill-atria-navy text-atria-navy" : "text-atria-text-gray"}
-            />
-          </button>
+          {/* Tag top-left — máx 1 badge: oferta automática (pelo preço) ganha;
+              senão, primeira tag manual do veículo (destaque/reservado/etc) */}
+          {(() => {
+            const primeiraTag = (v.tags || []).find((t) => t !== "oferta");
+            const tagFinal = emPromocao ? "oferta" : primeiraTag ?? null;
+            if (!tagFinal) return null;
+            return (
+              <div className="absolute top-3 left-3">
+                <TagBadge tag={tagFinal} />
+              </div>
+            );
+          })()}
 
-          {/* Badge OFERTA (se aplica) */}
-          {emPromocao && (
-            <div className="absolute top-14 left-3 bg-atria-navy text-white text-[10px] font-inter font-bold px-2 py-1 rounded-md tracking-wider">
-              OFERTA
-            </div>
-          )}
-
-          {/* Badge ano top-right */}
-          <span className="absolute top-3 right-3 bg-atria-navy/70 backdrop-blur-sm text-white text-xs font-inter font-semibold px-2.5 py-1 rounded-md">
-            {v.ano}
-          </span>
+          {/* Badge ano + Heart top-right (lado a lado) */}
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <span className="bg-atria-navy/70 backdrop-blur-sm text-white text-xs font-inter font-semibold px-2.5 py-1 rounded-md">
+              {v.ano}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFavorited((s) => !s); }}
+              aria-label={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
+              aria-pressed={favorited}
+              className="w-9 h-9 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            >
+              <Heart
+                size={16}
+                strokeWidth={2}
+                className={favorited ? "fill-atria-navy text-atria-navy" : "text-atria-text-gray"}
+              />
+            </button>
+          </div>
 
           {/* Wordmark "ÁTRIA" bottom-right — assinatura discreta */}
           <span aria-hidden className="absolute bottom-2.5 right-3 font-barlow-condensed font-black italic text-sm tracking-[0.2em] text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
