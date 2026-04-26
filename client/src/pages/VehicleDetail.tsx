@@ -16,7 +16,6 @@ import { getPrecoExibicao, precoEfetivo, parcelaParaPreco, SIM_PRAZO } from "@/l
 import { TagBadge } from "@/components/TagBadge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { PriceCTABox } from "@/components/vehicle/PriceCTABox";
-import { useOrientation } from "@/hooks/useOrientation";
 
 // ---- Helpers ----------------------------------------------------------------
 const WA_NUMBER = "5519996525211";
@@ -201,39 +200,10 @@ function GalleryDots({
   );
 }
 
-// Hook que sincroniza um track com scroll-snap ao state `current` via IntersectionObserver
-function useSnapTrack(rootRef: React.RefObject<HTMLDivElement>, total: number, onChange: (i: number) => void) {
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || total <= 1) return;
-    const slides = root.querySelectorAll<HTMLElement>("[data-slide-index]");
-    const io = new IntersectionObserver(
-      (entries) => {
-        // Pega o slide com maior intersection ratio entre os ativos
-        let best: { idx: number; ratio: number } | null = null;
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = Number(entry.target.getAttribute("data-slide-index"));
-            if (!best || entry.intersectionRatio > best.ratio) {
-              best = { idx, ratio: entry.intersectionRatio };
-            }
-          }
-        });
-        if (best && best.ratio > 0.5) onChange(best.idx);
-      },
-      { root, threshold: [0.5, 0.75, 1] },
-    );
-    slides.forEach((s) => io.observe(s));
-    return () => io.disconnect();
-  }, [total, rootRef, onChange]);
-}
-
 function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string; slug: string }) {
   const [current, setCurrent] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
-  const orientation = useOrientation();
-  const isLandscapeLightbox = lightboxOpen && orientation === "landscape";
   const mainTrackRef = useRef<HTMLDivElement>(null);
   const lightboxTrackRef = useRef<HTMLDivElement>(null);
 
@@ -247,28 +217,31 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
     }
   };
 
+  // onScroll handler — calcula slide ativo direto do scrollLeft. Mais confiável que IO
+  // (IO travava em 9/9 quando lightbox montava porque ref ainda era null no 1º effect).
+  const handleTrackScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const root = e.currentTarget;
+    if (root.clientWidth === 0) return;
+    const idx = Math.round(root.scrollLeft / root.clientWidth);
+    const clamped = Math.max(0, Math.min(fotos.length - 1, idx));
+    if (clamped !== current) setCurrent(clamped);
+  };
+
   const goTo = (i: number) => {
     const next = Math.max(0, Math.min(fotos.length - 1, i));
-    setCurrent(next);
     scrollTrackTo(lightboxOpen ? lightboxTrackRef : mainTrackRef, next);
   };
   const navigate = (delta: number) => {
     const next = Math.max(0, Math.min(fotos.length - 1, current + delta));
     if (next !== current) {
-      setCurrent(next);
       scrollTrackTo(lightboxOpen ? lightboxTrackRef : mainTrackRef, next);
       trackVehicleEvent(slug, lightboxOpen ? "gallery_swipe_lightbox" : "gallery_swipe").catch(() => {});
     }
   };
 
-  // Sincroniza state quando user scrolla manualmente (swipe nativo)
-  useSnapTrack(mainTrackRef, fotos.length, setCurrent);
-  useSnapTrack(lightboxTrackRef, fotos.length, setCurrent);
-
   // Quando abre lightbox, posiciona no slide atual sem animação
   useEffect(() => {
     if (lightboxOpen) {
-      // Espera DOM montar
       const t = setTimeout(() => scrollTrackTo(lightboxTrackRef, current, false), 0);
       return () => clearTimeout(t);
     }
@@ -307,6 +280,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
         {/* Scroll-snap nativo — comportamento idêntico ao Instagram, sem JS no swipe */}
         <div
           ref={mainTrackRef}
+          onScroll={handleTrackScroll}
           className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: "none" }}
         >
@@ -401,27 +375,23 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setLightboxOpen(false)}
-            // Sem flex justify-center — track absolute fills viewport.
-            // 100dvw/dvh evita gap por causa da URL bar do iOS Safari.
             className="fixed inset-0 z-[100] bg-black overflow-hidden"
-            style={{ width: "100dvw", height: "100dvh" }}
             role="dialog"
             aria-modal="true"
             aria-label={`${titulo} - foto ampliada`}
           >
             <button
               onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
-              className={`absolute z-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ${
-                isLandscapeLightbox ? "top-2 right-2 w-9 h-9" : "top-4 right-4 w-11 h-11"
-              }`}
+              className="absolute z-10 top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
               aria-label="Fechar"
             >
-              <X size={isLandscapeLightbox ? 20 : 24} />
+              <X size={24} />
             </button>
 
             {/* Scroll-snap nativo — mesmo padrão da galeria principal */}
             <div
               ref={lightboxTrackRef}
+              onScroll={handleTrackScroll}
               onClick={(e) => e.stopPropagation()}
               className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain [&::-webkit-scrollbar]:hidden"
               style={{ scrollbarWidth: "none" }}
@@ -435,11 +405,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
                   <img
                     src={src}
                     alt={`${titulo} - foto ${i + 1}`}
-                    className={`select-none ${
-                      isLandscapeLightbox
-                        ? "w-full h-full object-cover"
-                        : "max-w-full max-h-full object-contain"
-                    }`}
+                    className="max-w-full max-h-full object-contain select-none"
                     draggable={false}
                   />
                 </div>
@@ -452,43 +418,35 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(-1); }}
                   disabled={current === 0}
-                  className={`hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                    isLandscapeLightbox ? "left-2 w-10 h-10" : "left-4 w-12 h-12"
-                  }`}
+                  className="hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 left-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Foto anterior"
                 >
-                  <ChevronLeft size={isLandscapeLightbox ? 22 : 28} />
+                  <ChevronLeft size={28} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(1); }}
                   disabled={current === fotos.length - 1}
-                  className={`hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                    isLandscapeLightbox ? "right-2 w-10 h-10" : "right-4 w-12 h-12"
-                  }`}
+                  className="hidden md:flex absolute z-10 top-1/2 -translate-y-1/2 right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Próxima foto"
                 >
-                  <ChevronRight size={isLandscapeLightbox ? 22 : 28} />
+                  <ChevronRight size={28} />
                 </button>
-                {!isLandscapeLightbox && (
+                <div className="absolute z-10 bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none">
                   <div
-                    className="absolute z-10 bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
+                    className="pointer-events-auto"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <div
-                      className="pointer-events-auto"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <GalleryDots
-                        total={fotos.length}
-                        current={current}
-                        onSelect={goTo}
-                        variant="overlay"
-                      />
-                    </div>
-                    <span className="bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
-                      {current + 1} / {fotos.length}
-                    </span>
+                    <GalleryDots
+                      total={fotos.length}
+                      current={current}
+                      onSelect={goTo}
+                      variant="overlay"
+                    />
                   </div>
-                )}
+                  <span className="bg-white/10 text-white text-sm font-inter font-semibold px-3 py-1.5 rounded-full">
+                    {current + 1} / {fotos.length}
+                  </span>
+                </div>
               </>
             )}
           </motion.div>
