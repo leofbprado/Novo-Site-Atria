@@ -23,5 +23,13 @@ if (apiKey) {
   auth = getAuth(app);
 }
 
+// Exposto pra chamadas REST diretas (logWhatsAppClick usa keepalive fetch
+// porque o SDK Firestore não sobrevive a page-hide quando user vai pro
+// WhatsApp app no mobile).
+export const firebaseConfig = {
+  apiKey,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined,
+};
+
 export { app, db, auth };
 export default app;

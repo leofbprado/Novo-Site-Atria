@@ -10,7 +10,7 @@ import {
   serverTimestamp,
   QueryConstraint,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, firebaseConfig } from "./firebase";
 import type { VeiculoAdmin } from "./adminFirestore";
 import { track } from "./track";
 import { getAttribution } from "./attribution";
@@ -110,26 +110,44 @@ export async function saveLead(lead: Lead): Promise<void> {
   }).catch(() => { /* ignora; erro vai no doc via server */ });
 }
 
-// Registra clique em WhatsApp (qualquer botão/link da página) na coleção
-// 'whatsapp_clicks' pra Admin ter visibilidade do funil. NÃO vai pro CRM
-// (Hypergestor) — esse fluxo continua via saveLead() quando o usuário
-// preenche formulário. Aqui é só registro/relatório.
-export async function logWhatsAppClick(data: {
+// Registra clique em WhatsApp na coleção 'whatsapp_clicks' pra Admin ter
+// visibilidade do funil. NÃO vai pro CRM (Hypergestor) — só registro.
+//
+// IMPORTANTE: usa fetch DIRETO na REST API do Firestore com `keepalive: true`
+// em vez do SDK addDoc(). Motivo: no mobile, ao clicar no botão WhatsApp
+// (<a target="_blank">), iOS/Android Safari pausa/congela o JS da página
+// quando o user é levado pro app do WhatsApp. A Promise do SDK addDoc é
+// cancelada antes de completar e o write se perde. fetch com keepalive=true
+// é garantido pelo browser pra completar mesmo se a página hide/unload.
+//
+// Como é fire-and-forget, não retornamos Promise nem aguardamos.
+export function logWhatsAppClick(data: {
   veiculo?: string;
   slug?: string;
   page?: string;
   source?: string;
-}): Promise<void> {
-  if (!db) return;
+}): void {
+  const { apiKey, projectId } = firebaseConfig;
+  if (!apiKey || !projectId) return;
+
+  const fields: Record<string, { stringValue?: string; timestampValue?: string }> = {
+    createdAt: { timestampValue: new Date().toISOString() },
+  };
+  if (data.veiculo) fields.veiculo = { stringValue: data.veiculo };
+  if (data.slug) fields.slug = { stringValue: data.slug };
+  if (data.page) fields.page = { stringValue: data.page };
+  if (data.source) fields.source = { stringValue: data.source };
+
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/whatsapp_clicks?key=${apiKey}`;
+
   try {
-    await addDoc(collection(db, "whatsapp_clicks"), {
-      ...data,
-      createdAt: serverTimestamp(),
-    });
-  } catch (err) {
-    // Não bloqueia navegação — clique do user no botão tem que ir mesmo se Firestore falhar
-    if (typeof console !== "undefined") console.warn("[logWhatsAppClick] falhou:", err);
-  }
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fields }),
+      keepalive: true,
+    }).catch(() => { /* fire-and-forget */ });
+  } catch { /* ignore */ }
 }
 
 export interface Vehicle {
