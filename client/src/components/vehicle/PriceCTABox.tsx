@@ -33,8 +33,9 @@ export interface PriceCTABoxProps {
 const formatBRL = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
+// Mesmo amarelo do CTA "Encontre seu carro" da home (atria-yellow-light → atria-yellow)
 const yellowGradStyle = {
-  background: "linear-gradient(180deg, #FFE95C 0%, #FFDD00 100%)",
+  background: "linear-gradient(180deg, #FFE95C 0%, #f9a825 100%)",
 };
 
 function WhatsappIcon({ size = 22 }: { size?: number }) {

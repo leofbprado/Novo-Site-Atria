@@ -1305,7 +1305,7 @@ export default function Estoque() {
       <PageHero
         eyebrow="Campinas, SP"
         title={<>Estoque de Seminovos <span className="text-atria-yellow-bright">em Campinas</span></>}
-        subtitle="Multimarcas inspecionados, laudo cautelar aprovados, fotografados e prontos pra entrega"
+        subtitle="Veículos inspecionados, laudo cautelar aprovado, fotografados e prontos para entrega"
       />
 
       {/* Top bar */}
