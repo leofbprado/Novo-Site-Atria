@@ -181,6 +181,27 @@ export function trackIntent(clarityEvent: ClarityLeadEvent, props: TrackIntentPr
   }
 }
 
+// ─── Clarity event genérico (não-conversão) ─────────────────────────────────
+// Pra eventos de UX/diagnóstico: rage_click, swipe excessivo, dead_click etc.
+// NÃO vai pro GTM/Ads (não é conversão). Diferente de trackLead que dispara
+// nos dois lugares e de trackIntent que é só Clarity mas pra funil de fricção.
+export function trackClarityEvent(
+  name: string,
+  tags?: Record<string, string | number | boolean>,
+): void {
+  if (typeof window === "undefined" || !window.clarity) return;
+  try {
+    if (tags) {
+      for (const [k, v] of Object.entries(tags)) {
+        window.clarity("set", k, String(v));
+      }
+    }
+    window.clarity("event", name);
+  } catch (err) {
+    console.warn("[track] Clarity event falhou:", err);
+  }
+}
+
 // ─── Clarity identify (admin/equipe vs público) ─────────────────────────────
 // Sem isso, sessões do Leo/equipe contaminam todas as métricas (heatmaps,
 // scroll médio, tempo ativo). Após chamar identify, no painel do Clarity dá

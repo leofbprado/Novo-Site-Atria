@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { getVehicleBySlug, getVehicles, getSiteConfig, saveLead, vehiclePath, type Vehicle, type SiteConfig } from "@/lib/firestore";
 import { ROUTES } from "@/lib/constants";
-import { track, trackLead, trackIntent } from "@/lib/track";
+import { track, trackLead, trackIntent, trackClarityEvent } from "@/lib/track";
 import { pushRecentSlug } from "@/lib/recentlyViewed";
 import { getPrecoExibicao, precoEfetivo, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
@@ -206,6 +206,27 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
   const [hintVisible, setHintVisible] = useState(true);
   const mainTrackRef = useRef<HTMLDivElement>(null);
   const lightboxTrackRef = useRef<HTMLDivElement>(null);
+  // Detecção de "rage click" / excessive clicks — janela rolante de 10s.
+  // Se 5+ cliques caírem na janela, dispara evento Clarity uma única vez (debounce).
+  const clickTimestampsRef = useRef<number[]>([]);
+  const excessiveDispatchedRef = useRef(false);
+
+  const reportClickForRageDetection = (location: "main" | "lightbox") => {
+    const now = Date.now();
+    const arr = clickTimestampsRef.current.filter((t) => now - t < 10_000);
+    arr.push(now);
+    clickTimestampsRef.current = arr;
+    if (arr.length >= 5 && !excessiveDispatchedRef.current) {
+      excessiveDispatchedRef.current = true;
+      trackClarityEvent("gallery_excessive_clicks", {
+        vehicle_slug: slug,
+        location,
+        click_count: arr.length,
+      });
+      // Reseta após 30s pra capturar novos episódios na mesma sessão se acontecerem
+      setTimeout(() => { excessiveDispatchedRef.current = false; }, 30_000);
+    }
+  };
 
   // Scroll-snap programático — funciona em ambos os tracks
   const scrollTrackTo = (ref: React.RefObject<HTMLDivElement>, i: number, smooth = true) => {
@@ -230,12 +251,16 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
   const goTo = (i: number) => {
     const next = Math.max(0, Math.min(fotos.length - 1, i));
     scrollTrackTo(lightboxOpen ? lightboxTrackRef : mainTrackRef, next);
+    reportClickForRageDetection(lightboxOpen ? "lightbox" : "main");
   };
   const navigate = (delta: number) => {
     const next = Math.max(0, Math.min(fotos.length - 1, current + delta));
+    reportClickForRageDetection(lightboxOpen ? "lightbox" : "main");
     if (next !== current) {
       scrollTrackTo(lightboxOpen ? lightboxTrackRef : mainTrackRef, next);
-      trackVehicleEvent(slug, lightboxOpen ? "gallery_swipe_lightbox" : "gallery_swipe").catch(() => {});
+      const evt = lightboxOpen ? "gallery_swipe_lightbox" : "gallery_swipe";
+      trackVehicleEvent(slug, evt).catch(() => {});
+      trackClarityEvent(evt);
     }
   };
 
@@ -250,6 +275,7 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
   const handleLightboxOpen = () => {
     setLightboxOpen(true);
     trackVehicleEvent(slug, "gallery_lightbox_open").catch(() => {});
+    trackClarityEvent("gallery_lightbox_open", { vehicle_slug: slug });
   };
 
   useEffect(() => {
