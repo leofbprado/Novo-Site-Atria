@@ -110,6 +110,28 @@ export async function saveLead(lead: Lead): Promise<void> {
   }).catch(() => { /* ignora; erro vai no doc via server */ });
 }
 
+// Registra clique em WhatsApp (qualquer botão/link da página) na coleção
+// 'whatsapp_clicks' pra Admin ter visibilidade do funil. NÃO vai pro CRM
+// (Hypergestor) — esse fluxo continua via saveLead() quando o usuário
+// preenche formulário. Aqui é só registro/relatório.
+export async function logWhatsAppClick(data: {
+  veiculo?: string;
+  slug?: string;
+  page?: string;
+  source?: string;
+}): Promise<void> {
+  if (!db) return;
+  try {
+    await addDoc(collection(db, "whatsapp_clicks"), {
+      ...data,
+      createdAt: serverTimestamp(),
+    });
+  } catch (err) {
+    // Não bloqueia navegação — clique do user no botão tem que ir mesmo se Firestore falhar
+    if (typeof console !== "undefined") console.warn("[logWhatsAppClick] falhou:", err);
+  }
+}
+
 export interface Vehicle {
   id: string;
   marca: string;

@@ -4,6 +4,14 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { track, trackLead, trackIntent } from "@/lib/track";
 import { withGclid } from "@/lib/attribution";
+import { logWhatsAppClick } from "@/lib/firestore";
+
+// Extrai slug da ficha quando rota é /campinas-sp/{slug} pra dar contexto
+// no registro do clique de WhatsApp na coleção whatsapp_clicks.
+function getCurrentVehicleSlug(): string | undefined {
+  const m = window.location.pathname.match(/^\/campinas-sp\/([^/?#]+)/);
+  return m ? m[1] : undefined;
+}
 
 const WA_NUMBER = "5519996525211";
 
@@ -170,10 +178,17 @@ function useGlobalLinkTracking() {
         // Extrai o número
         const match = enriched.match(/wa\.me\/(\d+)|phone=(\d+)/);
         const number = match?.[1] || match?.[2];
+        const source = anchor.getAttribute("data-source") || "link";
         track("whatsapp_click", {
-          source: anchor.getAttribute("data-source") || "link",
+          source,
           number,
           location: window.location.pathname,
+        });
+        // Registro no Firestore pra Admin ter visibilidade do funil (não vai pro CRM)
+        logWhatsAppClick({
+          page: window.location.pathname,
+          slug: getCurrentVehicleSlug(),
+          source,
         });
       } else if (href.startsWith("tel:")) {
         track("phone_click", {
@@ -210,6 +225,12 @@ function useGlobalWindowOpenTracking() {
               source: "window.open",
               number,
               location: window.location.pathname,
+            });
+            // Registro no Firestore pra Admin ter visibilidade do funil (não vai pro CRM)
+            logWhatsAppClick({
+              page: window.location.pathname,
+              slug: getCurrentVehicleSlug(),
+              source: "window.open",
             });
           }
         }
