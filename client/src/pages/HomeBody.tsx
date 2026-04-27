@@ -1205,7 +1205,7 @@ function RecentlyViewed() {
         </div>
         {/* Mobile: scroll-snap horizontal · Desktop: grid */}
         <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-none">
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5" style={{ width: "max-content" }}>
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-max md:w-auto">
             {recentes.map((v) => (
               <div key={v.id} className="w-[280px] md:w-auto flex-shrink-0 snap-start">
                 <VehicleCard v={v} />
