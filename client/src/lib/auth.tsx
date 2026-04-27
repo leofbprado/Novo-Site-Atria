@@ -6,6 +6,7 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import { identifyClarityUser } from "./track";
 
 interface AuthCtx {
   user: User | null;
@@ -28,11 +29,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!auth) {
       setLoading(false);
+      // Sem auth disponível = visitante público anônimo
+      identifyClarityUser(null);
       return;
     }
     return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
+      // Marca como admin (logado) ou público (anônimo) pro Clarity filtrar
+      identifyClarityUser(u ? { uid: u.uid, email: u.email } : null);
     });
   }, []);
 

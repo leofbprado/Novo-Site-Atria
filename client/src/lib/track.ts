@@ -180,3 +180,38 @@ export function trackIntent(clarityEvent: ClarityLeadEvent, props: TrackIntentPr
     console.warn("[track] Clarity intent falhou:", err);
   }
 }
+
+// ─── Clarity identify (admin/equipe vs público) ─────────────────────────────
+// Sem isso, sessões do Leo/equipe contaminam todas as métricas (heatmaps,
+// scroll médio, tempo ativo). Após chamar identify, no painel do Clarity dá
+// pra filtrar `tipo_usuario != admin` e ver só tráfego real.
+//
+// O Clarity é injetado via GTM e pode demorar pra carregar — fazemos retry
+// curto (até 10s). É um one-shot, não tem custo deixar em background.
+export function identifyClarityUser(
+  user: { uid: string; email?: string | null } | null,
+): void {
+  if (typeof window === "undefined") return;
+
+  let attempts = 0;
+  const apply = () => {
+    if (!window.clarity) {
+      if (attempts++ < 20) {
+        setTimeout(apply, 500);
+      }
+      return;
+    }
+    try {
+      if (user) {
+        window.clarity("identify", user.uid, undefined, undefined, user.email || user.uid);
+        window.clarity("set", "tipo_usuario", "admin");
+      } else {
+        window.clarity("set", "tipo_usuario", "publico");
+      }
+    } catch (err) {
+      console.warn("[track] Clarity identify falhou:", err);
+    }
+  };
+
+  apply();
+}
