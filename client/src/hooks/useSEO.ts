@@ -43,8 +43,11 @@ export function useSEO({ title, description, path, ogImage, ogType }: SEOProps) 
     const canonical = `${SITE_URL}${path}`;
     const img = ogImage || DEFAULTS.ogImage;
 
-    // Bloqueia indexação no domínio espelho (.com) — só .com.br deve ser indexado
-    const robotsValue = isMirrorDomain() ? "noindex, nofollow" : "index, follow";
+    // Bloqueia indexação no domínio espelho (.com) — só .com.br deve ser indexado.
+    // Usa "follow" (não "nofollow") pra Googlebot ainda mapear a estrutura interna —
+    // assim quando virarmos pro .com.br, a topologia já está conhecida e a indexação
+    // é mais rápida. nofollow mataria internal link equity sem benefício real.
+    const robotsValue = isMirrorDomain() ? "noindex, follow" : "index, follow";
     setMeta('meta[name="robots"]', "content", robotsValue);
 
     document.title = title;

@@ -26,7 +26,20 @@
     <!-- Primary Meta -->
     <title>Átria Veículos | Seminovos em Campinas-SP | Compre, Venda e Financie</title>
     <meta name="description" content="Átria Veículos: concessionária de seminovos em Campinas-SP com mais de 12 anos de mercado e +10.000 carros vendidos. Mais de 200 veículos, 3 lojas e financiamento facilitado. BMW, Mercedes, Audi, Toyota e muito mais." />
-    <meta name="robots" content="index, follow" />
+    <!-- Default conservador: noindex pro .com (espelho técnico). Inline script
+         abaixo libera 'index, follow' quando hostname for o canônico .com.br.
+         Roda síncrono no <head>, ANTES do React, antes do Googlebot terminar
+         de parsear — evita race condition de indexação acidental. -->
+    <meta name="robots" content="noindex, follow" id="meta-robots-tag" />
+    <script>
+      (function () {
+        var host = location.hostname;
+        if (host === "atriaveiculos.com.br" || host === "www.atriaveiculos.com.br") {
+          var tag = document.getElementById("meta-robots-tag");
+          if (tag) tag.setAttribute("content", "index, follow");
+        }
+      })();
+    </script>
     <link rel="canonical" href="https://www.atriaveiculos.com.br/" />
     <meta name="theme-color" content="#001A8C" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
