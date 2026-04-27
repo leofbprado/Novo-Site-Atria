@@ -797,92 +797,26 @@ function summaryFor(key: FilterKey, f: FilterState, precoMaxStock: number): stri
   }
 }
 
-// ─── FilterIndex ──────────────────────────────────────────────────────────────
-// Lista de filtros (índice). Cada linha mostra título + dot se ativo + summary +
-// chevron pra direita. Click "drilla" pra dentro do filtro escolhido.
-function FilterIndex({
-  filters, precoMaxStock, onSelectKey, focusKey,
-}: {
-  filters: FilterState;
-  precoMaxStock: number;
-  onSelectKey: (key: FilterKey) => void;
-  focusKey: FilterKey | null;
-}) {
-  const refs = useRef<Partial<Record<FilterKey, HTMLButtonElement | null>>>({});
-  useEffect(() => {
-    if (focusKey) refs.current[focusKey]?.focus();
-  }, [focusKey]);
-
-  return (
-    <div className="flex flex-col">
-      {FILTER_LIST.map(({ key, title }) => {
-        const active = isActiveFor(key, filters, precoMaxStock);
-        const summary = summaryFor(key, filters, precoMaxStock);
-        const ariaLabel = active && summary
-          ? `${title}, atualmente ${summary}`
-          : `${title}, sem filtro aplicado`;
-        return (
-          <button
-            key={key}
-            ref={(el) => { refs.current[key] = el; }}
-            type="button"
-            onClick={() => onSelectKey(key)}
-            aria-label={ariaLabel}
-            className="w-full min-h-[48px] flex items-center justify-between py-3 px-1 -mx-1 border-b border-atria-gray-medium last:border-b-0 hover:bg-atria-gray-light/40 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              <span className="font-inter font-semibold text-sm text-atria-text-dark">
-                {title}
-              </span>
-              {active && (
-                <span className="w-1.5 h-1.5 rounded-full bg-atria-navy flex-shrink-0" aria-hidden="true" />
-              )}
-            </span>
-            <span className="flex items-center gap-1.5 ml-2 min-w-0">
-              {summary && (
-                <span className="font-inter text-xs text-atria-text-gray truncate max-w-[160px]">
-                  {summary}
-                </span>
-              )}
-              <ChevronRight size={16} className="text-atria-text-gray flex-shrink-0" aria-hidden="true" />
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── FilterDrillPanel ─────────────────────────────────────────────────────────
-// Painel de um filtro só. Header "Voltar para todos os filtros" + título +
-// conteúdo (reusa MarcaFilter, RangeSlider, etc.).
-function FilterDrillPanel({
-  activeKey, filters, onChange, vehicles, precoMaxStock, onBack,
+// ─── Conteúdo de um filtro (extraído pra reuso entre drill antigo e accordion) ──
+function FilterContent({
+  activeKey, filters, onChange, vehicles, precoMaxStock,
 }: {
   activeKey: FilterKey;
   filters: FilterState;
   onChange: (f: FilterState) => void;
   vehicles: Vehicle[];
   precoMaxStock: number;
-  onBack: () => void;
 }) {
   const set = useCallback(
     (patch: Partial<FilterState>) => onChange({ ...filters, ...patch }),
-    [filters, onChange]
+    [filters, onChange],
   );
   const toggleArr = <T,>(arr: T[], val: T): T[] =>
     arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 
-  const def = FILTER_LIST.find((f) => f.key === activeKey)!;
-  const backRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    backRef.current?.focus();
-  }, [activeKey]);
-
-  let content: React.ReactNode = null;
   switch (activeKey) {
     case 'preco':
-      content = (
+      return (
         <PriceFilterContent
           filters={filters}
           onChange={onChange}
@@ -890,18 +824,16 @@ function FilterDrillPanel({
           precoMaxStock={precoMaxStock}
         />
       );
-      break;
     case 'marca':
-      content = (
+      return (
         <MarcaFilter
           vehicles={vehicles}
           selected={filters.marcas}
           onChange={(v) => set({ marcas: v, modelos: [] })}
         />
       );
-      break;
     case 'modelo':
-      content = (
+      return (
         <ModeloFilter
           vehicles={vehicles}
           selectedMarcas={filters.marcas}
@@ -909,9 +841,8 @@ function FilterDrillPanel({
           onChange={(v) => set({ modelos: v })}
         />
       );
-      break;
     case 'tipos':
-      content = (
+      return (
         <div className="grid grid-cols-2 gap-2">
           {TIPOS.map((tipo) => {
             const selected = filters.tipos.includes(tipo);
@@ -946,9 +877,8 @@ function FilterDrillPanel({
           })}
         </div>
       );
-      break;
     case 'ano':
-      content = (
+      return (
         <>
           <RangeSlider
             min={DEFAULT_RANGES.ano[0]}
@@ -967,9 +897,8 @@ function FilterDrillPanel({
           />
         </>
       );
-      break;
     case 'km':
-      content = (
+      return (
         <>
           <RangeSlider
             min={DEFAULT_RANGES.km[0]}
@@ -989,53 +918,34 @@ function FilterDrillPanel({
           />
         </>
       );
-      break;
     case 'combustivel':
-      content = (
+      return (
         <CheckList
           options={COMBUSTIVEIS}
           selected={filters.combustivel}
           onChange={(v) => set({ combustivel: v })}
         />
       );
-      break;
     case 'cambio':
-      content = (
+      return (
         <CheckList
           options={CAMBIOS}
           selected={filters.cambio}
           onChange={(v) => set({ cambio: v })}
         />
       );
-      break;
   }
-
-  return (
-    <div className="flex flex-col">
-      <button
-        ref={backRef}
-        type="button"
-        onClick={onBack}
-        className="self-start min-h-[40px] flex items-center gap-1 -ml-1 px-1 mb-2 font-inter text-xs font-semibold text-atria-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
-        aria-label="Voltar para a lista de filtros"
-      >
-        <ChevronLeft size={14} />
-        Voltar para todos os filtros
-      </button>
-      <h3 className="font-inter font-semibold text-base text-atria-text-dark mb-3">
-        {def.title}
-      </h3>
-      <div>{content}</div>
-    </div>
-  );
 }
 
-// ─── Sidebar (drill-down router) ──────────────────────────────────────────────
+// ─── Sidebar (sanfona — uma seção aberta por vez) ─────────────────────────────
+// Voltou pra padrão acordeão depois que o drill-down (com "Voltar para todos os
+// filtros") confundia o usuário (Clarity gravou abandono em sequência Preço →
+// Marca → home). Sanfona deixa o usuário ver todos os filtros de uma vez,
+// expandir o que quer e combinar dimensões sem perder posição.
 function Sidebar({
   filters, onChange, vehicles,
 }: { filters: FilterState; onChange: (f: FilterState) => void; vehicles: Vehicle[] }) {
-  const [activeFilterKey, setActiveFilterKey] = useState<FilterKey | null>(null);
-  const [focusKey, setFocusKey] = useState<FilterKey | null>(null);
+  const [openKey, setOpenKey] = useState<FilterKey | null>(null);
   const reduceMotion = useReducedMotion();
 
   const precoMaxStock = useMemo(() => {
@@ -1046,66 +956,87 @@ function Sidebar({
     return Math.max(10000, Math.ceil(maxPreco / 10000) * 10000);
   }, [vehicles]);
 
-  // Esc dentro do drill volta pra índice (intercepta antes de outros handlers)
+  // Esc fecha a seção aberta
   useEffect(() => {
-    if (!activeFilterKey) return;
+    if (!openKey) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        setFocusKey(activeFilterKey);
-        setActiveFilterKey(null);
+        setOpenKey(null);
       }
     };
     window.addEventListener('keydown', handler, true);
     return () => window.removeEventListener('keydown', handler, true);
-  }, [activeFilterKey]);
+  }, [openKey]);
 
-  const slide = reduceMotion ? 0 : 12;
-  const dur = reduceMotion ? 0 : 0.18;
+  const dur = reduceMotion ? 0 : 0.2;
 
   return (
-    <div className="relative">
-      <AnimatePresence mode="wait" initial={false}>
-        {activeFilterKey === null ? (
-          <motion.div
-            key="index"
-            initial={{ x: -slide, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -slide, opacity: 0 }}
-            transition={{ duration: dur, ease: "easeOut" }}
-          >
-            <FilterIndex
-              filters={filters}
-              precoMaxStock={precoMaxStock}
-              onSelectKey={(key) => {
-                setFocusKey(null);
-                setActiveFilterKey(key);
-              }}
-              focusKey={focusKey}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key={`drill-${activeFilterKey}`}
-            initial={{ x: slide, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: slide, opacity: 0 }}
-            transition={{ duration: dur, ease: "easeOut" }}
-          >
-            <FilterDrillPanel
-              activeKey={activeFilterKey}
-              filters={filters}
-              onChange={onChange}
-              vehicles={vehicles}
-              precoMaxStock={precoMaxStock}
-              onBack={() => {
-                setFocusKey(activeFilterKey);
-                setActiveFilterKey(null);
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="flex flex-col">
+      {FILTER_LIST.map(({ key, title }) => {
+        const isOpen = openKey === key;
+        const active = isActiveFor(key, filters, precoMaxStock);
+        const summary = summaryFor(key, filters, precoMaxStock);
+        const ariaLabel = active && summary
+          ? `${title}, atualmente ${summary}`
+          : `${title}, sem filtro aplicado`;
+
+        return (
+          <div key={key} className="border-b border-atria-gray-medium last:border-b-0">
+            <button
+              type="button"
+              onClick={() => setOpenKey(isOpen ? null : key)}
+              aria-expanded={isOpen}
+              aria-label={ariaLabel}
+              className="w-full min-h-[48px] flex items-center justify-between py-3 px-1 -mx-1 hover:bg-atria-gray-light/40 transition-colors text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-atria-navy focus-visible:ring-offset-2 rounded-sm"
+            >
+              <span className="flex items-center gap-2 min-w-0">
+                <span className="font-inter font-semibold text-sm text-atria-text-dark">
+                  {title}
+                </span>
+                {active && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-atria-navy flex-shrink-0" aria-hidden="true" />
+                )}
+              </span>
+              <span className="flex items-center gap-1.5 ml-2 min-w-0">
+                {summary && !isOpen && (
+                  <span className="font-inter text-xs text-atria-text-gray truncate max-w-[160px]">
+                    {summary}
+                  </span>
+                )}
+                <ChevronDown
+                  size={16}
+                  className={`text-atria-text-gray flex-shrink-0 transition-transform duration-200 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                  aria-hidden="true"
+                />
+              </span>
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: dur, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="pb-4 pt-1">
+                    <FilterContent
+                      activeKey={key}
+                      filters={filters}
+                      onChange={onChange}
+                      vehicles={vehicles}
+                      precoMaxStock={precoMaxStock}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
     </div>
   );
 }
