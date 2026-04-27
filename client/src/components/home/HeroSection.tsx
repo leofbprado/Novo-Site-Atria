@@ -13,7 +13,8 @@ import { getPrecoExibicao, precoEfetivo } from "@/lib/preco";
 //   - gravity=right (desktop) → mantém a família à direita, sky à esquerda pro texto
 //   - gravity=center (mobile) → centraliza o sujeito no crop 4:5
 // Troca HERO_ID pra "hero-2" quando quiser alternar a foto.
-const CF = "https://atriaveiculos.com/cdn-cgi/image";
+// www.* (não apex) — apex faz 301 redirect via Cloudflare e adiciona 300-800ms no LCP
+const CF = "https://www.atriaveiculos.com/cdn-cgi/image";
 const HERO_ID = "hero-1";
 const HERO_SRC = `https://hero.atriaveiculos.com/${HERO_ID}`;
 const HERO_MOBILE = `${CF}/width=800,height=1000,fit=cover,gravity=center,quality=78,format=auto/${HERO_SRC}-mobile.png`;
@@ -318,7 +319,7 @@ export function HeroSection() {
         >
           {/* Ilustração servida pelo Cloudflare R2 + Image Transformations */}
           <img
-            src="https://atriaveiculos.com/cdn-cgi/image/width=200,format=auto/https://botoes.atriaveiculos.com/vender-carro.png"
+            src="https://www.atriaveiculos.com/cdn-cgi/image/width=200,format=auto/https://botoes.atriaveiculos.com/vender-carro.png"
             alt=""
             aria-hidden
             loading="lazy"

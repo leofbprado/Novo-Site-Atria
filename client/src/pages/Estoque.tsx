@@ -32,7 +32,7 @@ type SortKey = typeof SORT_OPTIONS[number]["key"];
 // Ilustrações dos tipos de carroceria — PNGs no R2 servidas via Cloudflare
 // Image Transformations (format=auto negocia WebP/JPG pelo Accept header,
 // width=320 dá folga pra retina agora que a imagem ocupa o botão inteiro).
-const ICON_CF = "https://atriaveiculos.com/cdn-cgi/image";
+const ICON_CF = "https://www.atriaveiculos.com/cdn-cgi/image";
 const ICON_BASE = "https://icons.atriaveiculos.com";
 const TIPO_ICONS: Record<string, string> = {
   SUV:    `${ICON_CF}/width=320,format=auto/${ICON_BASE}/suv-model.png`,
