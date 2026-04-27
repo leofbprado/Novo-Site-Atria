@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { motion } from "framer-motion";
+// framer-motion removido daqui pra não puxar 116KB no critical path do hero —
+// PageSpeed mostrou framer-motion com 7.7s de CPU. Animações leves aqui usam
+// CSS puro (keyframes em index.css) que respeita prefers-reduced-motion via
+// @media query.
 import { Search, ChevronRight, Car, Clock } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { trackLead } from "@/lib/track";
@@ -35,12 +38,8 @@ const QUICK_FILTERS: Array<{ label: string; href: string; highlight?: boolean }>
 const fmtPrice = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
-// Variants do trust row — fade + leve subida, respeitado automaticamente
-// por prefers-reduced-motion via framer-motion.
-const trustItemVariants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
-};
+// Trust row: fade + leve subida via CSS animation (animate-fade-up) com
+// stagger delay por elemento. Respeita prefers-reduced-motion no index.css.
 
 export function HeroSection() {
   // Autocomplete state
@@ -345,25 +344,16 @@ export function HeroSection() {
         </a>
       </div>
 
-      {/* Trust row — staggered fade-in sutil (dispara 1x ao entrar no viewport) */}
-      <motion.div
-        className="px-5 lg:px-8 mt-5 lg:mt-8 mb-8 lg:mb-12 flex items-center justify-between lg:justify-center lg:gap-8 text-xs lg:text-sm uppercase tracking-wide text-atria-navy font-barlow-condensed font-bold"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-        }}
-      >
-        <motion.span variants={trustItemVariants}>+12 anos</motion.span>
+      {/* Trust row — staggered fade-in via CSS keyframe (sem framer-motion) */}
+      <div className="px-5 lg:px-8 mt-5 lg:mt-8 mb-8 lg:mb-12 flex items-center justify-between lg:justify-center lg:gap-8 text-xs lg:text-sm uppercase tracking-wide text-atria-navy font-barlow-condensed font-bold">
+        <span className="animate-fade-up" style={{ animationDelay: "0.10s" }}>+12 anos</span>
         <Dot />
-        <motion.span variants={trustItemVariants}>+10k carros</motion.span>
+        <span className="animate-fade-up" style={{ animationDelay: "0.18s" }}>+10k carros</span>
         <Dot />
-        <motion.span variants={trustItemVariants}>3 lojas</motion.span>
+        <span className="animate-fade-up" style={{ animationDelay: "0.26s" }}>3 lojas</span>
         <Dot />
-        <motion.span variants={trustItemVariants}>Até 1 ano de garantia</motion.span>
-      </motion.div>
+        <span className="animate-fade-up" style={{ animationDelay: "0.34s" }}>Até 1 ano de garantia</span>
+      </div>
     </section>
   );
 }
