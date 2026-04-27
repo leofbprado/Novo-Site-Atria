@@ -22,6 +22,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // === WHATSAPP CLICKS (registro de cliques pra Admin, não vai pro CRM) ===
+    match /whatsapp_clicks/{id} {
+      allow read, write: if true;
+    }
+
     // === VÍDEOS ===
     match /videos/{id} {
       allow read, write: if true;
