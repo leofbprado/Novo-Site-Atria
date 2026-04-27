@@ -1445,6 +1445,7 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
           const placaAutoconfRaw = String(v.placa || "");
           const isMascarada = placaAutoconfRaw.includes("*");
           const precoAutoconf = parseFloat(String(v.valoranuncio || v.valor_anuncio || v.valorvenda || v.preco || 0)) || 0;
+          const precoPromo = parseFloat(String(v.valorpromocao || 0)) || 0;
 
           // Tenta matchar: primeiro placa completa direta (caso raro, fallback), depois fingerprint
           let match: SancesMatch | null = null;
@@ -1512,7 +1513,13 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
             } else {
               precoToSave = sancesPreco;
               diff = precoAutoconf - sancesPreco;
-              if (Math.abs(diff) < 1) { status = "ok"; ok++; } else { status = "divergente"; divergentes++; }
+              // OK se preço cheio OU promocional bate com Sances. Pediu o Leo
+              // depois de ver casos tipo "cheio R$ 60.890 / promo R$ 51.990 /
+              // Sances R$ 51.990" — promo é o que efetivamente vai ao cliente,
+              // então quando ele iguala Sances o estoque está alinhado.
+              const cheioBate = Math.abs(diff) < 1;
+              const promoBate = precoPromo > 0 && Math.abs(precoPromo - sancesPreco) < 1;
+              if (cheioBate || promoBate) { status = "ok"; ok++; } else { status = "divergente"; divergentes++; }
             }
           }
 
