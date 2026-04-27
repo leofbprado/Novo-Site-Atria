@@ -267,9 +267,19 @@ function PhotoGallery({ fotos, titulo, slug }: { fotos: string[]; titulo: string
     window.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    // Mobile (≤768px): se virar pro landscape com lightbox aberto, fecha automaticamente.
+    // Layout em landscape ficava estranho e usuário perdia referência. Fechar é mais
+    // previsível que tentar adaptar — usuário volta pra ficha normal e pode reabrir.
+    const mql = window.matchMedia("(orientation: landscape) and (max-width: 1024px)");
+    const onOrient = (e: MediaQueryListEvent) => { if (e.matches) setLightboxOpen(false); };
+    if (mql.matches) setLightboxOpen(false);
+    mql.addEventListener("change", onOrient);
+
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      mql.removeEventListener("change", onOrient);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, fotos.length]);
