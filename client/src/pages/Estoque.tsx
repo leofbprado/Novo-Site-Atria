@@ -1234,7 +1234,9 @@ export default function Estoque() {
     }
   }, []);
 
-  // Sync URL on change
+  // Sync URL on change — inclui preço pra preservar deep-link do simulador
+  // home (clickbait → /estoque?precoMin=X&precoMax=Y). Sem preco aqui o sync
+  // sobrescrevia a URL no mount e o filtro se perdia em refresh/compartilhamento.
   useEffect(() => {
     const p = new URLSearchParams();
     if (filters.busca) p.set("q", filters.busca);
@@ -1242,9 +1244,11 @@ export default function Estoque() {
     if (filters.marcas.length) p.set("marca", filters.marcas.join(","));
     if ((filters.modelos ?? []).length) p.set("modelo", (filters.modelos ?? []).join(","));
     if (filters.cambio.length === 1) p.set("cambio", filters.cambio[0]);
+    if (filters.preco[0] > DEFAULT_RANGES.preco[0]) p.set("precoMin", String(filters.preco[0]));
+    if (filters.preco[1] < DEFAULT_RANGES.preco[1]) p.set("precoMax", String(filters.preco[1]));
     const url = `${window.location.pathname}${p.toString() ? "?" + p.toString() : ""}`;
     window.history.replaceState({}, "", url);
-  }, [filters.busca, filters.tipos, filters.marcas, filters.modelos, filters.cambio]);
+  }, [filters.busca, filters.tipos, filters.marcas, filters.modelos, filters.cambio, filters.preco]);
 
   // Filter change flash — feedback visual pra usuário saber que filtro recomputou
   const [filterFlash, setFilterFlash] = useState(false);
