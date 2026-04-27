@@ -68,28 +68,18 @@
     <meta name="twitter:description" content="Mais de 200 veículos seminovos com garantia e financiamento facilitado. 3 lojas em Campinas-SP." />
     <meta name="twitter:image" content="https://www.atriaveiculos.com.br/og-image.jpg" />
 
-    <!-- Google Tag Manager — carrega DEPOIS do load event pra não competir
-         com o LCP. PageSpeed mostrou Clarity (982ms) + GTM tags (545ms) +
-         Facebook Pixel (324ms) consumindo CPU no critical path. Trade-off:
-         os primeiros ~1-2s de navegação não são trackeados (bots/skim users).
-         dataLayer é criado imediatamente — pushes de eventos cedo ficam na
-         fila e processam quando GTM carrega. -->
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
-      function loadGTM() {
-        var s = document.createElement("script");
-        s.async = true;
-        s.src = "https://www.googletagmanager.com/gtm.js?id=GTM-PDHTBSMH";
-        document.head.appendChild(s);
-      }
-      if (document.readyState === "complete") {
-        // Já carregou: defer pro próximo idle
-        setTimeout(loadGTM, 100);
-      } else {
-        window.addEventListener("load", function () { setTimeout(loadGTM, 100); });
-      }
-    </script>
+    <!-- Google Tag Manager — snippet padrão (async). Tinha sido deferido pra
+         pós-load pra ganhar LCP, mas isso quebrava: Tag Assistant/Preview Mode
+         não detectavam o container, conversões Ads podiam ser perdidas se o
+         user fechasse a aba antes do GTM carregar, e Enhanced Conversions
+         podia disparar antes do tag estar pronto. Conversões > Performance.
+         Otimização de tags pesadas (Clarity/FB Pixel) deve ser feita DENTRO
+         do GTM via triggers 'Window Loaded'. -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PDHTBSMH');</script>
 
     <!-- Performance: preconnect & dns-prefetch -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
