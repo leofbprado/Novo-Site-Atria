@@ -83,11 +83,27 @@
     <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
     <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
 
-    <!-- Fonts: only critical weights, latin subset, display=swap -->
+    <!-- Fonts: técnica non-blocking (media=print + onload swap) pra não atrasar
+         o LCP. Browser baixa o CSS sem aplicar (print = não tela), depois do
+         load troca pra 'all' e aplica. display=swap garante texto visível com
+         fallback enquanto a fonte real carrega. -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600;700&display=swap&subset=latin"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600;700&display=swap&subset=latin"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter:wght@400;500;600;700&display=swap&subset=latin"
+        rel="stylesheet"
+      />
+    </noscript>
 
     <!-- Preload hero image (Cloudflare Image Transformations em cima do R2).
          Preloads responsivos via media query: mobile baixa 800×1000 q78, desktop 1600×700 q75.
