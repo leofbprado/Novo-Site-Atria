@@ -38,6 +38,96 @@ function cors(res) {
   res.set("Access-Control-Allow-Headers", "Content-Type");
 }
 
+// ─── Sitemap dinâmico ─────────────────────────────────────────────────────────
+// Lê veículos publicados + posts de blog do Firestore e gera sitemap.xml em
+// runtime. Cache de 1h pra reduzir leituras (Google Search Console rebusca a
+// cada poucos dias). URLs sempre apontam pro domínio canônico (.com.br) —
+// quando esse for o final, anúncios do Ads e SEO orgânico ficam alinhados.
+function escapeXml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function tsToISODate(ts) {
+  try {
+    if (!ts) return null;
+    const d = typeof ts.toDate === "function" ? ts.toDate() : new Date(ts);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return null;
+  }
+}
+
+exports.sitemap = onRequest({ region: "southamerica-east1" }, async (req, res) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const staticUrls = [
+      { loc: "/", changefreq: "weekly", priority: "1.0", lastmod: today },
+      { loc: "/estoque-carros-usados-seminovos-campinas-sp", changefreq: "daily", priority: "0.9", lastmod: today },
+      { loc: "/vender-carro-usado-campinas-sp", changefreq: "monthly", priority: "0.8", lastmod: today },
+      { loc: "/financiamento-carros-usados-seminovos-campinas-sp", changefreq: "monthly", priority: "0.7", lastmod: today },
+      { loc: "/sobre-atria-veiculos-campinas-sp", changefreq: "monthly", priority: "0.5", lastmod: today },
+      { loc: "/blog", changefreq: "weekly", priority: "0.6", lastmod: today },
+    ];
+
+    const [vehSnap, blogSnap] = await Promise.all([
+      db.collection("veiculos_admin").where("status", "==", "publicado").get(),
+      db.collection("blog_posts").where("status", "==", "publicado").get(),
+    ]);
+
+    const vehicleUrls = vehSnap.docs.flatMap((doc) => {
+      const v = doc.data() || {};
+      const slug = v.slug;
+      if (!slug) return [];
+      const lastmod = tsToISODate(v.updatedAt) || tsToISODate(v.createdAt) || today;
+      return [{
+        loc: `/campinas-sp/${slug}`,
+        changefreq: "weekly",
+        priority: "0.8",
+        lastmod,
+      }];
+    });
+
+    const blogUrls = blogSnap.docs.flatMap((doc) => {
+      const p = doc.data() || {};
+      const slug = p.slug;
+      if (!slug) return [];
+      const lastmod = tsToISODate(p.data_publicacao) || tsToISODate(p.updatedAt) || today;
+      return [{
+        loc: `/blog/${slug}`,
+        changefreq: "monthly",
+        priority: "0.5",
+        lastmod,
+      }];
+    });
+
+    const all = [...staticUrls, ...vehicleUrls, ...blogUrls];
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${all.map((u) => `  <url>
+    <loc>${escapeXml(SITE_URL + u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+
+    res.set("Content-Type", "application/xml; charset=utf-8");
+    res.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    res.status(200).send(xml);
+  } catch (err) {
+    console.error("[sitemap] erro:", err);
+    res.status(500).send("erro ao gerar sitemap");
+  }
+});
+
 exports.autoconf = onRequest({ region: "southamerica-east1" }, async (req, res) => {
   cors(res);
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
