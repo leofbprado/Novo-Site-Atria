@@ -10,7 +10,7 @@ const fmtKm = (n: number) => `${n.toLocaleString("pt-BR")} km`;
 
 const ENTRADA_PCT = 0.4;
 
-export function VehicleCard({ v }: { v: Vehicle }) {
+export function VehicleCard({ v, priority = false }: { v: Vehicle; priority?: boolean }) {
   const titulo = v.titulo ?? `${v.marca} ${v.modelo}`;
   const { precoFinal, precoCheio, emPromocao } = getPrecoExibicao(v);
   const desconto = precoCheio ? precoCheio - precoFinal : 0;
@@ -34,7 +34,9 @@ export function VehicleCard({ v }: { v: Vehicle }) {
               src={v.fotos[0]}
               alt={`${titulo} – ${v.cor} – ${fmtKm(v.km)}`}
               width={800} height={600}
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              decoding={priority ? "sync" : "async"}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               itemProp="image"
             />

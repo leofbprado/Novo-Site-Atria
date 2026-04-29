@@ -1447,8 +1447,8 @@ export default function Estoque() {
             ) : filtered.length > 0 ? (
               <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" role="list">
                 <AnimatePresence mode="popLayout">
-                  {filtered.map((v) => (
-                    <li key={v.id}><VehicleCard v={v} /></li>
+                  {filtered.map((v, i) => (
+                    <li key={v.id}><VehicleCard v={v} priority={i < 3} /></li>
                   ))}
                 </AnimatePresence>
               </ul>
