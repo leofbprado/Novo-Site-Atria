@@ -838,7 +838,9 @@ function InterestDrawer({ vehicle, onClose }: { vehicle: Vehicle; onClose: () =>
         ano: vehicle.ano,
         preco: precoEfetivo(vehicle),
       });
-    } catch { /* não bloqueia */ }
+    } catch (err) {
+      console.error("[InterestDrawer] erro ao salvar lead:", err);
+    }
     setSending(false);
     setDone(true);
   };
