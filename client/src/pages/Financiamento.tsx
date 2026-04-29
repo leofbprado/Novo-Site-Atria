@@ -5,6 +5,7 @@ import {
   FileText, CheckCircle, Car, Send, Shield, X,
 } from "lucide-react";
 import { saveLead } from "@/lib/firestore";
+import { trackLead } from "@/lib/track";
 import { calcularFaixaParcela, SIM_PRAZO } from "@/lib/preco";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { PageHero } from "@/components/ui/PageHero";
@@ -73,6 +74,12 @@ function SimuladorResultModal({
         source,
         query: `Simulação: entrada ${fmtBRL(entrada)}, parcela ${fmtBRL(parcela)}/mês, faixa ${fmtBRL(precoMin)}–${fmtBRL(precoMax)}`,
         dados: { entrada, parcela, prazo: SIM_PRAZO, precoMin, precoMax },
+      });
+      trackLead({
+        clarityEvent: "lead_simulador_financiamento",
+        origem: "credere",
+        source,
+        preco: Math.round((precoMin + precoMax) / 2),
       });
     } catch (err) {
       console.error("[Simulador] erro ao salvar lead:", err);

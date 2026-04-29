@@ -6,6 +6,7 @@ import {
   TrendingUp, Handshake, Send,
 } from "lucide-react";
 import { saveLead } from "@/lib/firestore";
+import { trackLead } from "@/lib/track";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 
 const WA_NUMBER = "5519996525211";
@@ -329,6 +330,9 @@ function PurchaseForm() {
     e.preventDefault();
     if (!form.nome || !form.whatsapp || !form.marcaModelo) return;
     setSending(true);
+    // Abre tab SINCRONAMENTE no gesto pra escapar do popup blocker (Safari iOS)
+    const waTab = window.open("", "_blank");
+    const waUrl = waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`);
     try {
       await saveLead({
         source: "venda-seu-carro-compra",
@@ -336,22 +340,21 @@ function PurchaseForm() {
         query: `${form.marcaModelo} ${form.ano} ${form.km}km`,
         dados: { nome: form.nome, marcaModelo: form.marcaModelo, ano: form.ano, km: form.km },
       });
-      setSent(true);
-      setTimeout(() => {
-        window.open(
-          waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`),
-          "_blank"
-        );
-      }, 500);
-    } catch {
-      window.open(
-        waLink(`Olá! Quero vender meu carro. ${form.marcaModelo} ${form.ano} ${form.km}km. Meu nome é ${form.nome}, WhatsApp: ${form.whatsapp}`),
-        "_blank"
-      );
-      setSent(true);
+      trackLead({
+        clarityEvent: "lead_vender_carro",
+        origem: "home",
+        source: "venda-seu-carro-compra",
+        marca: form.marcaModelo,
+        ano: form.ano ? Number(form.ano) : undefined,
+      });
+    } catch (err) {
+      console.error("[VendaSeuCarro] erro ao salvar lead:", err);
     } finally {
       setSending(false);
+      setSent(true);
     }
+    if (waTab) waTab.location.href = waUrl;
+    else window.location.href = waUrl;
   };
 
   // Validações por etapa
