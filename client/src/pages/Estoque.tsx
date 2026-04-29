@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, X, Car, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Heart } from "lucide-react";
 import { getVehicles, saveLead, vehiclePath, type Vehicle } from "@/lib/firestore";
+import { trackLead } from "@/lib/track";
 import { brandLogoFor, brandDisplayName } from "@/lib/brandLogos";
 import { getPrecoExibicao, calcularFaixaParcela, parcelaParaPreco, SIM_PRAZO } from "@/lib/preco";
 import { TagBadge } from "@/components/TagBadge";
@@ -1118,10 +1119,27 @@ function NaoEncontrou({ busca }: { busca: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    await saveLead({ nome: form.nome, whatsapp: form.whatsapp, source: "estoque-nao-encontrou", query: form.busca });
-    setSending(false);
-    setDone(true);
-    setTimeout(() => window.open(waLink(`Olá! Me chamo ${form.nome}. Não encontrei no estoque. Procuro: ${form.busca}`), "_blank"), 800);
+    // Abre tab SINCRONAMENTE no gesto do usuário pra escapar do popup blocker
+    // (Safari iOS bloqueia window.open chamado depois de await). Vamos preencher
+    // a URL real assim que tivermos o link montado, mas a tab já tá liberada.
+    const waTab = window.open("", "_blank");
+    try {
+      await saveLead({ nome: form.nome, whatsapp: form.whatsapp, source: "estoque-nao-encontrou", query: form.busca });
+      trackLead({
+        clarityEvent: "lead_nao_encontrou_estoque",
+        origem: "home",
+        source: "estoque-nao-encontrou",
+        termoBusca: form.busca,
+      });
+    } catch (err) {
+      console.error("[NaoEncontrou] erro ao salvar lead:", err);
+    } finally {
+      setSending(false);
+      setDone(true);
+    }
+    const url = waLink(`Olá! Me chamo ${form.nome}. Não encontrei no estoque. Procuro: ${form.busca}`);
+    if (waTab) waTab.location.href = url;
+    else window.location.href = url;
   };
 
   return (
