@@ -101,6 +101,7 @@ export type ClarityLeadEvent =
   | "lead_simular_credere_ficha"
   | "lead_agendar_visita"
   | "lead_clickbait_home"
+  | "lead_simulador_home"
   | "lead_vender_carro"
   | "lead_contato_generico"
   | "busca_realizada";

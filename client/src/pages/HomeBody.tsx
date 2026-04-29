@@ -156,7 +156,7 @@ function SimuladorResultModal({
       });
       // Dispara só após o 200 do saveLead — lead confirmado, não tentativa
       trackLead({
-        clarityEvent: "lead_clickbait_home",
+        clarityEvent: "lead_simulador_home",
         origem: "home",
         source,
         preco: Math.round((precoMin + precoMax) / 2),
@@ -1203,15 +1203,21 @@ function RecentlyViewed() {
           <p className="section-label mb-2">Continue de onde parou</p>
           <h2 className="section-title">Você viu recentemente</h2>
         </div>
-        {/* Mobile: scroll-snap horizontal · Desktop: grid */}
-        <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-none">
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-max md:w-auto">
+        {/* Mobile: scroll-snap horizontal */}
+        <div className="md:hidden -mx-4 px-4 overflow-x-auto snap-x snap-mandatory scrollbar-none">
+          <div className="flex gap-4 w-max">
             {recentes.map((v) => (
-              <div key={v.id} className="w-[280px] md:w-auto flex-shrink-0 snap-start">
+              <div key={v.id} className="w-[280px] flex-shrink-0 snap-start">
                 <VehicleCard v={v} />
               </div>
             ))}
           </div>
+        </div>
+        {/* Desktop: grid limpo */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {recentes.map((v) => (
+            <VehicleCard key={v.id} v={v} />
+          ))}
         </div>
       </div>
     </section>
