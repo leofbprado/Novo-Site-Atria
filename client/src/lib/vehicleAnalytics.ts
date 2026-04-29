@@ -60,6 +60,19 @@ const EVENT_FIELD: Record<AnalyticsEvent, string> = {
 
 // ─── Track Event ─────────────────────────────────────────────────────────────
 
+// Adia o trabalho pra fora do main thread no momento do clique. INP da PDP
+// estava em 550ms (Clarity, abr/2026) — handlers chamavam até 2x essa função
+// e o setup sync dos setDocs entrava no critical path. requestIdleCallback
+// move tudo pra ociosidade do browser sem quebrar fire-and-forget existente.
+function deferIdle(fn: () => void): void {
+  if (typeof window === "undefined") { fn(); return; }
+  const ric = (window as any).requestIdleCallback as
+    | ((cb: () => void, opts?: { timeout: number }) => number)
+    | undefined;
+  if (ric) ric(fn, { timeout: 2000 });
+  else setTimeout(fn, 0);
+}
+
 export async function trackVehicleEvent(
   slug: string,
   event: AnalyticsEvent,
@@ -69,24 +82,26 @@ export async function trackVehicleEvent(
   const field = EVENT_FIELD[event];
   const today = new Date().toISOString().slice(0, 10);
 
-  // Aggregate counter (creates doc if missing)
-  await setDoc(
-    doc(db, COLLECTION, slug),
-    {
-      slug,
-      [field]: increment(1),
-      ...(dataPub ? { data_publicacao: dataPub } : {}),
-      lastEvent: serverTimestamp(),
-    },
-    { merge: true },
-  );
+  deferIdle(() => {
+    // Aggregate counter (creates doc if missing)
+    setDoc(
+      doc(db!, COLLECTION, slug),
+      {
+        slug,
+        [field]: increment(1),
+        ...(dataPub ? { data_publicacao: dataPub } : {}),
+        lastEvent: serverTimestamp(),
+      },
+      { merge: true },
+    ).catch(() => {});
 
-  // Daily counter
-  await setDoc(
-    doc(db, COLLECTION, slug, "historico_diario", today),
-    { [field]: increment(1) },
-    { merge: true },
-  );
+    // Daily counter
+    setDoc(
+      doc(db!, COLLECTION, slug, "historico_diario", today),
+      { [field]: increment(1) },
+      { merge: true },
+    ).catch(() => {});
+  });
 }
 
 // ─── Read All Analytics (Admin) ──────────────────────────────────────────────
