@@ -1324,6 +1324,20 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
     try {
       const res = await fetchAutoConfVeiculos({ registros_por_pagina: 500 });
       const dados = Array.isArray(res.dados) ? res.dados : [];
+      // Diagnóstico: se AutoConf paginar e não trouxer tudo na pag 1, veículos
+      // novos cadastrados ficam fora do sync silenciosamente. Loga sempre pra
+      // o user enxergar discrepância no console quando algo "não sincronizar".
+      console.log(
+        `[sync] AutoConf retornou ${dados.length} veículos`,
+        res.paginacao
+          ? ` | paginacao: pag ${res.paginacao.pagina_atual}/${res.paginacao.total_paginas}, total_registros=${res.paginacao.total_registros}`
+          : "",
+      );
+      if (res.paginacao && res.paginacao.total_registros > dados.length) {
+        console.warn(
+          `[sync] ATENÇÃO: AutoConf reporta ${res.paginacao.total_registros} registros mas trouxe só ${dados.length}. Páginas adicionais não estão sendo buscadas — veículos novos podem estar invisíveis ao admin.`,
+        );
+      }
       let created = 0, updated = 0, errors = 0;
       const failedIds: number[] = [];
       let loggedPrecoFields = false;
@@ -1465,8 +1479,13 @@ function EstoquePage({ vehicles, loadVehicles, openaiKey, claudeKey, analytics, 
               const normModelo = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim();
               // Aliases de modelo: AutoConf às vezes usa submarca ("Haval"),
               // Sances usa modelo específico ("H6"). Mapeamento token AC → tokens aceitos SC.
+              // DUSTER↔OROCH: AutoConf cataloga a picape "Duster Oroch" só como "DUSTER"
+              // no modelopai_nome; Sances grava "OROCH". Sem o alias, o EMA9A84 (Renault
+              // Oroch 2020) caía como pendente mesmo com fingerprint placa+marca+ano OK.
               const MODELO_ALIASES: Record<string, string[]> = {
                 HAVAL: ["H6", "H2", "H3", "JOLION", "DARGO", "F7"],
+                DUSTER: ["OROCH"],
+                OROCH: ["DUSTER"],
               };
               const tokenAc = normModelo(String(v.modelopai_nome || "")).split(/\s+/)[0] || "";
               const tokensAceitos = tokenAc ? [tokenAc, ...(MODELO_ALIASES[tokenAc] || [])] : [];
